@@ -1,0 +1,54 @@
+---
+title: Astro Metadata Lab
+kind: research
+status: complete
+repo: cevdetch/astro-metadata-lab
+site: https://astro-metadata-lab.cevdet.ch/
+stack: [astro, html, javascript, cloudflare-pages]
+tagline: Test cases for HTML metadata, social previews, favicons and theming
+summary: Compares HTML metadata, social previews, favicons and native theming in real browsers and messaging clients before choosing a starter's defaults.
+role: Creator
+highlights:
+  - Built 121 static test cases covering metadata precedence, canonicals, icons, head parsing, theming, manifests, JSON-LD, language and HTTP status.
+  - Recorded browser and link-preview observations per case, keeping documented platform contracts separate from observed client behaviour.
+  - Turned the results into the metadata defaults of the Astro Minimal Template.
+metrics:
+  - label: Metadata test cases
+    value: '121'
+    measuredAt: 2026-10-24
+    source: { label: Astro Metadata Lab README, url: https://github.com/cevdetch/astro-metadata-lab/blob/main/README.md }
+---
+
+## Problem
+
+Advice on what belongs in a page's `<head>` is easy to find and hard to verify. Whether a messaging app falls back to the HTML title when Open Graph text is missing, whether an SVG works as a share image, or which icon a browser picks from several candidates depends on the client, and documentation rarely says. Before deciding what a minimal Astro starter should emit by default, those questions needed answers from actual clients.
+
+## Constraints
+
+- Each case had to be an independent page, viewable on its own for favicon, first-paint and mobile viewport observations that an iframe cannot show.
+- Values had to be distinguishable at a glance. In the precedence cases, HTML, Open Graph, Twitter card and body text each carry a different marker and image colour, so a preview shows which source a client used.
+- Observations come from real browsers and apps on available devices, reported by hand, so every record states what was and was not observed.
+- The site is static, with no client JavaScript bundle, and deploys to Cloudflare Pages with the host rules that the HTTP controls need.
+
+## Decisions
+
+- **One catalogue, three views per case.** Every fixture has its own page, a side-by-side comparison with the baseline homepage and a plain-text view of its source.
+- **Controls that are meant to fail.** Fixtures include broken images, conflicting tags, duplicate canonicals, a script-end injection in JSON-LD, a real 404, a 302 redirect and a header-only `noindex`, so failure modes are visible rather than assumed.
+- **Records separate contracts from observations.** Each case has a results page, and a shared run registry records which client produced each observation. A documented requirement of the Open Graph protocol or Google's guidance is kept apart from what a client happened to show.
+- **Checks on the artifact.** The build is verified for every case, source and comparison output, exact fixture HTML, asset bytes, manifest paths, host rules and the absence of a client bundle, including under a subpath.
+
+## Results
+
+- **Write Open Graph text explicitly.** When Open Graph text was omitted, Discord showed no title or description at all instead of falling back to the HTML values, and other clients' fallbacks differed. The recommendation became one shared title and description feeding both the HTML and the Open Graph text.
+- **Some tags stay for the protocol, not for an observed effect.** Removing `og:type` or `og:url` individually caused no visible change in the tested clients; both stay for protocol conformance. Image dimension tags caused no visible regression when omitted, so the agreed default leaves them out.
+- **Prefer an absolute PNG share image.** Root-relative and SVG images behaved inconsistently, and a missing image produced anything from no image to an "Image failed to load" stand-in. Generated images default to 1200×630 PNG.
+- **Escape JSON-LD.** The unsafe control failed to parse, injected an image element and set its runtime flag, while the escaped control parsed with the markup-like text kept as a string.
+- **Build checks alone missed a dev-only failure.** A strict trailing-slash policy made an extensionless asset endpoint reject file URLs in the dev server while the static build emitted the right files; a regression check now exercises Astro's dev route matching.
+- **Clients cut text at different lengths**, so the starter keeps full escaped strings and gives writing guidance instead of silent truncation.
+- These defaults shipped in the [Astro Minimal Template](https://astro-minimal-template.cevdet.ch/).
+
+## Next
+
+- Testing the clients unavailable in this round, X and Facebook Messenger, against the same precedence cases is a possible follow-up.
+- Diagnosing why LinkedIn's post composer and direct messages showed no preview, which the Inspector results did not explain, remains open.
+- Running the extended hosted HTTP checks and the remaining browser combinations, including a 48px ICO result and a matching light-mode theming report, is further possible work.
