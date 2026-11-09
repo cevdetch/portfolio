@@ -22,3 +22,14 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# private CV output and inputs
+private/
+cv.private.env
+rendercv_output/
+
+# local privacy deny list
+.privacy-denylist
+
+# lighthouse reports
+.lighthouseci/

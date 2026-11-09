@@ -1,8 +1,9 @@
 {
-  "name": "astro-minimal-template",
+  "name": "portfolio",
   "type": "module",
   "version": "0.0.1",
   "license": "MIT",
+  "private": true,
   "packageManager": "pnpm@12.3.4",
   "engines": {
     "node": ">=24.8.0"
@@ -15,21 +16,28 @@
     "build": "astro build",
     "verify:output": "node scripts/verify-output.ts",
     "lint:html": "node scripts/lint-html.ts",
-    "verify": "pnpm check && pnpm test && pnpm test:build && pnpm build && pnpm verify:output && pnpm lint:html",
+    "verify:portfolio": "node scripts/verify-portfolio.ts",
+    "verify": "pnpm check && pnpm test && pnpm test:build && pnpm build && pnpm verify:output && pnpm lint:html && pnpm verify:portfolio",
+    "fetch-facts": "node scripts/fetch-facts.ts",
+    "cv:private": "node scripts/cv-private.ts",
+    "lighthouse": "astro build --site http://127.0.0.1:4321 && lhci autorun --config=lighthouse/mobile.json && lhci autorun --config=lighthouse/desktop.json",
     "preview": "astro preview",
     "astro": "astro"
   },
   "dependencies": {
+    "@astrojs/mdx": "8.1.3",
     "astro": "^7.4.2"
   },
   "devDependencies": {
     "@astrojs/check": "0.9.12",
     "@astrojs/sitemap": "3.7.4",
+    "@lhci/cli": "0.16.0",
     "@types/node": "24.8.0",
     "deadhead": "0.3.1",
     "parse5": "8.0.1",
     "satori": "0.33.5",
     "sharp": "0.35.5",
-    "typescript": "6.0.3"
+    "typescript": "6.0.3",
+    "yaml": "2.9.1"
   }
 }
