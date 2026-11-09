@@ -1,0 +1,132 @@
+import assert from 'node:assert/strict';
+import { test } from 'node:test';
+import { createClient, type Client } from '../../src/facts/client.ts';
+import { collectFacts } from '../../src/facts/refresh.ts';
+
+type Route = { data?: unknown; link?: string; body?: string; contentType?: string } | null;
+
+function fakeClient(routes: Record<string, Route>): Client & { requested: string[] } {
+  const requested: string[] = [];
+  const hit = (url: string): Route => {
+    requested.push(url);
+    if (!(url in routes)) throw new Error(`unexpected request ${url}`);
+    return routes[url]!;
+  };
+  return {
+    requested,
+    async json<T>(url: string) {
+      const route = hit(url);
+      return route ? { data: route.data as T, headers: new Headers(route.link ? { link: route.link } : {}) } : null;
+    },
+    async text(url: string) {
+      const route = hit(url);
+      return route ? { body: route.body ?? '', contentType: route.contentType ?? 'image/svg+xml' } : null;
+    },
+  };
+}
+
+const api = 'https://api.github.com';
+const search = `${api}/search/issues?q=${encodeURIComponent('is:pr is:merged is:public author:cevdetch -user:cevdetch')}&per_page=100&page=1`;
+const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"/>';
+
+test('collectFacts reads every source for a Work and the Contributions', async () => {
+  const client = fakeClient({
+    [`${api}/repos/cevdetch/deadhead`]: { data: { private: false, default_branch: 'main', license: { spdx_id: 'MIT' } } },
+    [`${api}/repos/cevdetch/deadhead/commits?sha=main&per_page=1`]: { data: [{ commit: { author: { date: '2026-11-01T10:00:00Z' } } }], link: `<${api}/repositories/1/commits?per_page=1&page=412>; rel="last"` },
+    [`${api}/repos/cevdetch/deadhead/commits?sha=main&per_page=1&page=412`]: { data: [{ commit: { author: { date: '2026-09-01T10:00:00Z' } } }] },
+    [`${api}/repos/cevdetch/deadhead/releases/latest`]: { data: { tag_name: 'v0.3.1', published_at: '2026-10-20T10:00:00Z', draft: false } },
+    'https://registry.npmjs.org/deadhead': { data: { 'dist-tags': { latest: '0.3.1' }, time: { '0.3.1': '2026-10-20T10:00:00.000Z' } } },
+    'https://registry.npmjs.org/favseed': null,
+    'https://deadhead.cevdet.ch/icon.svg': { body: svg },
+    'https://astro-metadata-lab.cevdet.ch/icon.svg': null,
+    [search]: { data: { total_count: 1, items: [{ html_url: 'https://github.com/withastro/astro/pull/101', number: 101, title: 'Fix', repository_url: `${api}/repos/withastro/astro`, pull_request: { merged_at: '2026-06-24T12:35:44Z' } }] } },
+  });
+  const collected = await collectFacts([
+    { id: 'deadhead', repo: 'cevdetch/deadhead', site: 'https://deadhead.cevdet.ch/', packages: [{ registry: 'npm', name: 'deadhead' }, { registry: 'npm', name: 'favseed' }], pkgbuilds: false },
+    { id: 'astro-metadata-lab', site: 'https://astro-metadata-lab.cevdet.ch/', packages: [], pkgbuilds: false },
+    { id: 'homelab', packages: [], pkgbuilds: false },
+  ], client);
+  assert.equal(collected.works['deadhead']?.repo?.commitCount, 412);
+  assert.equal(collected.works['deadhead']?.repo?.firstCommit, '2026-09-01T10:00:00Z');
+  assert.deepEqual(collected.works['deadhead']?.packages.map(p => p.published), [true, false]);
+  assert.equal(collected.works['deadhead']?.icon?.file, 'icons/deadhead.svg');
+  assert.equal(collected.works['astro-metadata-lab']?.icon, null);
+  assert.equal('homelab' in collected.works, false);
+  assert.deepEqual(collected.icons, [{ workId: 'deadhead', svg }]);
+  assert.equal(collected.contributions.length, 1);
+});
+
+test('a single-commit repository needs no second page', async () => {
+  const client = fakeClient({
+    [`${api}/repos/cevdetch/x`]: { data: { private: false, default_branch: 'main', license: null } },
+    [`${api}/repos/cevdetch/x/commits?sha=main&per_page=1`]: { data: [{ commit: { author: { date: '2026-11-01T10:00:00Z' } } }] },
+    [`${api}/repos/cevdetch/x/releases/latest`]: null,
+    [search]: { data: { total_count: 0, items: [] } },
+  });
+  const collected = await collectFacts([{ id: 'x', repo: 'cevdetch/x', packages: [], pkgbuilds: false }], client);
+  assert.equal(collected.works['x']?.repo?.commitCount, 1);
+  assert.equal(collected.works['x']?.repo?.firstCommit, '2026-11-01T10:00:00Z');
+});
+
+test('a private repo, a non-SVG icon or an unsafe icon stops the refresh', async () => {
+  await assert.rejects(collectFacts([{ id: 'one', repo: 'cevdetch/one', packages: [], pkgbuilds: false }], fakeClient({
+    [`${api}/repos/cevdetch/one`]: { data: { private: true, default_branch: 'main', license: null } },
+  })), /private/);
+  await assert.rejects(collectFacts([{ id: 'x', site: 'https://x.cevdet.ch/', packages: [], pkgbuilds: false }], fakeClient({
+    'https://x.cevdet.ch/icon.svg': { body: '<html></html>', contentType: 'text/html' },
+  })), /not image\/svg\+xml/);
+  await assert.rejects(collectFacts([{ id: 'x', site: 'https://x.cevdet.ch/', packages: [], pkgbuilds: false }], fakeClient({
+    'https://x.cevdet.ch/icon.svg': { body: '<svg><script/></svg>' },
+  })), /script element/);
+});
+
+test('createClient sends the token only to GitHub and maps 404 to null', async () => {
+  const seen: { url: string; auth: string | undefined }[] = [];
+  const fetcher = (async (url: string | URL | Request, init?: RequestInit) => {
+    const headers = new Headers(init?.headers);
+    seen.push({ url: String(url), auth: headers.get('authorization') ?? undefined });
+    return new Response(String(url).includes('missing') ? 'no' : '{"ok":true}', { status: String(url).includes('missing') ? 404 : 200 });
+  }) as typeof fetch;
+  const client = createClient('secret', fetcher);
+  assert.deepEqual((await client.json<{ ok: boolean }>('https://api.github.com/x'))?.data, { ok: true });
+  assert.equal(await client.json('https://registry.npmjs.org/missing'), null);
+  await client.json('https://api.github.com.example.test/x');
+  assert.deepEqual(seen.map(s => s.auth), ['Bearer secret', undefined, undefined]);
+  const failing = createClient(undefined, (async () => new Response('', { status: 502 })) as typeof fetch);
+  await assert.rejects(failing.json('https://api.github.com/x'), /HTTP 502/);
+});
+
+test('createClient follows GitHub 301 within api.github.com and sends token on both hops', async () => {
+  const seen: { url: string; auth: string | undefined }[] = [];
+  const fetcher = (async (url: string | URL | Request, init?: RequestInit) => {
+    const headers = new Headers(init?.headers);
+    seen.push({ url: String(url), auth: headers.get('authorization') ?? undefined });
+    const urlStr = String(url);
+    if (urlStr === `${api}/x`) {
+      return new Response('', { status: 301, headers: { 'location': `${api}/y` } });
+    }
+    if (urlStr === `${api}/y`) {
+      return new Response('{"redirected":true}', { status: 200 });
+    }
+    throw new Error(`unexpected URL ${urlStr}`);
+  }) as typeof fetch;
+  const client = createClient('secret', fetcher);
+  const result = await client.json<{ redirected: boolean }>(`${api}/x`);
+  assert.deepEqual(result?.data, { redirected: true });
+  assert.deepEqual(seen.map(s => s.auth), ['Bearer secret', 'Bearer secret']);
+});
+
+test('createClient rejects GitHub redirect to another origin', async () => {
+  const seen: string[] = [];
+  const fetcher = (async (url: string | URL | Request, _init?: RequestInit) => {
+    seen.push(String(url));
+    const urlStr = String(url);
+    if (urlStr === `${api}/x`) {
+      return new Response('', { status: 302, headers: { 'location': 'https://evil.test/x' } });
+    }
+    throw new Error(`should not reach ${urlStr}`);
+  }) as typeof fetch;
+  const client = createClient('secret', fetcher);
+  await assert.rejects(client.json(`${api}/x`), /leaves api.github.com/);
+  assert.deepEqual(seen, [`${api}/x`]);
+});
