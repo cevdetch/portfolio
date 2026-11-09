@@ -1,0 +1,45 @@
+---
+title: Branding pipeline
+kind: tool
+status: active
+stack: [bash, javascript, node, css]
+tagline: One mark, an OKLCH palette per project, generated site tokens
+summary: Generates the icon set and accessible colour tokens for each site from one SVG mark and an OKLCH palette registry, with contrast and colour-blindness checks.
+role: Designer and developer
+highlights:
+  - Derives each project palette in OKLCH and checks it against real browser tab colours, WCAG contrast floors and simulated colour blindness.
+  - Generates icon sets and brand colour tokens for each site from one registry row, so no site copies a colour by hand.
+---
+
+## Problem
+
+Every site Cevdet builds needs a favicon set, a theme colour and brand colours for its pages. Picking them by hand per site drifts: the icon and the page disagree, and sibling sites end up hard to tell apart in a row of browser tabs. The marks also live at 16 pixels on light and dark tab strips, where most colour choices stop reading.
+
+## Constraints
+
+- **One geometry.** The mark is a C of seven blocks on a 3×3 grid, the odd block at the top right in the accent colour, and it is the only thing that moves. Between sites only colour and timing change.
+- **Pixel-exact at favicon sizes.** Every edge lands on a whole pixel at each multiple of 16, so the sizes a favicon lives at render with no anti-aliasing.
+- **Legible on both tab themes.** A favicon cannot switch with the browser theme, so both colours must read on a white tab and on the browsers' own dark tab colours, taken from Chromium's colour tokens and Firefox's dark theme.
+- **The odd block must be odd for everyone,** including under protanopia, deuteranopia and tritanopia.
+- The renderer behind the icons does not parse `oklch()`, so every colour must cross that boundary as an in-gamut hex value, never clipped.
+
+## Decisions
+
+- **Designed in OKLCH, shipped as hex.** The palette registry holds each project's body, accent, blink and Apple ground in OKLCH. The build converts every value to hex before rendering and refuses a value outside the sRGB gamut.
+- **One gold, many bodies.** The accent is the family constant and the body carries each project's identity. At 16 pixels a single block is too small for its hue to be read, while the six-block body is most of the ink and is what peripheral vision catches in a tab strip.
+- **Bodies placed by an optimiser, not by taste.** Each body maximises the worst distance to its siblings in OKLab, normally and under three colour-blindness simulations, subject to hard contrast floors. Personal sites take the night arc of hues (steel blue, violet, wine) and tools the day arc (copper, leaf green), with the gold as the one light over both. The registry is full at five bodies; a sixth would sit too close to a sibling.
+- **A checker gates every row.** Primary and accent have hard contrast floors on white and on the dark tab frame, soft floors on mid-grey active tabs, and minimum OKLab distances between accent and body and between siblings. A row that fails does not build.
+- **Tokens are derived, not chosen.** From one row, the generator writes a CSS layer of brand slots for light and dark schemes and a JSON file with the theme and background colours. Text colours are walked along the body's own hue until they reach 4.5:1, because the bodies are tuned for tab strips, not for text. A floor that cannot be met stops the build; nothing is lowered to make a row pass.
+- **favseed renders the icons.** The mark is a template whose colours are CSS custom properties, and [favseed](https://favseed.cevdet.ch/) turns it and one row's values into the icon set.
+- **One command installs a site.** Each row names its site root, and an install step copies the icons and tokens into that site, or only the source mark and tokens for a site that runs the favseed integration itself.
+
+## Results
+
+- One registry holds five project palettes, among them cevdet.ch, One and deadhead. favseed's copper body is shared by every tool without a site of its own.
+- A site that installs its row, such as One, reads its theme and manifest colours from the generated JSON instead of copying them, and the generated files are never edited by hand.
+- Tests prove every row in both colour schemes, and a preview page shows every project at 64, 32 and 16 pixels on five tab grounds, with the masked icons under the iOS and Android shapes.
+
+## Next
+
+- Wire the generated tokens into cevdet.ch itself, following the consumer checklist: the shared neutral tokens first, the generated brand layer after them, and a check that the theme and manifest colours match the generated JSON.
+- Apply the same checklist to each later branded site as it is built.
