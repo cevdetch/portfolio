@@ -1,0 +1,57 @@
+---
+title: favseed
+kind: package
+status: active
+featured: true
+order: 2
+repo: cevdetch/favseed
+site: https://favseed.cevdet.ch/
+packages:
+  - { registry: npm, name: favseed }
+stack: [javascript, node, webassembly, vite, astro]
+tagline: One SVG in, an optimised favicon set out
+summary: Generates a small favicon set from one SVG through a CLI, a Vite plugin, an Astro integration and an in-browser version that share one engine.
+role: Creator and maintainer
+highlights:
+  - Built a favicon generator with one engine behind a CLI, a Vite plugin, an Astro integration and an in-browser app that produces identical files with nothing uploaded.
+  - Chooses the encode order by measurement, quantising before lossless recompression, and keeps the smallest PNG that passes an accuracy bar.
+metrics:
+  - label: Raster bytes saved by the encode search vs quality 80
+    value: '20.4% over 568 rasters'
+    measuredAt: 2026-11-08
+    source: { label: 'favseed README, How it decides', url: https://github.com/cevdetch/favseed/blob/main/README.md }
+---
+
+## Problem
+
+Most favicon generators on npm write whatever a single image encode produced, often with one fixed quality setting, no comparison between candidates and no final recompression. The most thorough writes around thirty files, many for platforms that no longer exist. Installable web apps also show their icon through a mask of the platform's own shape, so a mark placed without measuring it can be clipped on one device and shrunk on another.
+
+## Constraints
+
+- One SVG is the only input, and the output has to be a small set: an optimised `icon.svg`, a `favicon.ico`, an Apple touch icon, the 192 and 512 pixel icons that Chrome's install criteria document, and an optional manifest.
+- Nothing extra to install. The CLI needs Node and the package alone, with no external binaries.
+- The browser version and the CLI must produce the same bytes for the same self-contained input, with nothing uploaded.
+- Generated icons get committed to downstream repositories, so builds are deterministic and any change to output bytes is at least a minor release.
+- Every pipeline decision has to be backed by a recorded measurement.
+
+## Decisions
+
+The decisions in force, and the ones they replaced, are recorded with their measurements in the repository's decisions log.
+
+- **One engine.** `@napi-rs/image` renders, quantises and recompresses in one native module, and a Zopfli build compiled to WebAssembly finishes each PNG. The same stages run in Node and in a browser worker.
+- **Quantise before recompressing.** The quantiser re-encodes from scratch, so any order that ends in quantisation throws away the recompressor's work. Zopfli runs once per raster, on the winning encode only.
+- **The smallest encode that passes wins.** Each PNG and the ICO payload is scored against a render of the source, on black and on white, and a search over quality and palette settings keeps the smallest candidate that passes. An `effort` option trades build time for bytes, and the dev servers use the fast path.
+- **Placement is measured.** Each mark is scaled until its farthest opaque pixel sits on the W3C safe circle, then snapped to whole pixels when that at least halves the partly covered edge pixels.
+- **The ICO container is written directly**: a 22-byte header around a PNG payload, which removes the one tool that had no npm package and no Windows build.
+- **`var()` is resolved before rendering**, so a mark can be a template recoloured with `--var`, and a variable with no value is an error rather than a black square.
+- The Vite plugin and Astro integration serve icons from memory in development and keep a content-addressed cache keyed on the input, the options and the engine identities, so an engine upgrade cannot serve stale files.
+
+## Results
+
+- The CLI, the Node API, the Vite plugin and the Astro integration share one pipeline, and [favseed.cevdet.ch](https://favseed.cevdet.ch/) runs it in the browser.
+- Over 568 rasters, the encode search wrote 20.4% fewer bytes than a fixed quality of 80, within a fraction of a percent of trying every candidate.
+
+## Next
+
+- Publish the first release to npm by hand from a packed tarball, as npm requires before trusted publishing can be enabled.
+- After that, each release starts from a tag: the release workflow tests, packs and stages the tarball through trusted publishing with provenance, and nothing goes live until it is approved with two-factor authentication.

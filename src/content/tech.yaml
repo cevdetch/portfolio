@@ -5,6 +5,7 @@
 - { id: css, label: CSS, category: language, url: https://www.w3.org/Style/CSS/ }
 - { id: sql, label: SQL, category: language, url: https://en.wikipedia.org/wiki/SQL }
 - { id: bash, label: Bash, category: language, url: https://www.gnu.org/software/bash/ }
+- { id: webassembly, label: WebAssembly, category: language, url: https://webassembly.org/ }
 
 # framework
 - { id: astro, label: Astro, category: framework, url: https://astro.build/ }
