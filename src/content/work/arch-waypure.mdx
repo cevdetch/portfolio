@@ -1,0 +1,46 @@
+---
+title: arch-waypure
+kind: infrastructure
+status: active
+repo: cevdetch/arch-waypure
+pkgbuilds: true
+stack: [arch-linux, wayland, pipewire, sway, zed, bash, python, github-actions]
+tagline: Arch Linux PKGBUILDs for a Wayland-only desktop with PipeWire audio
+summary: Packages a Wayland-only Arch Linux desktop with X11 and XWayland disabled, PipeWire for audio and Vulkan or EGL graphics, with tools that audit every recipe.
+role: Creator and maintainer
+highlights:
+  - Rebuilds desktop libraries and applications for Arch Linux with X11, XWayland, GLX and JACK left out, from official releases with recorded checksums.
+  - Built Python maintenance tools that compare upstream build options with Arch packaging, audit recipes and archives for X11 dependencies, and build in dependency order.
+---
+
+## Problem
+
+Arch Linux's official packages are built to work everywhere, so a desktop that runs only on Wayland still pulls in X11 libraries, XWayland, GLX and audio backends it never uses. Removing them means rebuilding the libraries and applications that depend on them, and then keeping every rebuilt package current with both its upstream release and Arch's own packaging.
+
+## Constraints
+
+- Wayland only: no dependency on X11, Xorg or XWayland, and no graphical application that needs XWayland to run.
+- PipeWire only for audio, through native backends or the PulseAudio and ALSA clients that PipeWire serves. JACK is excluded, including PipeWire's own JACK bridge.
+- Vulkan and EGL for graphics, with OpenGL through EGL and no GLX.
+- Sources are official release archives or pinned upstream Git sources, verified by SHA-256 checksums and built in a clean chroot.
+- Replacement packages must stay drop-in: each provides and conflicts with the official package name, so other packages keep depending on official names.
+
+## Decisions
+
+- **One directory per package**, each with its `PKGBUILD` and `.SRCINFO`, and starter recipes for CMake, Meson and Autotools.
+- **Build options are explicit and labelled.** Each recipe declares its options in a named array, with a short tag such as `# WAYLAND` or `# PIPEWIRE` beside each policy flag and a longer explanation above any unusual choice. Declaring a dependency is never treated as enabling a feature.
+- **Option reviews are tooled.** `waypure-options` discovers a package's build system and release source, compares the upstream options of a new release with the previous one and with Arch's packaging, reports removed and deprecated options, and writes a copyable option array. It covers Meson, CMake, Autoconf, Qt 6 and FFmpeg.
+- **Every recipe is audited.** `waypure-audit` checks metadata, checksums, dependency policy and replacement declarations, traces runtime dependencies through local packages, and with built archives inspects ELF links and library names for X11 or forbidden audio libraries. A shared policy file lists the forbidden package and library families.
+- **Builds follow the local recipe graph.** `waypure-build` orders builds by the local recipes rather than Arch's dependency graph, which differs for these packages, and rejects incompatible versions, ambiguous providers and duplicate outputs before building.
+- The tools use only the Python standard library, with optional direct libalpm queries, so they need no virtual environment.
+
+## Results
+
+- The repository holds rebuilt packages across the desktop stack, from Cairo, GTK and Qt 6 to FFmpeg, mpv, Sway and Zed.
+- CI runs the tools' test suite on two Python releases, audits the metadata of changed recipes, and runs a release-validation smoke job that builds a synthetic package in a clean chroot and checks its receipt, archive hashes and provenance.
+- `waypure-remove-x11` previews which installed X11 packages can be removed and requests their removal through pacman's own confirmation and dependency checks.
+
+## Next
+
+- Finish the recipes that the working build selection still excludes, among them GStreamer and LibreOffice, so the whole collection builds in one dependency-ordered run.
+- Keep each package current with the update workflow: bump the release, refresh checksums, review the new upstream options against Arch's packaging, then build and audit the result.
