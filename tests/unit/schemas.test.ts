@@ -1,0 +1,84 @@
+import assert from 'node:assert/strict';
+import { test } from 'node:test';
+import { isoDate } from '../../src/schemas/common.ts';
+import { techSchema, techCategories } from '../../src/schemas/tech.ts';
+import { workSchema, workTranslationSchema } from '../../src/schemas/work.ts';
+import { profileSchema } from '../../src/schemas/profile.ts';
+import { educationSchema } from '../../src/schemas/background.ts';
+import { contributionOverridesSchema } from '../../src/schemas/contributions.ts';
+
+const work = {
+  title: 'deadhead', kind: 'package', status: 'maintained', featured: true, order: 1,
+  repo: 'cevdetch/deadhead', site: 'https://deadhead.cevdet.ch/',
+  packages: [{ registry: 'npm', name: 'deadhead' }], stack: ['typescript'],
+  tagline: 'An HTML head linter: CLI, ESLint plugin and browser playground',
+  summary: 'Lints the HTML head against sourced rules.', role: 'Creator and maintainer',
+  highlights: ['Generates the linter and its documentation from the same Markdown.'],
+};
+
+test('isoDate accepts YAML dates and strings and yields YYYY-MM-DD', () => {
+  assert.equal(isoDate.parse('2026-10-04'), '2026-10-04');
+  assert.equal(isoDate.parse(new Date('2026-10-04T00:00:00Z')), '2026-10-04');
+  assert.throws(() => isoDate.parse('04.10.2026'));
+});
+
+test('work applies defaults and enforces Story lengths', () => {
+  const parsed = workSchema.parse(work);
+  assert.deepEqual(parsed.metrics, []);
+  assert.equal(parsed.pkgbuilds, false);
+  assert.throws(() => workSchema.parse({ ...work, tagline: 'x'.repeat(71) }));
+  assert.throws(() => workSchema.parse({ ...work, summary: 'x'.repeat(161) }));
+  assert.throws(() => workSchema.parse({ ...work, highlights: ['a', 'b', 'c', 'd'] }));
+});
+
+test('work rejects unknown keys, so a typo never vanishes silently', () => {
+  assert.throws(() => workSchema.parse({ ...work, higlights: [] }));
+});
+
+test('work repo must be a cevdetch repository and site must be https', () => {
+  assert.throws(() => workSchema.parse({ ...work, repo: 'someone/deadhead' }));
+  assert.throws(() => workSchema.parse({ ...work, site: 'http://deadhead.cevdet.ch/' }));
+});
+
+test('a Translation holds only Story fields', () => {
+  assert.deepEqual(workTranslationSchema.parse({ tagline: 'Un linter du head HTML' }), { tagline: 'Un linter du head HTML' });
+  assert.throws(() => workTranslationSchema.parse({ tagline: 'x', repo: 'cevdetch/deadhead' }));
+  assert.throws(() => workTranslationSchema.parse({ stack: ['typescript'] }));
+});
+
+test('tech categories form a closed list; app is never a skill or on the CV', () => {
+  assert.equal(techCategories.app.skills, false);
+  assert.equal(techCategories.app.cv, false);
+  assert.equal(techCategories.desktop.cv, false);
+  assert.throws(() => techSchema.parse({ id: 'x', label: 'X', category: 'misc', url: 'https://x.test/' }));
+  assert.throws(() => techSchema.parse({ id: 'Type Script', label: 'TS', category: 'language', url: 'https://x.test/' }));
+});
+
+test('profile pins the public identity and carries no location field', () => {
+  const profile = {
+    name: 'Cevdet', handle: 'cevdetch', jobTitle: 'Software Developer',
+    headline: 'Builds fast sites.', bio: 'Builds and publishes developer tools.',
+    email: 'hello@cevdet.ch', website: 'https://cevdet.ch/', contactSubject: 'Enquiry from cevdet.ch', writing: 'one',
+    socials: [{ network: 'github', url: 'https://github.com/cevdetch' }],
+    availability: { capacity: 'part-time', timeZone: 'Europe/Zurich', reply: 'within 2 working days', openTo: ['employment'], workplace: ['remote'] },
+    services: [{ id: 'static-sites', name: 'Fast static sites', summary: 'Astro sites.' }],
+    languages: [{ name: 'English', level: 'C1' }],
+  };
+  assert.equal(profileSchema.parse(profile).name, 'Cevdet');
+  assert.throws(() => profileSchema.parse({ ...profile, name: 'Cevdet Someone' }));
+  assert.throws(() => profileSchema.parse({ ...profile, location: 'Exampleville' }));
+  assert.throws(() => profileSchema.parse({ ...profile, availability: { ...profile.availability, timeZone: 'Mars/Olympus' } }));
+  assert.throws(() => profileSchema.parse({ ...profile, availability: { ...profile.availability, hours: 'after 17:00' } }));
+});
+
+test('education has no location field', () => {
+  const entry = { id: 'sismondi', institution: 'Collège Sismondi', credential: 'Maturité gymnasiale', start: '2024-08', end: '2028-06', expected: true };
+  assert.equal(educationSchema.parse(entry).institution, 'Collège Sismondi');
+  assert.throws(() => educationSchema.parse({ ...entry, location: 'Exampleville' }));
+});
+
+test('contribution overrides key pulls by number', () => {
+  const parsed = contributionOverridesSchema.parse({ upstreams: [{ repo: 'withastro/astro', order: 1, pulls: { '101': { highlight: true } } }] });
+  assert.equal(parsed.upstreams[0]?.pulls['101']?.hidden, false);
+  assert.throws(() => contributionOverridesSchema.parse({ upstreams: [{ repo: 'withastro/astro', pulls: { abc: {} } }] }));
+});
