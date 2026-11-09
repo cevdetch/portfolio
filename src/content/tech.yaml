@@ -1,0 +1,83 @@
+# language
+- { id: typescript, label: TypeScript, category: language, url: https://www.typescriptlang.org/ }
+- { id: javascript, label: JavaScript, category: language, url: https://developer.mozilla.org/en-US/docs/Web/JavaScript }
+- { id: html, label: HTML, category: language, url: https://html.spec.whatwg.org/ }
+- { id: css, label: CSS, category: language, url: https://www.w3.org/Style/CSS/ }
+- { id: sql, label: SQL, category: language, url: https://en.wikipedia.org/wiki/SQL }
+- { id: bash, label: Bash, category: language, url: https://www.gnu.org/software/bash/ }
+
+# framework
+- { id: astro, label: Astro, category: framework, url: https://astro.build/ }
+- { id: starlight, label: Starlight, category: framework, url: https://starlight.astro.build/ }
+- { id: svelte, label: Svelte, category: framework, url: https://svelte.dev/ }
+- { id: lume, label: Lume, category: framework, url: https://lume.land/ }
+- { id: sass, label: Sass, category: framework, url: https://sass-lang.com/ }
+- { id: tailwind-css, label: Tailwind CSS, category: framework, url: https://tailwindcss.com/ }
+
+# tooling
+- { id: node, label: Node.js, category: tooling, url: https://nodejs.org/ }
+- { id: deno, label: Deno, category: tooling, url: https://deno.com/ }
+- { id: bun, label: Bun, category: tooling, url: https://bun.sh/ }
+- { id: vite, label: Vite, category: tooling, url: https://vite.dev/ }
+- { id: pnpm, label: pnpm, category: tooling, url: https://pnpm.io/ }
+- { id: npm, label: npm, category: tooling, url: https://www.npmjs.com/ }
+- { id: git, label: Git, category: tooling, url: https://git-scm.com/ }
+- { id: github-actions, label: GitHub Actions, category: tooling, url: https://github.com/features/actions }
+- { id: eslint, label: ESLint, category: tooling, url: https://eslint.org/ }
+- { id: mise, label: mise, category: tooling, url: https://mise.jdx.dev/ }
+- { id: uv, label: uv, category: tooling, url: https://docs.astral.sh/uv/ }
+- { id: mdbook, label: mdBook, category: tooling, url: https://rust-lang.github.io/mdBook/ }
+
+# data
+- { id: postgresql, label: PostgreSQL, category: data, url: https://www.postgresql.org/ }
+- { id: mysql, label: MySQL, category: data, url: https://www.mysql.com/ }
+- { id: sqlite, label: SQLite, category: data, url: https://sqlite.org/ }
+- { id: turso, label: Turso, category: data, url: https://turso.tech/ }
+- { id: supabase, label: Supabase, category: data, url: https://supabase.com/ }
+- { id: pocketbase, label: PocketBase, category: data, url: https://pocketbase.io/ }
+
+# infrastructure
+- { id: cloudflare-pages, label: Cloudflare Pages, category: infrastructure, url: https://pages.cloudflare.com/ }
+- { id: cloudflare-workers, label: Cloudflare Workers, category: infrastructure, url: https://workers.cloudflare.com/ }
+- { id: netlify, label: Netlify, category: infrastructure, url: https://www.netlify.com/ }
+- { id: vercel, label: Vercel, category: infrastructure, url: https://vercel.com/ }
+- { id: debian, label: Debian, category: infrastructure, url: https://www.debian.org/ }
+- { id: docker-compose, label: Docker Compose, category: infrastructure, url: https://docs.docker.com/compose/ }
+- { id: tailscale, label: Tailscale, category: infrastructure, url: https://tailscale.com/ }
+
+# desktop
+- { id: arch-linux, label: Arch Linux, category: desktop, url: https://archlinux.org/ }
+- { id: wayland, label: Wayland, category: desktop, url: https://wayland.freedesktop.org/ }
+- { id: sway, label: Sway, category: desktop, url: https://swaywm.org/ }
+- { id: pipewire, label: PipeWire, category: desktop, url: https://pipewire.org/ }
+- { id: foot, label: foot, category: desktop, url: https://codeberg.org/dnkl/foot }
+- { id: fuzzel, label: fuzzel, category: desktop, url: https://codeberg.org/dnkl/fuzzel }
+- { id: mako, label: mako, category: desktop, url: https://github.com/emersion/mako }
+- { id: yazi, label: Yazi, category: desktop, url: https://yazi-rs.github.io/ }
+- { id: helix, label: Helix, category: desktop, url: https://helix-editor.com/ }
+- { id: zed, label: Zed, category: desktop, url: https://zed.dev/ }
+- { id: fish, label: fish, category: desktop, url: https://fishshell.com/ }
+- { id: starship, label: Starship, category: desktop, url: https://starship.rs/ }
+- { id: fzf, label: fzf, category: desktop, url: https://github.com/junegunn/fzf }
+- { id: ripgrep, label: ripgrep, category: desktop, url: https://github.com/BurntSushi/ripgrep }
+- { id: fd, label: fd, category: desktop, url: https://github.com/sharkdp/fd }
+- { id: bat, label: bat, category: desktop, url: https://github.com/sharkdp/bat }
+- { id: grapheneos, label: GrapheneOS, category: desktop, url: https://grapheneos.org/ }
+
+# app
+- { id: obtainium, label: Obtainium, category: app, url: https://obtainium.imranr.dev/ }
+- { id: f-droid, label: F-Droid, category: app, url: https://f-droid.org/ }
+- { id: accrescent, label: Accrescent, category: app, url: https://accrescent.app/ }
+- { id: molly, label: Molly, category: app, url: https://molly.im/ }
+- { id: bitwarden, label: Bitwarden, category: app, url: https://bitwarden.com/ }
+- { id: keepassdx, label: KeePassDX, category: app, url: https://www.keepassdx.com/ }
+- { id: aegis, label: Aegis, category: app, url: https://getaegis.app/ }
+- { id: davx5, label: DAVx⁵, category: app, url: https://www.davx5.com/ }
+- { id: syncthing, label: Syncthing, category: app, url: https://syncthing.net/ }
+- { id: immich, label: Immich, category: app, url: https://immich.app/ }
+- { id: jellyfin, label: Jellyfin, category: app, url: https://jellyfin.org/ }
+- { id: navidrome, label: Navidrome, category: app, url: https://www.navidrome.org/ }
+- { id: paperless-ngx, label: Paperless-ngx, category: app, url: https://docs.paperless-ngx.com/ }
+- { id: miniflux, label: Miniflux, category: app, url: https://miniflux.app/ }
+- { id: karakeep, label: Karakeep, category: app, url: https://karakeep.app/ }
+- { id: rustical, label: RustiCal, category: app, url: https://github.com/lennart-k/rustical }

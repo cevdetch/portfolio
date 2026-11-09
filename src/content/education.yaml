@@ -1,0 +1,8 @@
+- id: sismondi
+  institution: Collège Sismondi
+  credential: Maturité gymnasiale
+  field: Physics and Applied Mathematics
+  start: 2024-08
+  end: 2028-06
+  expected: true
+  note: 'Matura thesis: a grade-tracking web app, with every rule checked against the official regulations.'

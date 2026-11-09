@@ -1,0 +1,11 @@
+- id: starlane
+  organisation: The Cosmic Initiative / Starlane
+  role: Freelance Web Developer
+  engagement: freelance
+  workplace: remote
+  start: 2022-03
+  end: 2022-05
+  highlights:
+    - Built three sites as the sole web developer for Starlane, a Rust/WebAssembly framework, and The Cosmic Initiative, working directly with the founder in Astro and custom CSS.
+    - Moved the documentation to mdBook and replaced a JavaScript background animation with CSS.
+  stack: [astro, css, mdbook]

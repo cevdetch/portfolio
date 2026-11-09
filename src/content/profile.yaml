@@ -1,0 +1,48 @@
+name: Cevdet
+handle: cevdetch
+jobTitle: Software Developer
+headline: Software developer who ships fast sites, developer tools and the infrastructure underneath.
+bio: >-
+  Builds web tools and fast sites in TypeScript and Astro. Created deadhead, an HTML head linter
+  published on npm, and favseed, a favicon generator; HTML-head and metadata fixes merged into Astro,
+  Svelte, Immich and GrapheneOS. Works end to end, from tests and docs to Linux packaging.
+email: hello@cevdet.ch
+website: https://cevdet.ch/
+contactSubject: Enquiry from cevdet.ch
+writing: one
+socials:
+  - network: github
+    url: https://github.com/cevdetch
+  - network: linkedin
+    url: https://www.linkedin.com/in/cevdetch/
+  - network: npm
+    url: https://www.npmjs.com/~cevdetch
+availability:
+  capacity: part-time
+  timeZone: Europe/Zurich
+  reply: within 2 working days
+  openTo: [employment, contract, freelance]
+  workplace: [remote, local]
+services:
+  - id: static-sites
+    name: Fast static sites
+    summary: Astro sites built for a Lighthouse 100, with no client JavaScript unless a feature earns it.
+    evidence: [astro-minimal-template, deadhead]
+  - id: metadata-audit
+    name: Metadata and SEO audit
+    summary: A review of the HTML head, structured data and indexing, backed by deadhead and the astro-metadata-lab findings.
+    evidence: [deadhead, astro-metadata-lab]
+  - id: maintenance
+    name: Site maintenance
+    summary: Dependency updates, fixes and verification for existing sites.
+languages:
+  - { name: Turkish, level: native }
+  - { name: Kurdish, level: native }
+  - { name: English, level: C1 }
+  - { name: French, level: C1 }
+  - { name: German, level: B1 }
+interests:
+  - label: Writing
+    details: Philosophical essays, published at one.cevdet.ch
+  - label: Pursuits
+    details: Bouldering, hiking, mathematics, language learning, reading
