@@ -1,0 +1,46 @@
+---
+title: One
+kind: site
+status: active
+site: https://one.cevdet.ch/
+stack: [astro, typescript, html, css, cloudflare-pages, github-actions]
+tagline: An author site for essays and poems, built on Astro
+summary: Publishes essays and poems on a static Astro site with one URL per piece, structured data, an RSS feed and redirects from an earlier site.
+role: Author and builder
+highlights:
+  - Migrated essays from an earlier Zola site, with every old article URL answering a 301 to its new address.
+  - Generates branded share images at build time and gives every piece one URL with a self-referencing canonical.
+---
+
+## Problem
+
+Cevdet's essays lived on an earlier site built with Zola, and short poems sat in a separate project that was never deployed. Writing needed one home of its own: separate from the professional portfolio, with a different audience, and readable, linkable and indexable piece by piece.
+
+## Constraints
+
+- A separate site, not a section of the portfolio, so personal writing does not mix with work for clients and employers. One links quietly to the portfolio, the portfolio links back from a Writing line, and both describe the same author in their structured data.
+- English only, with every piece at exactly one URL.
+- Every old article URL had to keep working after the move.
+- Nothing went live before the essays were ready to publish.
+- Brand colours and icons come from the shared logo registry, never typed by hand.
+
+## Decisions
+
+- **Start lean from the Astro Minimal Template.** One began as a local copy of the [starter](https://astro-minimal-template.cevdet.ch/) with everything it did not use removed, and each feature added back brought its own tests. The branded share-image pipeline returned once it was needed.
+- **Content collections with strict fields.** Every entry needs a title, a description of at most 160 characters and a publication date. Drafts are filtered in one helper that every route uses, so a draft produces no page, list entry, feed item or sitemap entry.
+- **Search-ready by default.** Every URL ends in a slash and has a self-referencing canonical. `WebSite`, `Person` and `Article` structured data match the visible content only. Each sitemap entry's `lastmod` is the piece's own updated or published date, list pages carry the newest of their pieces, and pages with no meaningful date carry none rather than a guess.
+- **Redirects that preserve every link.** The old site is redeployed as a redirect map that sends each article, with and without a trailing slash, to its new URL with a 301.
+- **Reading first.** Essays get a byline with a reading time, a reading-width body and a contents list built from native `<details>` that becomes a sticky sidebar on wide screens through CSS alone. The RSS feed carries full essay HTML.
+- Icons, brand styles and `theme-color` are generated from the logo registry and committed, and the manifest is built from the same generated data.
+
+## Results
+
+- [one.cevdet.ch](https://one.cevdet.ch/) publishes Cevdet's essays and poems, with an RSS feed and a sitemap.
+- Old article URLs and a short alias domain answer with a 301 to the new site.
+- Every build runs Astro and TypeScript checks, unit and build tests and a deadhead audit of the output, in CI as well as locally.
+
+## Next
+
+- Add the reels feed for poems and art, mounted from the Astro Reels Template, followed by an art section.
+- Finish search: review the structured data and submit the sitemap to search engines.
+- Add photography as a section of One once the first photographs exist.
