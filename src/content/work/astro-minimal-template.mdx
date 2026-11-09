@@ -1,0 +1,48 @@
+---
+title: Astro Minimal Template
+kind: template
+status: maintained
+featured: true
+order: 3
+repo: cevdetch/astro-minimal-template
+site: https://astro-minimal-template.cevdet.ch/
+stack: [astro, typescript, node, pnpm, github-actions, cloudflare-pages]
+tagline: An Astro starter with typed metadata and browser-native defaults
+summary: Starts an Astro site with strictest TypeScript, typed page metadata, sitemap and robots output, optional social cards and checks on the built HTML.
+role: Creator and maintainer
+highlights:
+  - Added optional build-time social cards, sitemap/robots output, canonical/noindex handling, a semantic 404 and automated build/output checks with deadhead.
+  - Ships the default page with no application JavaScript, author CSS or downloaded webfont, leaving styling and scripts to each project.
+---
+
+## Problem
+
+A new Astro site needs the same head work every time: a title and description on every page, canonical URLs, social images, a sitemap and `robots.txt` that agree with what was built, a real 404 and a way to keep previews out of search results. Copying that from an earlier project also copies its canonical URLs and branding. The goal was a starter that gets the metadata right and stays out of the way of everything else.
+
+## Constraints
+
+- No personal values inherited. The checked-in configuration leaves `site` unset, and a production build fails until an origin is supplied, so a copied project cannot publish another site's canonical URLs.
+- Browser-native by default: the starter page ships no application JavaScript, author CSS or downloaded webfont. Projects add their own styles and scripts through Astro's ordinary support.
+- Every metadata choice has to hold under a subpath `base`, a canonical override, page-level `noindex` and a preview-wide `noindex`.
+- Building the template needs no external checkout, no image-generation service and no favicon tool.
+- Auth, databases, a CMS, a component library and client-specific content are out of scope.
+
+## Decisions
+
+- **One layout owns the head.** `Layout.astro` requires a nonblank title and description and resolves canonical, language, direction, `noindex` and social metadata through typed helpers that validate URL syntax without fetching anything.
+- **Social cards are optional and built locally.** Pages without a manual image get a 1200×630 PNG at build time, rendered with Satori and Sharp from a bundled, licensed Noto Sans. The renderer and font never reach visitors, and the README documents how to remove the feature entirely.
+- **Crawler output follows the pages.** A build-time collector reads each page's indexing policy and feeds the actual emitted URLs to Astro's official sitemap integration, so there is no route list to maintain. Pages marked `noindex`, error pages, redirects and pages that canonicalise elsewhere stay out. A finalizer then checks `robots.txt` against the sitemap that was actually written.
+- **`image.alt` is opt-in.** The layout emits `og:image:alt` only for text the author supplied and never invents alt from the title.
+- **The built output is checked, not just the source.** `pnpm verify` runs type checks, unit tests, build tests, a fresh build, an output verifier and a [deadhead](https://deadhead.cevdet.ch/) audit of the emitted HTML. The verifier decodes generated PNGs and checks sitemap and robots references against the recorded selection.
+- **Replaceable neutral assets.** A neutral mark ships as a declared ICO plus optional SVG, Apple and PNG icons, named to match [favseed](https://favseed.cevdet.ch/)'s output so a project can swap in its own set.
+
+## Results
+
+- The repository is a public GitHub template with a [live demo](https://astro-minimal-template.cevdet.ch/), deployed by Cloudflare Pages.
+- CI runs the full verification on the minimum supported Node release and the latest LTS, with frozen installs, pinned Actions and read-only permissions.
+- The deadhead audit of the built demo reports no findings.
+
+## Next
+
+- Serve as the base for the first cevdet.ch consumer site, which adds its own palette tokens, generated brand styles and theme checks on top of the starter rather than inside it.
+- Maintain the starter for bugs, dependency and security updates, and needs a consumer has demonstrated. A shared feature joins the starter only after it has been reused.
