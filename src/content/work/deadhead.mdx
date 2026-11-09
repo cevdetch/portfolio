@@ -1,0 +1,65 @@
+---
+title: deadhead
+kind: package
+status: maintained
+featured: true
+order: 1
+repo: cevdetch/deadhead
+site: https://deadhead.cevdet.ch/
+packages:
+  - { registry: npm, name: deadhead }
+  - { registry: npm, name: eslint-plugin-deadhead }
+stack: [typescript, node, eslint, vite, astro]
+tagline: An HTML head linter with a CLI, an ESLint plugin and a playground
+summary: Lints the HTML head against sourced rules, with targeted source fixes, SARIF output and adapter conformance tests.
+role: Creator and maintainer
+highlights:
+  - Built an HTML head linter with 203 sourced rules, a CLI, an ESLint plugin and a browser playground, generating the linter and its documentation from one set of Markdown rule files.
+  - 'Audited 4,570 homepages from the Tranco top 10,000, respecting robots.txt: 44% had a finding classified as harmful and 99% had at least one.'
+metrics:
+  - label: Sourced rules
+    value: '203'
+    measuredAt: 2026-10-26
+    source: { label: deadhead release notes, url: https://github.com/cevdetch/deadhead/releases/tag/v0.3.1 }
+  - label: Homepages audited
+    value: '4,570 of 10,000 targets'
+    measuredAt: 2026-10-04
+    source: { label: deadhead corpus results, url: https://github.com/cevdetch/deadhead/blob/main/corpus/results/2026-10-04-top10000.json }
+  - label: Homepages with a harmful-classified finding
+    value: '2,029 (44%)'
+    measuredAt: 2026-10-04
+    source: { label: deadhead corpus results, url: https://github.com/cevdetch/deadhead/blob/main/corpus/results/2026-10-04-top10000.json }
+---
+
+## Problem
+
+Most linters say *that* something is wrong. Markup in the `<head>` needs *why*: advice written years ago may no longer hold, and a tag that looks harmless can stop people zooming in, leave a page without a language for screen readers, or break link previews. deadhead finds head markup that is harmful, deprecated or unnecessary, and links every finding to a written explanation with sources.
+
+## Constraints
+
+- Every rule needs at least two independent sources and a concrete consequence for users. A rule that cannot be explained does not ship.
+- A fix must not reformat the file. Parsing a document and printing it back rewrites quote style, attribute order and whitespace, turning a one-line fix into a large diff.
+- The same rules run in three places: a CLI for CI, an ESLint plugin for the editor, and a bookmarklet that reads the rendered DOM of any page. A live DOM has no source text or byte offsets, so some checks and all fixes are unavailable there.
+- Layout partials and components are not whole pages, so a fragment must never be reported for head content that another file supplies.
+- The corpus crawl had to be polite: robots.txt honoured, one request per page, a user agent that names the project, and only aggregate counts committed.
+
+## Decisions
+
+- **One Markdown file per rule.** The linter's registry and the documentation site at [deadhead.cevdet.ch](https://deadhead.cevdet.ch/) are both generated from the same files, so a finding and its explanation cannot drift apart. Every finding prints the URL of its rule page.
+- **Severity describes cost.** `harmful` breaks something for users, `deprecated` is formally obsolete but inert, and `unnecessary` works but is dead weight.
+- **Fixes are byte-range edits.** `--fix` splices ranges out of the original text and only ever subtracts. A rule whose detection is partial never edits a file, and overlapping fixes are skipped for a second pass rather than merged.
+- **Adapters are tested against each other.** A conformance suite runs every fixture through every adapter, including the built bookmarklet, and asserts that the CLI and ESLint autofix produce byte-identical output. The DOM's known differences are declared in the suite and asserted in both directions.
+- **Baselines count findings per file per rule**, not line numbers, so reindenting a file does not light up CI with findings nobody introduced.
+- **The docs site is a fixture.** Its build runs the CLI over its own rendered output, so the head the project ships is held to the rules it ships.
+- Reports come as stylish text, JSON or SARIF, with exit codes as the CI contract. A Vite plugin reports findings for served pages during development.
+
+## Results
+
+- The `deadhead` and `eslint-plugin-deadhead` packages are on npm. The rules are published one page each at [deadhead.cevdet.ch](https://deadhead.cevdet.ch/), and the [browser playground](https://deadhead.cevdet.ch/try) checks pasted HTML without installing anything.
+- A corpus run over the Tranco top 10,000 linted 4,570 homepages as served. 44% had at least one harmful-classified finding and 99% had at least one finding of any kind. Applying every fix saved only a median of tens of bytes per page after compression, so the case for cleaning up is correctness, not weight.
+- The corpus fed back into the rules. A review of 20 findings per rule turned up autofixes that changed what a page does, false positives, and documentation claims that their own sources contradicted. The fixes shipped in the following patch release.
+
+## Next
+
+- New rules arrive one at a time through the **New rule** issue form, whose fields are the research checklist. One rule per issue and one rule per pull request keeps each rule's sources reviewable.
+- The corpus lint and aggregation steps run offline against the stored snapshot, so later corpus runs can measure the current rule set against the same method.
