@@ -1,0 +1,54 @@
+---
+title: Homelab
+kind: infrastructure
+status: active
+stack: [debian, docker-compose, tailscale, immich, jellyfin, navidrome, paperless-ngx, miniflux, karakeep, rustical]
+tagline: 'Self-hosted services on Debian: no public ports, remote via Tailscale'
+summary: Runs self-hosted photos, media, documents, feeds, bookmarks and calendars on Debian with Docker Compose; no public ports, remote access only over Tailscale.
+role: Designer and operator
+highlights:
+  - Runs the services behind Tailscale with no public ports, giving each app its own private HTTPS address.
+  - Labels every app choice with a threat-model tier and reviews each app's telemetry and outbound requests against its source and documentation.
+  - Compared Stirling-PDF and BentoPDF across 27 saved outputs, measuring layout, compression and OCR rather than trusting file size or extracted text.
+metrics:
+  - label: PDF outputs compared, Stirling-PDF vs BentoPDF
+    value: '27'
+    measuredAt: 2026-10-23
+    source: { label: Homelab comparison notes }
+---
+
+## Problem
+
+Photos, documents, music, calendars and reading should not depend on services that profile their users. Self-hosting moves that data onto a machine Cevdet controls, but it brings its own risks: a self-hosted app can still be reachable from the internet, still send usage analytics, and still contact third parties for metadata. A home server also needs a way to be reached from a phone and a laptop without opening it to everyone.
+
+## Constraints
+
+- **Zero public exposure.** No app is published to the internet: no public ports, with remote access only over Tailscale.
+- **Open source by default.** Apps are chosen through a written threat model rather than by popularity, and an app that is not open source has to be flagged with the reason.
+- The clients are a GrapheneOS phone and an Arch-based laptop, both on the same private network.
+- Every change is described as configuration first and reviewed before it reaches the server.
+
+## Decisions
+
+- **Tailscale as the way in.** Each app is published as its own Tailscale Service with an HTTPS address on the private network, and no stack publishes a port to the internet. Services that exist only for other containers stay off the host entirely and find each other by their Compose names inside a private Docker network.
+- **One Docker Compose project per stack**, kept in a repository that is the source of truth for the server. Secrets live in encrypted environment files beside committed examples with the same keys, and every change is validated with `docker compose config` before it is applied.
+- **Threat-model tiers.** Every app choice is labelled with the strictest tier it satisfies: *targeted* (a state-level adversary: verifiable source and offline backups), *opportunistic* (thieves, phishing and the network provider: open source, no tracking SDKs, encryption in transit and at rest) or *tracking-only* (large platforms and data brokers: no advertising or broker telemetry). The search starts at the strictest tier and falls back only with a stated reason.
+- **Telemetry hardening, app by app.** Each app's analytics defaults were checked in its source and documentation. Opt-outs set in the Compose configuration include Navidrome's insights collector, external services and Gravatar, Stirling-PDF's three analytics switches, and the analytics of Karakeep's search engine. Opting out is not treated as privacy on its own: each app's notes record which metadata providers and other hosts it still contacts.
+- **Categories, not a pile of apps:** photos in Immich, films and series in Jellyfin, music in Navidrome, documents in Paperless-ngx, feeds in Miniflux, bookmarks in Karakeep, and calendars and contacts in RustiCal over CalDAV and CardDAV.
+
+## Results
+
+### A worked example: Stirling-PDF against BentoPDF
+
+Before replacing either PDF tool, both were tested on the same small set of synthetic inputs: a three-page text document and two multilingual scans. Nine cases (word, phrase and paragraph edits, merge, split, text and scan compression, and OCR on both scans) ran on a self-hosted Stirling-PDF, a self-hosted BentoPDF and BentoPDF's public instance, giving 27 saved outputs. Each output was inspected with Poppler's tools for text, fonts, images, page geometry and renders, and the original inputs were checked against their recorded hashes.
+
+- **Text checks missed the worst defect.** After a longer paragraph edit, both BentoPDF outputs pushed everything below it down, clipping the footer past the page edge, yet the footer still extracted as text. Only measuring positions and rendering the page showed it. Stirling-PDF kept the surrounding layout in place.
+- **File size alone ranked the scans wrongly.** The smallest compressed scan had been resampled to a lower resolution and was visibly softer, so its size was not an equal-quality win.
+- **The two BentoPDF instances differed.** On the text document, the public instance made the file far smaller by subsetting its fonts, at the same measured fidelity, while the self-hosted instance barely reduced it.
+- **OCR differed on the details that matter.** BentoPDF misread a time and a word in the first scan, while Stirling-PDF matched the reference text exactly. Both handled the second scan.
+- The pilot's outcome was to keep both for a while: Stirling-PDF for OCR and longer edits, and BentoPDF for quick merges, splits and simple edits once the export had been checked. BentoPDF has since been removed from the homelab's configuration, leaving Stirling-PDF as the self-hosted PDF tool.
+
+## Next
+
+- Finish the trial of a self-hosted reading and watch log shared by phone and laptop, import the history from two phone apps, and retire the tracker it replaces.
+- Add file sync in which the server is an untrusted peer holding an encrypted copy it cannot read.
