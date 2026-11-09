@@ -1,0 +1,53 @@
+---
+title: Astro Reels Template
+kind: template
+status: active
+featured: true
+order: 4
+repo: cevdetch/astro-reels-template
+site: https://astro-reels-template.cevdet.ch/
+stack: [astro, typescript, html, css]
+tagline: A reels-style feed of short pieces for Astro, with no JavaScript
+summary: Shows short pieces one per screen, each with its own page, using CSS scroll-snap and view transitions instead of JavaScript.
+role: Creator and maintainer
+highlights:
+  - Builds a one-piece-per-screen feed from HTML and CSS alone, with deep links, paging and a page of its own for every piece.
+  - Scored 100 in Lighthouse for accessibility, best practices and SEO, with a contrast test and a deadhead audit in the checks.
+metrics:
+  - label: Lighthouse accessibility, best practices and SEO
+    value: '100 each'
+    measuredAt: 2026-11-08
+    source: { label: Astro Reels Template README, url: https://github.com/cevdetch/astro-reels-template/blob/main/README.md }
+---
+
+## Problem
+
+A reels-style feed shows one short piece per screen. The goal was that format with every piece also at an address of its own, readable and indexable on its own page, and with no JavaScript at all. Poems add a typesetting problem: their line breaks carry meaning, so a line that wraps on a small screen must not read as a new line.
+
+## Constraints
+
+- No JavaScript in any page. The only `<script>` allowed is structured data.
+- Every piece needs a stable address in the feed and a page of its own.
+- Verse has to keep its lines as written, including indented couplets and irregular poems that do not fit a fixed shape.
+- The template must stay generic: the feed's path, page size, wording and content type are settings, so a later site can mount the same feed for its own pieces.
+- Accessible and fast in light and dark, with no web fonts.
+
+## Decisions
+
+- **CSS does the motion.** Scroll-snap holds one piece per screen, and the mouse wheel, touch and native keys (arrows, Page Down, Space) move card by card. Page turns cross-fade with a cross-document view transition. With reduced motion requested, snapping relaxes and the transition is off.
+- **Paged, not infinite.** The feed is split into pages of 20, each ending with a card that opens the next page, and every feed page is indexable with a self-referencing canonical rather than pointing back to page one.
+- **Anchors are deep links.** Each card has the piece's number as its ID, so `/#18` and `/page/2/#25` land on the right card, and each piece's own page links to its neighbours and back into the feed.
+- **Verse is typeset as lines.** A line too long for the screen wraps with a hanging indent, so its remainder never reads as a new line. Indentation comes from the source text, so irregular sonnets keep their own shape.
+- **Off-screen cards are skipped** with `content-visibility`, and the system serif stack replaces a web font.
+- The trade-off is documented: without JavaScript the address bar does not follow the scroll and there is no native share sheet, so each piece's own page is the link to share.
+- The template is built from the [Astro Minimal Template](https://astro-minimal-template.cevdet.ch/) and keeps its metadata, sitemap, `robots.txt`, `noindex` 404 and generated share images, adding `CreativeWork` structured data per piece.
+
+## Results
+
+- The [demo](https://astro-reels-template.cevdet.ch/) publishes all 154 of Shakespeare's sonnets, imported from Project Gutenberg by a script that records the source file and its hash and fails unless it finds exactly 154 sonnets in order.
+- Lighthouse scored 100 for accessibility, best practices and SEO on the first feed page, a later feed page and a sonnet page.
+- No built page ships JavaScript beyond structured data, and the deadhead audit and contrast test pass.
+
+## Next
+
+- Mount the same feed on [One](https://one.cevdet.ch/) for its poems and art, using the configurable feed path.
