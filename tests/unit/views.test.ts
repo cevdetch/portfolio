@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { featuredWorks, inSourceOrder, newestFirst, skillGroups, upstreamGroups, workFactsView } from '../../src/data/views.ts';
+import { socialUsername } from '../../src/data/profile.ts';
+import { contributionTotals, featuredWorks, inSourceOrder, newestFirst, skillGroups, upstreamGroups, workFactsView } from '../../src/data/views.ts';
 import { formatDay, formatMonth, joinList } from '../../src/lib/format.ts';
 import { fixturePortfolio, fixtureSnapshot } from '../helpers/portfolio-fixture.ts';
 
@@ -32,6 +33,19 @@ test('Upstreams: Story order first, then PR count, then name; hidden pulls vanis
   p.contributions.upstreams[0]!.pulls['101'] = { hidden: true, highlight: false };
   p.contributions.upstreams[0]!.pulls['102'] = { hidden: true, highlight: false };
   assert.deepEqual(upstreamGroups(fixtureSnapshot().contributions, p.contributions).map(g => g.repo), ['sveltejs/svelte']);
+});
+
+test('contribution totals count visible pulls and their upstreams once, for every page', () => {
+  const p = fixturePortfolio();
+  assert.deepEqual(contributionTotals(upstreamGroups(fixtureSnapshot().contributions, p.contributions)), { pulls: 3, upstreams: 2 });
+  assert.deepEqual(contributionTotals([]), { pulls: 0, upstreams: 0 });
+});
+
+test('a social URL yields the handle in its path', () => {
+  assert.equal(socialUsername('https://github.com/cevdetch'), 'cevdetch');
+  assert.equal(socialUsername('https://www.linkedin.com/in/cevdetch/'), 'cevdetch');
+  assert.equal(socialUsername('https://www.npmjs.com/~cevdetch'), 'cevdetch');
+  assert.throws(() => socialUsername('https://github.com/'), /no username/);
 });
 
 test('Featured Works come in Featured order', () => {

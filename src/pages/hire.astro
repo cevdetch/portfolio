@@ -3,14 +3,12 @@ import SiteNav from '../components/SiteNav.astro';
 import SocialLinks from '../components/SocialLinks.astro';
 import Layout from '../layouts/Layout.astro';
 import { loadPortfolio } from '../data/portfolio.ts';
-import { joinList } from '../lib/format.ts';
+import { availabilityLine } from '../data/profile.ts';
 
 const data = await loadPortfolio();
 const { profile } = data;
 const works = new Map(data.works.map(work => [work.id, work]));
-const { capacity, openTo, workplace, timeZone, reply } = profile.availability;
-const availabilityLine = `Available ${capacity} for ${joinList(openTo, 'or')} work, ${joinList(workplace, 'or')}, `
-  + `in the ${timeZone} time zone. Replies ${reply}.`;
+const availability = availabilityLine(profile.availability);
 const mailto = `mailto:${profile.email}?subject=${encodeURIComponent(profile.contactSubject)}`;
 ---
 
@@ -35,7 +33,7 @@ const mailto = `mailto:${profile.email}?subject=${encodeURIComponent(profile.con
     </section>
     <section aria-labelledby="availability">
       <h2 id="availability">Availability</h2>
-      <p>{availabilityLine}</p>
+      <p>{availability}</p>
     </section>
     <section aria-labelledby="contact">
       <h2 id="contact">Contact</h2>

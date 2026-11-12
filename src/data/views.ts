@@ -60,6 +60,11 @@ export function upstreamGroups(contributions: readonly Contribution[], overrides
   return [...groups.values()].sort((a, b) => rank(a) - rank(b) || b.pulls.length - a.pulls.length || a.repo.localeCompare(b.repo));
 }
 
+/** The counts behind "N merged pull requests to M upstream projects", for the home page and the CV. */
+export function contributionTotals(groups: readonly UpstreamGroup[]): { pulls: number; upstreams: number } {
+  return { pulls: groups.reduce((sum, group) => sum + group.pulls.length, 0), upstreams: groups.length };
+}
+
 export interface WorkFactsView {
   packages: PackageFacts[];
   license?: string;

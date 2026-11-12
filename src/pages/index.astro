@@ -3,13 +3,13 @@ import SiteNav from '../components/SiteNav.astro';
 import SocialLinks from '../components/SocialLinks.astro';
 import Layout from '../layouts/Layout.astro';
 import { loadPortfolio } from '../data/portfolio.ts';
-import { featuredWorks, upstreamGroups } from '../data/views.ts';
+import { contributionTotals, featuredWorks, upstreamGroups } from '../data/views.ts';
 import { graph, personNode, profilePageNode, websiteNode } from '../lib/jsonld.ts';
 
 const data = await loadPortfolio();
 const { profile } = data;
 const groups = upstreamGroups(data.facts.contributions, data.contributions);
-const total = groups.reduce((sum, group) => sum + group.pulls.length, 0);
+const totals = contributionTotals(groups);
 const highlighted = groups.flatMap(group => group.pulls.filter(pull => pull.highlight));
 ---
 
@@ -30,7 +30,7 @@ const highlighted = groups.flatMap(group => group.pulls.filter(pull => pull.high
     </section>
     <section aria-labelledby="open-source">
       <h2 id="open-source">Open source</h2>
-      <p>{total} merged pull requests to {groups.length} upstream projects.</p>
+      <p>{totals.pulls} merged pull requests to {totals.upstreams} upstream projects.</p>
       {highlighted.length > 0 && (
         <ul>{highlighted.map(pull => <li><a href={pull.url}>{pull.upstream}#{pull.number}</a>: {pull.title}{pull.note && <> ({pull.note})</>}</li>)}</ul>
       )}
