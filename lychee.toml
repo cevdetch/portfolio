@@ -1,0 +1,9 @@
+# Internal links are checked against dist/ through --root-dir. Absolute cevdet.ch URLs
+# (canonical, og:url) point at the not-yet-live production site; verify:output covers them.
+exclude = [
+  '^https://cevdet\.ch/',
+  # LinkedIn answers bots with HTTP 999.
+  '^https://www\.linkedin\.com/',
+]
+max_retries = 3
+accept = ["200", "429"]

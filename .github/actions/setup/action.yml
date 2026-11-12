@@ -1,0 +1,24 @@
+name: Setup
+description: Install pnpm, Node, Python and RenderCV, then the locked dependencies.
+inputs:
+  node-version:
+    description: Node version
+    default: '24.8.0'
+runs:
+  using: composite
+  steps:
+    - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5
+      with:
+        run_install: false
+    - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: pnpm
+    - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
+      with:
+        python-version-file: .python-version
+        cache: pip
+    - run: pip install -r requirements.txt
+      shell: bash
+    - run: pnpm install --frozen-lockfile
+      shell: bash
