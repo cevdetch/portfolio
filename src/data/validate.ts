@@ -1,6 +1,7 @@
 import type { Snapshot } from '../facts/schema.ts';
 import type { Education, Experience } from '../schemas/background.ts';
 import type { ContributionOverrides } from '../schemas/contributions.ts';
+import type { CvChoices } from '../schemas/cv.ts';
 import type { Profile } from '../schemas/profile.ts';
 import type { Tech } from '../schemas/tech.ts';
 import type { UsesSection } from '../schemas/uses.ts';
@@ -17,6 +18,7 @@ export interface Portfolio {
   education: readonly Education[];
   uses: readonly { id: string; data: UsesSection }[];
   contributions: ContributionOverrides;
+  cv: CvChoices;
 }
 
 function lintAll(where: string, fields: Record<string, string | readonly string[] | undefined>, cvShared: boolean): string[] {
@@ -33,6 +35,38 @@ function interestLinkErrors(at: string, details: string, linked: WorkEntry | und
   if (!linked.data.site) return [`${at}: Work "${ref}" has no site to link`];
   const host = new URL(linked.data.site).host;
   return details.includes(host) ? [] : [`${at}: details must name ${host}, the site it links`];
+}
+
+function cvErrors(cv: CvChoices, works: ReadonlyMap<string, WorkEntry>, techIds: ReadonlySet<string>): string[] {
+  const errors: string[] = [];
+  const placed = new Set<string>();
+  cv.projects.forEach((entry, index) => {
+    const at = `cv projects[${index}]`;
+    errors.push(...lintAll(at, { title: entry.title }, true));
+    if (!entry.title && entry.works.length !== 1) errors.push(`${at}: an entry without a title holds exactly one Work`);
+    for (const ref of entry.works) {
+      const linked = works.get(ref);
+      if (!linked) errors.push(`${at}: unknown Work "${ref}"`);
+      else if (entry.title && !linked.data.cvLine) errors.push(`${at}: Work "${ref}" has no cvLine to print`);
+      if (placed.has(ref)) errors.push(`${at}: Work "${ref}" appears in more than one entry`);
+      placed.add(ref);
+    }
+  });
+  const listed = new Set<string>();
+  cv.skills.forEach((group, index) => {
+    errors.push(...lintAll(`cv skills[${index}]`, { label: group.label }, true));
+    group.items.forEach((item, position) => {
+      const at = `cv skills[${index}] items[${position}]`;
+      errors.push(...lintAll(at, { display: item.display }, true));
+      for (const ref of item.techs) {
+        if (!techIds.has(ref)) errors.push(`${at}: unknown Tech "${ref}"`);
+        if (listed.has(ref)) errors.push(`${at}: Tech "${ref}" appears more than once`);
+        listed.add(ref);
+      }
+      if (item.techs.length > 1 && !item.display) errors.push(`${at}: several Techs need a display label`);
+    });
+  });
+  return errors;
 }
 
 export function validatePortfolio(p: Portfolio, facts: Snapshot): string[] {
@@ -118,6 +152,8 @@ export function validatePortfolio(p: Portfolio, facts: Snapshot): string[] {
     }
     for (const [number, pull] of Object.entries(upstream.pulls)) errors.push(...lintAll(`${at}#${number}`, { note: pull.note }, false));
   }
+  errors.push(...cvErrors(p.cv, new Map(p.works.map(entry => [entry.id, entry])), techIds));
+
   const themeIds = new Set<string>();
   for (const theme of p.contributions.themes) {
     const at = `contributions theme ${theme.id}`;

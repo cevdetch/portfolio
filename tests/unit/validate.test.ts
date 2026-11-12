@@ -40,6 +40,47 @@ test("an interest that links a Work names that Work's site in its details", () =
   assert.deepEqual(validatePortfolio(p, fixtureSnapshot()), ['profile interests[0]: Work "deadhead" has no site to link']);
 });
 
+test('cv projects and skills reference Works and Techs that exist', () => {
+  const p = fixturePortfolio();
+  p.cv.projects.push({ works: ['ghost'], optional: false });
+  p.cv.skills[0]!.items.push({ techs: ['cobol'] });
+  assert.deepEqual(validatePortfolio(p, fixtureSnapshot()), [
+    'cv projects[3]: unknown Work "ghost"',
+    'cv skills[0] items[1]: unknown Tech "cobol"',
+  ]);
+});
+
+test('a cv entry without a title prints one Work; a titled one prints a cvLine per Work', () => {
+  const p = fixturePortfolio();
+  p.cv.projects[0]!.works.push('one');
+  p.cv.projects[1]!.works.push('one');
+  assert.deepEqual(validatePortfolio(p, fixtureSnapshot()), [
+    'cv projects[0]: an entry without a title holds exactly one Work',
+    'cv projects[1]: Work "one" has no cvLine to print',
+    'cv projects[1]: Work "one" appears in more than one entry',
+  ]);
+});
+
+test('a cv skill item with several Techs needs a display label, and each Tech appears once', () => {
+  const p = fixturePortfolio();
+  delete p.cv.skills[1]!.items[0]!.display;
+  p.cv.skills[0]!.items.push({ techs: ['typescript'] });
+  assert.deepEqual(validatePortfolio(p, fixtureSnapshot()), [
+    'cv skills[0] items[1]: Tech "typescript" appears more than once',
+    'cv skills[1] items[0]: several Techs need a display label',
+  ]);
+});
+
+test('cv titles and labels are CV-shared Story', () => {
+  const p = fixturePortfolio();
+  p.cv.projects[1]!.title = 'My templates';
+  p.cv.skills[0]!.label = 'TODO';
+  assert.deepEqual(validatePortfolio(p, fixtureSnapshot()), [
+    'cv projects[1] title: CV-shared Story is verb-led and pronoun-free',
+    'cv skills[0] label: placeholder text',
+  ]);
+});
+
 test('the slug equals the repo name', () => {
   const p = fixturePortfolio();
   p.works[0]!.data.repo = 'cevdetch/dead-head';

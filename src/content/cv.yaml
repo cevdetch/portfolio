@@ -1,0 +1,44 @@
+# The one-page CV's own choices. Story text lives with the Works; this file only picks and orders.
+projects:
+  - works: [deadhead]
+  - works: [favseed]
+  - title: Astro templates
+    works: [astro-minimal-template, astro-reels-template]
+  - title: Linux & infrastructure
+    works: [arch-waypure, homelab]
+skills:
+  - label: Languages
+    items:
+      - techs: [typescript]
+      - techs: [javascript]
+      - techs: [html]
+      - techs: [css]
+      - techs: [sql]
+      - techs: [python]
+      - techs: [bash]
+  - label: Web
+    items:
+      - techs: [astro]
+      - techs: [svelte]
+      - techs: [vite]
+      - techs: [tailwind-css]
+  - label: Tooling
+    items:
+      - techs: [node]
+      - techs: [pnpm]
+      - techs: [npm]
+      - techs: [git]
+      - techs: [github-actions]
+      - techs: [eslint]
+      - techs: [docker-compose]
+  - label: Platforms
+    items:
+      - { techs: [debian, arch-linux], display: 'Linux (Debian, Arch)' }
+      - { techs: [cloudflare-pages, cloudflare-workers], display: Cloudflare Pages and Workers }
+      - techs: [netlify]
+      - techs: [vercel]
+      - techs: [tailscale]
+  - label: Data
+    items:
+      - techs: [postgresql]
+      - techs: [sqlite]

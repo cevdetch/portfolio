@@ -2,6 +2,7 @@ import type { Portfolio } from '../../src/data/validate.ts';
 import type { Snapshot } from '../../src/facts/schema.ts';
 import { educationSchema, experienceSchema } from '../../src/schemas/background.ts';
 import { contributionOverridesSchema } from '../../src/schemas/contributions.ts';
+import { cvSchema } from '../../src/schemas/cv.ts';
 import { profileSchema } from '../../src/schemas/profile.ts';
 import { techSchema } from '../../src/schemas/tech.ts';
 import { usesSectionSchema } from '../../src/schemas/uses.ts';
@@ -68,6 +69,17 @@ export function fixturePortfolio(): Portfolio {
         id: 'head-metadata', lead: 'HTML-head fixes merged into', note: 'including a sitemap_index fix in Astro',
         upstreams: [{ repo: 'withastro/astro', label: 'Astro' }, { repo: 'sveltejs/svelte', label: 'Svelte' }],
       }],
+    }),
+    cv: cvSchema.parse({
+      projects: [
+        { works: ['deadhead'] },
+        { title: 'Astro templates', works: ['astro-minimal-template'] },
+        { title: 'Linux & infrastructure', works: ['arch-waypure', 'homelab'], optional: true },
+      ],
+      skills: [
+        { label: 'Languages', items: [{ techs: ['typescript'] }] },
+        { label: 'Desktop', items: [{ techs: ['sway', 'molly'], display: 'Sway_and Molly' }, { techs: ['astro'] }] },
+      ],
     }),
   };
 }

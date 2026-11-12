@@ -17,14 +17,15 @@ export function loadPortfolio(): Promise<LoadedPortfolio> {
 }
 
 async function load(): Promise<LoadedPortfolio> {
-  const [profiles, techs, works, experience, education, uses, contributions] = await Promise.all([
+  const [profiles, techs, works, experience, education, uses, contributions, cvs] = await Promise.all([
     getCollection('profile'), getCollection('tech'), getCollection('work'), getCollection('experience'),
-    getCollection('education'), getCollection('uses'), getCollection('contributions'),
+    getCollection('education'), getCollection('uses'), getCollection('contributions'), getCollection('cv'),
   ]);
   const profile = profiles[0];
   const overrides = contributions[0];
-  if (profiles.length !== 1 || !profile || contributions.length !== 1 || !overrides) {
-    throw new Error('Expected exactly one profile.yaml and one contributions.yaml.');
+  const cv = cvs[0];
+  if (profiles.length !== 1 || !profile || contributions.length !== 1 || !overrides || cvs.length !== 1 || !cv) {
+    throw new Error('Expected exactly one profile.yaml, one contributions.yaml and one cv.yaml.');
   }
   const portfolio: Portfolio = {
     profile: profile.data,
@@ -35,6 +36,7 @@ async function load(): Promise<LoadedPortfolio> {
     education: newestFirst(education.map(entry => entry.data)),
     uses: uses.map(entry => ({ id: entry.id, data: entry.data })),
     contributions: overrides.data,
+    cv: cv.data,
   };
   const facts = snapshotSchema.parse(snapshotJson);
   const errors = validatePortfolio(portfolio, facts);

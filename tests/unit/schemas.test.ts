@@ -6,6 +6,7 @@ import { workSchema, workTranslationSchema } from '../../src/schemas/work.ts';
 import { profileSchema } from '../../src/schemas/profile.ts';
 import { educationSchema } from '../../src/schemas/background.ts';
 import { contributionOverridesSchema } from '../../src/schemas/contributions.ts';
+import { cvSchema } from '../../src/schemas/cv.ts';
 
 const work = {
   title: 'deadhead', kind: 'package', status: 'maintained', featured: true, order: 1,
@@ -84,6 +85,14 @@ test('every interest says whether the CV prints it', () => {
   });
   assert.deepEqual(profile.interests, [{ label: 'Writing', details: 'Essays, published at one.cevdet.ch', cv: true, work: 'one' }]);
   assert.throws(() => profileSchema.parse({ ...profile, interests: [{ label: 'Writing', details: 'Essays' }] }));
+});
+
+test('cv entries print unless marked optional, and need at least one Work or Tech', () => {
+  const cv = cvSchema.parse({ projects: [{ works: ['deadhead'] }], skills: [{ label: 'Languages', items: [{ techs: ['typescript'] }] }] });
+  assert.equal(cv.projects[0]!.optional, false);
+  assert.throws(() => cvSchema.parse({ ...cv, projects: [{ works: [] }] }));
+  assert.throws(() => cvSchema.parse({ ...cv, skills: [{ label: 'Languages', items: [{ techs: [] }] }] }));
+  assert.throws(() => cvSchema.parse({ ...cv, availability: true }));
 });
 
 test('education has no location field', () => {
