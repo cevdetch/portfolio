@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { availabilityLine, socialUsername } from '../../src/data/profile.ts';
-import { contributionTotals, featuredWorks, fillCvLine, inSourceOrder, mergedPullsUrl, newestFirst, skillGroups, splitOnTitles, upstreamGroups, workFactsView } from '../../src/data/views.ts';
+import { contributionHighlights, contributionTotals, featuredWorks, fillCvLine, inSourceOrder, mergedPullsUrl, newestFirst, skillGroups, splitOnTitles, upstreamGroups, workFactsView } from '../../src/data/views.ts';
 import { formatDay, formatMonth, joinList } from '../../src/lib/format.ts';
 import { fixturePortfolio, fixtureSnapshot } from '../helpers/portfolio-fixture.ts';
 
@@ -60,6 +60,15 @@ test('contribution totals count visible pulls and their upstreams once, for ever
   const p = fixturePortfolio();
   assert.deepEqual(contributionTotals(upstreamGroups(fixtureSnapshot().contributions, p.contributions)), { pulls: 3, upstreams: 2 });
   assert.deepEqual(contributionTotals([]), { pulls: 0, upstreams: 0 });
+});
+
+test("Contribution highlights follow their own pinned order, never the Upstream group's order", () => {
+  const p = fixturePortfolio();
+  p.contributions.upstreams[0]!.pulls['101'] = { hidden: false, highlight: true, order: 2 };
+  p.contributions.upstreams.push({ repo: 'sveltejs/svelte', order: undefined, techs: [], works: [], pulls: { '7': { hidden: false, highlight: true, order: 1 } } });
+  const groups = upstreamGroups(fixtureSnapshot().contributions, p.contributions);
+  // withastro/astro (Story order 1) would sort first by group order; the pinned highlight order puts svelte first instead.
+  assert.deepEqual(contributionHighlights(groups).map(h => [h.group.repo, h.pull.number]), [['sveltejs/svelte', 7], ['withastro/astro', 101]]);
 });
 
 test('an Upstream links to the merged pulls by the Handle, never to a count', () => {

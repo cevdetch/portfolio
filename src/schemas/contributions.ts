@@ -14,6 +14,8 @@ export const contributionOverridesSchema = z.strictObject({
     pulls: z.record(z.string().regex(/^\d+$/), z.strictObject({
       hidden: z.boolean().default(false),
       highlight: z.boolean().default(false),
+      // Fixes the order of the home page's Contribution highlights; ignored unless highlight is true.
+      order: z.number().int().positive().optional(),
       note: line(200).optional(),
     })).default({}),
   })),

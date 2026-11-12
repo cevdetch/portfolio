@@ -2,7 +2,7 @@
 import SiteNav from '../components/SiteNav.astro';
 import Layout from '../layouts/Layout.astro';
 import { loadPortfolio } from '../data/portfolio.ts';
-import { orderWorks, upstreamGroups, workFactsView } from '../data/views.ts';
+import { contributionTotals, orderWorks, upstreamGroups, workFactsView } from '../data/views.ts';
 import { formatDay } from '../lib/format.ts';
 import { techCategories } from '../schemas/tech.ts';
 
@@ -12,6 +12,7 @@ const works = new Map(data.works.map(work => [work.id, work]));
 const packageWorks = orderWorks(data.works).map(work => ({ work, facts: workFactsView(work.id, data.facts) }))
   .filter(({ facts }) => facts.packages.length > 0 || facts.pkgbuildCount !== undefined);
 const groups = upstreamGroups(data.facts.contributions, data.contributions);
+const totals = contributionTotals(groups);
 ---
 
 <Layout title="Open source - Cevdet" description="Published Packages and merged upstream Contributions.">
@@ -42,6 +43,7 @@ const groups = upstreamGroups(data.facts.contributions, data.contributions);
     </section>
     <section aria-labelledby="contributions">
       <h2 id="contributions">Contributions</h2>
+      <p>{totals.pulls} merged pull requests to {totals.upstreams} upstream projects.</p>
       {groups.map(group => (
         <>
           <h3><a href={group.url}>{group.repo}</a></h3>

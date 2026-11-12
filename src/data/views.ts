@@ -49,7 +49,7 @@ export function skillGroups(techs: readonly Tech[], works: readonly WorkEntry[])
     .filter(group => group.techs.length > 0);
 }
 
-export interface UpstreamPull extends Contribution { highlight: boolean; note?: string }
+export interface UpstreamPull extends Contribution { highlight: boolean; note?: string; order?: number }
 export interface UpstreamGroup { repo: string; url: string; pulls: UpstreamPull[]; techs: string[]; works: string[] }
 
 export function upstreamGroups(contributions: readonly Contribution[], overrides: ContributionOverrides): UpstreamGroup[] {
@@ -63,11 +63,22 @@ export function upstreamGroups(contributions: readonly Contribution[], overrides
       repo: contribution.upstream, url: `https://github.com/${contribution.upstream}`,
       pulls: [], techs: upstream?.techs ?? [], works: upstream?.works ?? [],
     };
-    group.pulls.push({ ...contribution, highlight: pull?.highlight ?? false, ...(pull?.note ? { note: pull.note } : {}) });
+    group.pulls.push({
+      ...contribution, highlight: pull?.highlight ?? false,
+      ...(pull?.note ? { note: pull.note } : {}), ...(pull?.order !== undefined ? { order: pull.order } : {}),
+    });
     groups.set(contribution.upstream, group);
   }
   const rank = (group: UpstreamGroup) => config.get(group.repo)?.order ?? Number.MAX_SAFE_INTEGER;
   return [...groups.values()].sort((a, b) => rank(a) - rank(b) || b.pulls.length - a.pulls.length || a.repo.localeCompare(b.repo));
+}
+
+export interface ContributionHighlight { group: UpstreamGroup; pull: UpstreamPull }
+
+/** The highlighted pulls across every Upstream, in their pinned order, never the Upstream group's own order. */
+export function contributionHighlights(groups: readonly UpstreamGroup[]): ContributionHighlight[] {
+  const highlights = groups.flatMap(group => group.pulls.filter(pull => pull.highlight).map(pull => ({ group, pull })));
+  return highlights.sort((a, b) => (a.pull.order ?? Number.MAX_SAFE_INTEGER) - (b.pull.order ?? Number.MAX_SAFE_INTEGER));
 }
 
 /** The counts behind "N merged pull requests to M upstream projects", for the home page. */
