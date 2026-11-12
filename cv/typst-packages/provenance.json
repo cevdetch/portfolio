@@ -1,0 +1,18 @@
+{
+  "purpose": "Typst packages the RenderCV template imports, vendored so rendering the CV never downloads anything. @preview/rendercv:0.3.0 is not vendored: RenderCV ships it inside its Python package and hands it to Typst ahead of any cache.",
+  "packages": [
+    {
+      "name": "fontawesome",
+      "namespace": "preview",
+      "version": "0.6.0",
+      "path": "preview/fontawesome/0.6.0",
+      "license": "MIT",
+      "licenseFile": "preview/fontawesome/0.6.0/LICENSE",
+      "copyright": "Copyright (c) 2023 duskmoon314 (Campbell He)",
+      "repository": "https://github.com/duskmoon314/typst-fontawesome",
+      "source": "https://packages.typst.org/preview/fontawesome-0.6.0.tar.gz",
+      "archiveSha256": "31374c788d6850c7fd3da742a67e8a753e5644fa0c677b845f75be8aa488380c",
+      "licenseSha256": "0320baf81952401aa54110ac90787587119ce6a26fc2235e506f3cc150399162"
+    }
+  ]
+}

@@ -170,6 +170,9 @@ test('physical removal builds manual metadata and crawlers with normal remaining
     await cp(new URL(`../../${path}`, import.meta.url), new URL(path, fixture.root));
   }
   await cp(new URL('../../scripts/', import.meta.url), new URL('scripts/', fixture.root), { recursive: true });
+  // cv-private.ts reaches src/cv/ and, through it, data/portfolio.ts's astro:content import,
+  // which this fixture deliberately never defines (see the consumer() comment above).
+  await rm(new URL('scripts/cv-private.ts', fixture.root));
   await promisify(execFile)('pnpm', ['remove', '-D', 'satori'], { cwd: fixture.root, maxBuffer: 1024 * 1024 });
   const manifest = JSON.parse(await readFile(new URL('package.json', fixture.root), 'utf8')) as {devDependencies: Record<string,string>};
   assert.equal(manifest.devDependencies['satori'], undefined);

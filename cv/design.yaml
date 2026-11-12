@@ -1,0 +1,73 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/rendercv/rendercv/refs/tags/v2.8/schema.json
+
+# Design for the CV generated from the portfolio data.
+# Passed to RenderCV as `--design design.yaml`.
+#
+# DELIBERATELY MINIMAL. Every line below is here because something breaks or
+# misleads without it. The theme author already made the typographic choices
+# (fonts, colours, bullets, link underlines, spacing) and they are better
+# defaults than ad-hoc overrides — don't re-add those without a reason.
+#
+# Theme choice: engineeringresumes, kept for ATS safety, which was measured
+# rather than assumed. Extracting text with pdftotext (which is essentially
+# what an ATS does):
+#   - classic, engineeringclassic, moderncv, opal each emit 6 private-use-area
+#     glyphs (FontAwesome contact icons) that reach a parser as garbage.
+#   - ember, engineeringresumes, harvard, ink, sb2nov emit none.
+#   - engineeringresumes additionally puts job title and employer on ONE
+#     extracted line ("Freelance Web Developer, The Cosmic Initiative"), which
+#     is the pattern parsers expect. ink splits them across the date line.
+
+design:
+  theme: engineeringresumes
+
+  page:
+    # Switzerland/Europe. Every theme defaults to us-letter.
+    size: a4
+    # Stock margins are 0.7in (1.78cm), at which this CV runs to two pages.
+    # This is the only reason they are overridden.
+    top_margin: 1.4cm
+    bottom_margin: 1.4cm
+    left_margin: 1.4cm
+    right_margin: 1.4cm
+    # Hides the "Last updated in <month>" line. It dates the document the
+    # moment you stop editing it, and a stale date costs more than a fresh
+    # one gains. Set to true if you'd rather show recency.
+    show_top_note: false
+
+  typography:
+    # The theme default is justified. French hyphenation in a narrow column
+    # opens visible rivers of whitespace, and justification buys nothing on a
+    # CV. Measured to make no difference to page count either way.
+    alignment: left
+
+  section_titles:
+    # Also load-bearing. Once real contact details are injected the header line
+    # wraps, and the English CV needs this plus the entry gap below to hold one
+    # page. Theme defaults are 0.5cm / 0.3cm.
+    space_above: 0.35cm
+    space_below: 0.25cm
+
+  sections:
+    # See above — paired with section_titles.space_above. Theme default 0.42cm.
+    space_between_regular_entries: 0.3cm
+
+  header:
+    # LOAD-BEARING, measured. The theme inherits classic's 0.7cm below the
+    # name, the headline AND the connections line — 2.1cm of header whitespace,
+    # enough on its own to push the English CV onto a second page. Reducing
+    # these three is the single override that brings it back; every other
+    # spacing tweak tested made no difference to page count.
+    space_below_name: 0.4cm
+    space_below_headline: 0.4cm
+    space_below_connections: 0.5cm
+    connections:
+      # Keep the country code: +41 79 123 45 67. `national` strips it to
+      # 079 123 45 67, useless to anyone dialling from abroad and no better
+      # for a Swiss reader.
+      phone_number_format: international
+# NOTE: deliberately no `templates.single_date: YEAR` here. It suppresses the
+# unwanted "Jan 2025" from a bare-year date, but it ALSO applies to the
+# endpoints of date ranges, flattening "Sept 2024 - June 2028" to "2024 - 2028".
+# Month precision matters for date ranges. Use year-only start_date/end_date
+# on undated entries instead.
