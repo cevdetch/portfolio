@@ -40,6 +40,7 @@ export function workNode(work: WorkEntry, facts: WorkFacts | undefined, techs: r
   const base = {
     '@id': `${page}#work`, name: work.data.title, description: work.data.summary,
     url: work.data.site ?? page, mainEntityOfPage: page, author: { '@id': PERSON_ID },
+    ...(work.data.site ? { sameAs: [work.data.site] } : {}),
   };
   if (work.data.kind === 'site') return { '@type': 'WebSite', ...base };
   const languages = work.data.stack.map(id => techs.find(tech => tech.id === id)).filter(tech => tech?.category === 'language').map(tech => tech!.label);
