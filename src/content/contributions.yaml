@@ -1,7 +1,7 @@
 upstreams:
-  - { repo: withastro/astro, order: 1, techs: [astro] }
-  - { repo: immich-app/immich, order: 2, techs: [immich] }
-  - { repo: GrapheneOS/grapheneos.org, order: 3, techs: [grapheneos] }
+  - { repo: withastro/astro, order: 1, techs: [astro], pulls: { '17196': { highlight: true } } }
+  - { repo: immich-app/immich, order: 2, techs: [immich], pulls: { '32594': { highlight: true } } }
+  - { repo: GrapheneOS/grapheneos.org, order: 3, techs: [grapheneos], pulls: { '1684': { highlight: true } } }
   - { repo: sveltejs/svelte, order: 4, techs: [svelte] }
   - { repo: withastro/starlight, order: 5, techs: [starlight] }
   - { repo: lennart-k/rustical, order: 6, techs: [rustical] }
