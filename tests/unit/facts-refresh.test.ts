@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
+import { mkdtemp, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { test } from 'node:test';
+import { pathToFileURL } from 'node:url';
 import { createClient, type Client } from '../../src/facts/client.ts';
 import { collectFacts } from '../../src/facts/refresh.ts';
+import { readWorkSources } from '../../scripts/fetch-facts.ts';
 
 type Route = { data?: unknown; link?: string; body?: string; contentType?: string } | null;
 
@@ -114,6 +119,18 @@ test('createClient follows GitHub 301 within api.github.com and sends token on b
   const result = await client.json<{ redirected: boolean }>(`${api}/x`);
   assert.deepEqual(result?.data, { redirected: true });
   assert.deepEqual(seen.map(s => s.auth), ['Bearer secret', 'Bearer secret']);
+});
+
+test('readWorkSources reads English Work frontmatter only', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'work-'));
+  const front = (extra: string) => `---\ntitle: X\nkind: package\nstatus: active\nstack: [typescript]\ntagline: T\nsummary: S\nrole: R\nhighlights: []\n${extra}---\n\n## Problem\n`;
+  await writeFile(join(dir, 'deadhead.mdx'), front('repo: cevdetch/deadhead\npackages:\n  - { registry: npm, name: deadhead }\n'));
+  await writeFile(join(dir, 'homelab.mdx'), front(''));
+  await writeFile(join(dir, 'deadhead.fr.mdx'), '---\ntagline: Un linter\n---\n');
+  assert.deepEqual(await readWorkSources(pathToFileURL(`${dir}/`)), [
+    { id: 'deadhead', repo: 'cevdetch/deadhead', packages: [{ registry: 'npm', name: 'deadhead' }], pkgbuilds: false },
+    { id: 'homelab', packages: [], pkgbuilds: false },
+  ]);
 });
 
 test('createClient rejects GitHub redirect to another origin', async () => {
