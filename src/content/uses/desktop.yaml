@@ -1,0 +1,11 @@
+title: Desktop
+order: 1
+entries:
+  - { tech: arch-linux }
+  - { tech: wayland, note: Wayland only }
+  - { tech: sway }
+  - { tech: pipewire }
+  - { tech: foot }
+  - { tech: fuzzel }
+  - { tech: mako }
+  - { tech: yazi }

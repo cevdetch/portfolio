@@ -1,0 +1,11 @@
+title: Editor & terminal
+order: 2
+entries:
+  - { tech: helix }
+  - { tech: zed, note: Own zed-waypure build, maintains: arch-waypure }
+  - { tech: fish }
+  - { tech: starship }
+  - { tech: fzf }
+  - { tech: ripgrep }
+  - { tech: fd }
+  - { tech: bat }

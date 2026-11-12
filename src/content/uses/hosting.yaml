@@ -1,0 +1,4 @@
+title: Hosting
+order: 4
+entries:
+  - { tech: cloudflare-pages }

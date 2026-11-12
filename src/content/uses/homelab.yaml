@@ -1,0 +1,14 @@
+title: Homelab
+order: 5
+work: homelab
+entries:
+  - { tech: debian }
+  - { tech: docker-compose }
+  - { tech: tailscale, note: "No public ports; remote access only over Tailscale" }
+  - { tech: immich }
+  - { tech: jellyfin }
+  - { tech: navidrome }
+  - { tech: paperless-ngx }
+  - { tech: miniflux }
+  - { tech: karakeep }
+  - { tech: rustical }

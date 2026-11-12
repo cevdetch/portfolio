@@ -1,1 +1,10 @@
-upstreams: []
+upstreams:
+  - { repo: withastro/astro, order: 1, techs: [astro] }
+  - { repo: immich-app/immich, order: 2, techs: [immich] }
+  - { repo: GrapheneOS/grapheneos.org, order: 3, techs: [grapheneos] }
+  - { repo: sveltejs/svelte, order: 4, techs: [svelte] }
+  - { repo: withastro/starlight, order: 5, techs: [starlight] }
+  - { repo: lennart-k/rustical, order: 6, techs: [rustical] }
+  - { repo: freeglut/freeglut, order: 7 }
+  - { repo: CachyOS/firefox-wayland-cachy-hg, order: 8 }
+  - { repo: lumeland/lume.land, order: 9, techs: [lume] }

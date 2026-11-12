@@ -1,0 +1,11 @@
+title: Web toolchain
+order: 3
+entries:
+  - { tech: node }
+  - { tech: pnpm }
+  - { tech: mise }
+  - { tech: uv }
+  - { tech: deno }
+  - { tech: astro }
+  - { tech: typescript }
+  - { tech: css, note: Vanilla CSS }

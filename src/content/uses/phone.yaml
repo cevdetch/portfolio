@@ -1,0 +1,15 @@
+title: Phone
+order: 6
+entries:
+  - { tech: grapheneos, note: Without Play Services }
+  - { tech: obtainium }
+  - { tech: f-droid }
+  - { tech: accrescent }
+  - { tech: molly }
+  - { tech: bitwarden }
+  - { tech: keepassdx }
+  - { tech: aegis }
+  - { tech: davx5, note: Syncs with RustiCal }
+  - { tech: syncthing }
+  - { tech: immich, note: Client }
+  - { tech: jellyfin, note: Client }
