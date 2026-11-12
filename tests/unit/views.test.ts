@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { availabilityLine, socialUsername } from '../../src/data/profile.ts';
-import { contributionTotals, featuredWorks, fillCvLine, inSourceOrder, mergedPullsUrl, newestFirst, skillGroups, upstreamGroups, workFactsView } from '../../src/data/views.ts';
+import { contributionTotals, featuredWorks, fillCvLine, inSourceOrder, mergedPullsUrl, newestFirst, skillGroups, splitOnTitles, upstreamGroups, workFactsView } from '../../src/data/views.ts';
 import { formatDay, formatMonth, joinList } from '../../src/lib/format.ts';
 import { fixturePortfolio, fixtureSnapshot } from '../helpers/portfolio-fixture.ts';
 
@@ -23,6 +23,27 @@ test('experience and education run newest start first', () => {
   const entries = [{ id: 'a', start: '2019-09' }, { id: 'b', start: '2024-08' }, { id: 'c', start: '2022-03' }];
   assert.deepEqual(newestFirst(entries).map(entry => entry.id), ['b', 'c', 'a']);
   assert.deepEqual(entries.map(entry => entry.id), ['a', 'b', 'c']);
+});
+
+test('splitting on titles keeps the text whole when there is nothing to split on', () => {
+  assert.deepEqual(splitOnTitles('Creator of deadhead.', []), ['Creator of deadhead.']);
+  assert.deepEqual(splitOnTitles('Creator of deadhead.', ['favseed']), ['Creator of deadhead.']);
+});
+
+test('splitting on titles alternates text and titles', () => {
+  assert.deepEqual(splitOnTitles('Creator of deadhead and favseed.', ['deadhead', 'favseed']), ['Creator of ', 'deadhead', ' and ', 'favseed', '.']);
+});
+
+test('punctuation next to a title still splits on it', () => {
+  assert.deepEqual(splitOnTitles('(deadhead), favseed.', ['deadhead', 'favseed']), ['(', 'deadhead', '), ', 'favseed', '.']);
+});
+
+test('regex characters in a title match only themselves', () => {
+  assert.deepEqual(splitOnTitles('Runs on Node.js, not NodeXjs.', ['Node.js']), ['Runs on ', 'Node.js', ', not NodeXjs.']);
+});
+
+test('a title inside another word does not split', () => {
+  assert.deepEqual(splitOnTitles('Undeadheaded deadheads.', ['deadhead']), ['Undeadheaded deadheads.']);
 });
 
 test('Upstreams: Story order first, then PR count, then name; hidden pulls vanish', () => {

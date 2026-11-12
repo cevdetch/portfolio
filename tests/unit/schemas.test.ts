@@ -57,7 +57,7 @@ test('profile pins the public identity and carries no location field', () => {
   const profile = {
     name: 'Cevdet', handle: 'cevdetch', jobTitle: 'Software Developer',
     headline: 'Builds fast sites.', specialisation: 'Web performance · Developer tooling · Open source', country: 'Switzerland',
-    bio: 'Builds and publishes developer tools.',
+    bio: 'Builds and publishes developer tools.', proof: 'Creator of deadhead. HTML-head fixes merged into Astro.', proofWorks: ['deadhead'],
     email: 'hello@cevdet.ch', website: 'https://cevdet.ch/', contactSubject: 'Enquiry from cevdet.ch', writing: 'one',
     socials: [{ network: 'github', url: 'https://github.com/cevdetch' }],
     availability: { capacity: 'part-time', timeZone: 'Europe/Zurich', reply: 'within 2 working days', openTo: ['employment'], workplace: ['remote'] },
@@ -75,7 +75,8 @@ test('profile pins the public identity and carries no location field', () => {
 test('every interest says whether the CV prints it', () => {
   const profile = profileSchema.parse({
     name: 'Cevdet', handle: 'cevdetch', jobTitle: 'Software Developer', headline: 'Builds fast sites.',
-    specialisation: 'Web performance', country: 'Switzerland', bio: 'Builds tools.', email: 'hello@cevdet.ch',
+    specialisation: 'Web performance', country: 'Switzerland', bio: 'Builds tools.', proof: 'Creator of deadhead.', proofWorks: ['deadhead'],
+    email: 'hello@cevdet.ch',
     website: 'https://cevdet.ch/', contactSubject: 'Enquiry', writing: 'one', socials: [{ network: 'github', url: 'https://github.com/cevdetch' }],
     availability: { capacity: 'part-time', timeZone: 'Europe/Zurich', reply: 'within 2 working days', openTo: ['employment'], workplace: ['remote'] },
     services: [{ id: 'static-sites', name: 'Fast static sites', summary: 'Astro sites.' }], languages: [{ name: 'English', level: 'C1' }],

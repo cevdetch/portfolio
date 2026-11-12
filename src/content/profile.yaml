@@ -8,6 +8,8 @@ bio: >-
   Builds web tools and fast sites in TypeScript and Astro. Created deadhead, an HTML head linter
   published on npm, and favseed, a favicon generator; HTML-head and metadata fixes merged into Astro,
   Svelte, Immich and GrapheneOS. Works end to end, from tests and docs to Linux packaging.
+proof: Creator of deadhead and favseed. HTML-head fixes merged into Astro, Svelte, Immich and GrapheneOS.
+proofWorks: [deadhead, favseed]
 email: hello@cevdet.ch
 website: https://cevdet.ch/
 contactSubject: Enquiry from cevdet.ch

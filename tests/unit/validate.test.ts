@@ -40,6 +40,16 @@ test("an interest that links a Work names that Work's site in its details", () =
   assert.deepEqual(validatePortfolio(p, fixtureSnapshot()), ['profile interests[0]: Work "deadhead" has no site to link']);
 });
 
+test("the home page links each proofWorks entry, so its title must appear in the proof as a whole word", () => {
+  const p = fixturePortfolio();
+  p.profile.proofWorks = ['blog'];
+  assert.deepEqual(validatePortfolio(p, fixtureSnapshot()), ['profile proofWorks[0]: unknown Work "blog"']);
+  p.profile.proofWorks = ['one'];
+  assert.deepEqual(validatePortfolio(p, fixtureSnapshot()), ['profile proofWorks[0]: proof must name "One" as a whole word']);
+  p.profile.proofWorks = ['deadhead'];
+  assert.deepEqual(validatePortfolio(p, fixtureSnapshot()), []);
+});
+
 test('cv projects and skills reference Works and Techs that exist', () => {
   const p = fixturePortfolio();
   p.cv.projects.push({ works: ['ghost'], optional: false });

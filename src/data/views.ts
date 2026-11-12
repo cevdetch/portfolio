@@ -4,6 +4,16 @@ import { techCategories, type Tech, type TechCategory } from '../schemas/tech.ts
 import type { UsesSection } from '../schemas/uses.ts';
 import type { WorkEntry } from './validate.ts';
 
+export function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/** Splits text on the whole-word occurrences of any title, for linking Work names that appear in prose. */
+export function splitOnTitles(text: string, titles: readonly string[]): string[] {
+  if (titles.length === 0) return [text];
+  return text.split(new RegExp(`\\b(${titles.map(escapeRegExp).join('|')})\\b`));
+}
+
 /** Entries in the order of their ids in the source file; `getCollection` returns them sorted by id. */
 export function inSourceOrder<T extends { id: string }>(entries: readonly T[], ids: readonly string[]): T[] {
   const index = new Map(ids.map((id, position) => [id, position]));

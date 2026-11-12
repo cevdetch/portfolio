@@ -7,7 +7,7 @@ import type { Tech } from '../schemas/tech.ts';
 import type { UsesSection } from '../schemas/uses.ts';
 import type { Work } from '../schemas/work.ts';
 import { caseStudyHeadings, caseStudySections, lintText } from './story-lint.ts';
-import { fillCvLine } from './views.ts';
+import { escapeRegExp, fillCvLine } from './views.ts';
 
 export interface WorkEntry { id: string; data: Work; body: string }
 export interface Portfolio {
@@ -35,6 +35,12 @@ function interestLinkErrors(at: string, details: string, linked: WorkEntry | und
   if (!linked.data.site) return [`${at}: Work "${ref}" has no site to link`];
   const host = new URL(linked.data.site).host;
   return details.includes(host) ? [] : [`${at}: details must name ${host}, the site it links`];
+}
+
+/** The home page links each proofWorks entry by title, so that title must appear in the proof as a whole word. */
+function proofLinkErrors(at: string, proof: string, linked: WorkEntry): string[] {
+  const pattern = new RegExp(`\\b${escapeRegExp(linked.data.title)}\\b`);
+  return pattern.test(proof) ? [] : [`${at}: proof must name "${linked.data.title}" as a whole word`];
 }
 
 function cvErrors(cv: CvChoices, works: ReadonlyMap<string, WorkEntry>, techIds: ReadonlySet<string>): string[] {
@@ -124,7 +130,13 @@ export function validatePortfolio(p: Portfolio, facts: Snapshot): string[] {
 
   p.profile.services.forEach(service => service.evidence.forEach(ref => work(`profile service ${service.id}`, ref)));
   work('profile writing', p.profile.writing);
-  errors.push(...lintAll('profile', { headline: p.profile.headline, bio: p.profile.bio }, true));
+  errors.push(...lintAll('profile', { headline: p.profile.headline, bio: p.profile.bio, proof: p.profile.proof }, true));
+  p.profile.proofWorks.forEach((ref, index) => {
+    const at = `profile proofWorks[${index}]`;
+    work(at, ref);
+    const linked = p.works.find(entry => entry.id === ref);
+    if (linked) errors.push(...proofLinkErrors(at, p.profile.proof, linked));
+  });
   for (const service of p.profile.services) {
     errors.push(...lintAll(`profile service ${service.id}`, { name: service.name, summary: service.summary }, false));
   }

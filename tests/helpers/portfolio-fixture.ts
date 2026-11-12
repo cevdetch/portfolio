@@ -17,6 +17,7 @@ export function fixturePortfolio(): Portfolio {
       headline: 'Software developer who ships fast sites and developer tools.',
       specialisation: 'Web performance · Developer tooling · Open source', country: 'Switzerland',
       bio: 'Builds and publishes open-source developer tools.',
+      proof: 'Creator of deadhead. HTML-head fixes merged into Astro.', proofWorks: ['deadhead'],
       email: 'hello@cevdet.ch', website: 'https://cevdet.ch/', contactSubject: 'Enquiry from cevdet.ch', writing: 'one',
       socials: [{ network: 'github', url: 'https://github.com/cevdetch' }, { network: 'linkedin', url: 'https://www.linkedin.com/in/cevdetch/' }],
       availability: { capacity: 'part-time', timeZone: 'Europe/Zurich', reply: 'within 2 working days', openTo: ['employment', 'contract', 'freelance'], workplace: ['remote', 'local'] },
