@@ -28,8 +28,9 @@ async function consumer(t: { after(fn: () => Promise<void>): void }, options: { 
   // Layout.astro now also reaches for brand.json and jsonld.ts's Portfolio schema/Facts types,
   // so the fixture needs those alongside the generic template files. data/portfolio.ts and
   // data/icons.ts stay excluded: they need astro:content collections this fixture never defines.
+  // gates/ is needed for scripts/verify-portfolio.ts to type-check in the physical-removal test.
   for (const path of ['lib', 'integrations', 'layouts', 'assets', 'config.ts', 'brand.json', 'schemas', 'facts',
-    'data/validate.ts', 'data/story-lint.ts']) {
+    'data/validate.ts', 'data/story-lint.ts', 'gates']) {
     await cp(new URL(`../../src/${path}`, import.meta.url), new URL(`src/${path}`, fixture.root), { recursive: true });
   }
   await mkdir(new URL('src/pages-source/', fixture.root));
