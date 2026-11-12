@@ -1,0 +1,77 @@
+import type { Contribution, PackageFacts, Snapshot } from '../facts/schema.ts';
+import type { ContributionOverrides } from '../schemas/contributions.ts';
+import { techCategories, type Tech, type TechCategory } from '../schemas/tech.ts';
+import type { UsesSection } from '../schemas/uses.ts';
+import type { WorkEntry } from './validate.ts';
+
+export function orderWorks(works: readonly WorkEntry[]): WorkEntry[] {
+  const rank = (work: WorkEntry) => work.data.featured && work.data.order !== undefined ? work.data.order : Number.MAX_SAFE_INTEGER;
+  return [...works].sort((a, b) => rank(a) - rank(b) || a.data.title.localeCompare(b.data.title));
+}
+
+export function featuredWorks(works: readonly WorkEntry[]): WorkEntry[] {
+  return orderWorks(works.filter(work => work.data.featured));
+}
+
+export interface SkillGroup { category: TechCategory; label: string; techs: { tech: Tech; works: WorkEntry[] }[] }
+
+export function skillGroups(techs: readonly Tech[], works: readonly WorkEntry[]): SkillGroup[] {
+  return (Object.keys(techCategories) as TechCategory[])
+    .filter(category => techCategories[category].skills)
+    .map(category => ({
+      category,
+      label: techCategories[category].label,
+      techs: techs.filter(tech => tech.category === category)
+        .map(tech => ({ tech, works: orderWorks(works.filter(work => work.data.stack.includes(tech.id))) })),
+    }))
+    .filter(group => group.techs.length > 0);
+}
+
+export interface UpstreamPull extends Contribution { highlight: boolean; note?: string }
+export interface UpstreamGroup { repo: string; url: string; pulls: UpstreamPull[]; techs: string[]; works: string[] }
+
+export function upstreamGroups(contributions: readonly Contribution[], overrides: ContributionOverrides): UpstreamGroup[] {
+  const config = new Map(overrides.upstreams.map(upstream => [upstream.repo, upstream]));
+  const groups = new Map<string, UpstreamGroup>();
+  for (const contribution of contributions) {
+    const upstream = config.get(contribution.upstream);
+    const pull = upstream?.pulls[String(contribution.number)];
+    if (pull?.hidden) continue;
+    const group = groups.get(contribution.upstream) ?? {
+      repo: contribution.upstream, url: `https://github.com/${contribution.upstream}`,
+      pulls: [], techs: upstream?.techs ?? [], works: upstream?.works ?? [],
+    };
+    group.pulls.push({ ...contribution, highlight: pull?.highlight ?? false, ...(pull?.note ? { note: pull.note } : {}) });
+    groups.set(contribution.upstream, group);
+  }
+  const rank = (group: UpstreamGroup) => config.get(group.repo)?.order ?? Number.MAX_SAFE_INTEGER;
+  return [...groups.values()].sort((a, b) => rank(a) - rank(b) || b.pulls.length - a.pulls.length || a.repo.localeCompare(b.repo));
+}
+
+export interface WorkFactsView {
+  packages: PackageFacts[];
+  license?: string;
+  active?: { from: string; to: string };
+  commitCount?: number;
+  release?: { tag: string; publishedAt: string };
+  pkgbuildCount?: number;
+  icon?: string;
+}
+
+export function workFactsView(id: string, snapshot: Snapshot): WorkFactsView {
+  const facts = snapshot.works[id];
+  if (!facts) return { packages: [] };
+  const repo = facts.repo;
+  return {
+    packages: facts.packages,
+    ...(repo?.license ? { license: repo.license } : {}),
+    ...(repo ? { active: { from: repo.firstCommit, to: repo.lastCommit }, commitCount: repo.commitCount } : {}),
+    ...(repo?.latestRelease ? { release: repo.latestRelease } : {}),
+    ...(facts.pkgbuilds ? { pkgbuildCount: facts.pkgbuilds.length } : {}),
+    ...(facts.icon ? { icon: facts.icon.file } : {}),
+  };
+}
+
+export function usesSections<T extends { id: string; data: UsesSection }>(uses: readonly T[]): T[] {
+  return [...uses].sort((a, b) => a.data.order - b.data.order);
+}
