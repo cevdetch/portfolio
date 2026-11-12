@@ -118,5 +118,15 @@ export function validatePortfolio(p: Portfolio, facts: Snapshot): string[] {
     }
     for (const [number, pull] of Object.entries(upstream.pulls)) errors.push(...lintAll(`${at}#${number}`, { note: pull.note }, false));
   }
+  const themeIds = new Set<string>();
+  for (const theme of p.contributions.themes) {
+    const at = `contributions theme ${theme.id}`;
+    errors.push(...lintAll(at, { lead: theme.lead, note: theme.note }, true));
+    for (const { repo } of theme.upstreams) {
+      if (!merged.has(repo)) errors.push(`${at}: no merged Contribution to ${repo} in the Snapshot`);
+    }
+    if (themeIds.has(theme.id)) errors.push(`${at}: duplicate id`);
+    themeIds.add(theme.id);
+  }
   return errors;
 }

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { socialUsername } from '../../src/data/profile.ts';
-import { contributionTotals, featuredWorks, fillCvLine, inSourceOrder, newestFirst, skillGroups, upstreamGroups, workFactsView } from '../../src/data/views.ts';
+import { contributionTotals, featuredWorks, fillCvLine, inSourceOrder, mergedPullsUrl, newestFirst, skillGroups, upstreamGroups, workFactsView } from '../../src/data/views.ts';
 import { formatDay, formatMonth, joinList } from '../../src/lib/format.ts';
 import { fixturePortfolio, fixtureSnapshot } from '../helpers/portfolio-fixture.ts';
 
@@ -39,6 +39,10 @@ test('contribution totals count visible pulls and their upstreams once, for ever
   const p = fixturePortfolio();
   assert.deepEqual(contributionTotals(upstreamGroups(fixtureSnapshot().contributions, p.contributions)), { pulls: 3, upstreams: 2 });
   assert.deepEqual(contributionTotals([]), { pulls: 0, upstreams: 0 });
+});
+
+test('an Upstream links to the merged pulls by the Handle, never to a count', () => {
+  assert.equal(mergedPullsUrl('withastro/astro', 'cevdetch'), 'https://github.com/withastro/astro/pulls?q=is%3Apr+is%3Amerged+author%3Acevdetch');
 });
 
 test('a social URL yields the handle in its path', () => {

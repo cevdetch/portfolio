@@ -65,6 +65,11 @@ export function contributionTotals(groups: readonly UpstreamGroup[]): { pulls: n
   return { pulls: groups.reduce((sum, group) => sum + group.pulls.length, 0), upstreams: groups.length };
 }
 
+/** The Handle's merged pull requests to one Upstream, on GitHub. */
+export function mergedPullsUrl(repo: string, handle: string): string {
+  return `https://github.com/${repo}/pulls?q=${encodeURIComponent(`is:pr is:merged author:${handle}`).replaceAll('%20', '+')}`;
+}
+
 export interface WorkFactsView {
   packages: PackageFacts[];
   license?: string;

@@ -1,10 +1,12 @@
 import { z } from 'astro/zod';
 import { id, line } from './common.ts';
 
+const repo = z.string().regex(/^[A-Za-z0-9._-]+\/[A-Za-z0-9._-]+$/);
+
 // Overrides only: the pull requests themselves come from the fetched Snapshot, never by hand.
 export const contributionOverridesSchema = z.strictObject({
   upstreams: z.array(z.strictObject({
-    repo: z.string().regex(/^[A-Za-z0-9._-]+\/[A-Za-z0-9._-]+$/),
+    repo,
     // Best-known projects first; unordered Upstreams follow by PR count, then name.
     order: z.number().int().positive().optional(),
     techs: z.array(id).default([]),
@@ -15,5 +17,12 @@ export const contributionOverridesSchema = z.strictObject({
       note: line(200).optional(),
     })).default({}),
   })),
+  // One line each on the CV and the home page: "<lead> <labels, linked>, <note>." No counts.
+  themes: z.array(z.strictObject({
+    id,
+    lead: line(80),
+    note: line(120).optional(),
+    upstreams: z.array(z.strictObject({ repo, label: line(40) })).min(1),
+  })).default([]),
 });
 export type ContributionOverrides = z.infer<typeof contributionOverridesSchema>;

@@ -62,7 +62,13 @@ export function fixturePortfolio(): Portfolio {
     experience: [experienceSchema.parse({ id: 'starlane', organisation: 'Starlane', role: 'Freelance Web Developer', engagement: 'freelance', workplace: 'remote', start: '2022-03', end: '2022-05', highlights: ['Built three sites.'], stack: ['astro'] })],
     education: [educationSchema.parse({ id: 'sismondi', institution: 'Collège Sismondi', credential: 'Maturité gymnasiale', field: 'Physics and Applied Mathematics', start: '2024-08', end: '2028-06', expected: true })],
     uses: [{ id: 'phone', data: usesSectionSchema.parse({ title: 'Phone', order: 1, entries: [{ tech: 'molly' }] }) }],
-    contributions: contributionOverridesSchema.parse({ upstreams: [{ repo: 'withastro/astro', order: 1, techs: ['astro'], pulls: { '101': { highlight: true, note: 'Fixed a sitemap edge case.' } } }] }),
+    contributions: contributionOverridesSchema.parse({
+      upstreams: [{ repo: 'withastro/astro', order: 1, techs: ['astro'], pulls: { '101': { highlight: true, note: 'Fixed a sitemap edge case.' } } }],
+      themes: [{
+        id: 'head-metadata', lead: 'HTML-head fixes merged into', note: 'including a sitemap_index fix in Astro',
+        upstreams: [{ repo: 'withastro/astro', label: 'Astro' }, { repo: 'sveltejs/svelte', label: 'Svelte' }],
+      }],
+    }),
   };
 }
 

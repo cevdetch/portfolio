@@ -81,6 +81,26 @@ test('overrides must point at Contributions in the Snapshot', () => {
   ]);
 });
 
+test('every theme Upstream has merged Contributions, and theme ids are unique', () => {
+  const p = fixturePortfolio();
+  p.contributions.themes[0]!.upstreams.push({ repo: 'nope/nope', label: 'Nope' });
+  p.contributions.themes.push({ ...p.contributions.themes[0]!, upstreams: [{ repo: 'sveltejs/svelte', label: 'Svelte' }] });
+  assert.deepEqual(validatePortfolio(p, fixtureSnapshot()), [
+    'contributions theme head-metadata: no merged Contribution to nope/nope in the Snapshot',
+    'contributions theme head-metadata: duplicate id',
+  ]);
+});
+
+test('theme leads and notes are CV-shared Story', () => {
+  const p = fixturePortfolio();
+  p.contributions.themes[0]!.lead = 'Our fixes merged into';
+  p.contributions.themes[0]!.note = 'including a fix in Astro 7.4.2';
+  assert.deepEqual(validatePortfolio(p, fixtureSnapshot()), [
+    'contributions theme head-metadata lead: CV-shared Story is verb-led and pronoun-free',
+    'contributions theme head-metadata note: a version is a Fact; remove it from Story',
+  ]);
+});
+
 test('CV-shared Story is linted', () => {
   const p = fixturePortfolio();
   p.works[0]!.data.highlights = ['I wrote 203 rules for v0.3.1'];

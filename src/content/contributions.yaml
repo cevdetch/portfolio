@@ -8,3 +8,18 @@ upstreams:
   - { repo: freeglut/freeglut, order: 7 }
   - { repo: CachyOS/firefox-wayland-cachy-hg, order: 8 }
   - { repo: lumeland/lume.land, order: 9, techs: [lume] }
+themes:
+  - id: head-metadata
+    lead: HTML-head and metadata fixes merged into
+    upstreams:
+      - { repo: withastro/astro, label: Astro }
+      - { repo: sveltejs/svelte, label: Svelte }
+      - { repo: withastro/starlight, label: Starlight }
+      - { repo: immich-app/immich, label: Immich }
+      - { repo: GrapheneOS/grapheneos.org, label: GrapheneOS }
+  - id: wayland-builds
+    lead: Wayland-only build fixes merged into
+    upstreams:
+      - { repo: freeglut/freeglut, label: freeglut }
+      - { repo: CachyOS/firefox-wayland-cachy-hg, label: CachyOS }
+      - { repo: aerynOS/recipes, label: aerynOS }
