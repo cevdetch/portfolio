@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { socialUsername } from '../../src/data/profile.ts';
-import { contributionTotals, featuredWorks, inSourceOrder, newestFirst, skillGroups, upstreamGroups, workFactsView } from '../../src/data/views.ts';
+import { contributionTotals, featuredWorks, fillCvLine, inSourceOrder, newestFirst, skillGroups, upstreamGroups, workFactsView } from '../../src/data/views.ts';
 import { formatDay, formatMonth, joinList } from '../../src/lib/format.ts';
 import { fixturePortfolio, fixtureSnapshot } from '../helpers/portfolio-fixture.ts';
 
@@ -62,6 +62,14 @@ test('workFactsView exposes only the displayed Facts', () => {
     icon: 'icons/deadhead.svg',
   });
   assert.deepEqual(workFactsView('homelab', fixtureSnapshot()), { packages: [] });
+});
+
+test('a cvLine fills {pkgbuilds} from the Snapshot and reports what it cannot fill', () => {
+  const facts = fixtureSnapshot().works;
+  assert.deepEqual(fillCvLine('{pkgbuilds} PKGBUILDs with audit tools.', facts['arch-waypure']), { text: '3 PKGBUILDs with audit tools.', problems: [] });
+  assert.deepEqual(fillCvLine('No tokens here.', undefined), { text: 'No tokens here.', problems: [] });
+  assert.deepEqual(fillCvLine('{pkgbuilds} recipes', facts['deadhead']), { text: '{pkgbuilds} recipes', problems: ['{pkgbuilds} has no Fact in the Snapshot'] });
+  assert.deepEqual(fillCvLine('{stars} stars, {constructor}', facts['deadhead']).problems, ['unknown token {stars}', 'unknown token {constructor}']);
 });
 
 test('formatting', () => {

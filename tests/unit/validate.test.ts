@@ -15,7 +15,7 @@ test('an unknown Tech in a Stack fails the build', () => {
 
 test('Uses, Maintains, Services, Writing and Upstream links must resolve', () => {
   const p = fixturePortfolio();
-  p.uses[0]!.data.entries.push({ tech: 'zed', maintains: 'arch-waypure' });
+  p.uses[0]!.data.entries.push({ tech: 'zed', maintains: 'dotfiles' });
   p.profile.services[0]!.evidence.push('nope');
   p.profile.writing = 'blog';
   p.contributions.upstreams[0]!.works.push('ghost');
@@ -23,7 +23,7 @@ test('Uses, Maintains, Services, Writing and Upstream links must resolve', () =>
     'contributions/withastro/astro: unknown Work "ghost"',
     'profile service static-sites: unknown Work "nope"',
     'profile writing: unknown Work "blog"',
-    'uses/phone maintains: unknown Work "arch-waypure"',
+    'uses/phone maintains: unknown Work "dotfiles"',
     'uses/phone: unknown Tech "zed"',
   ]);
 });
@@ -87,6 +87,16 @@ test('CV-shared Story is linted', () => {
   const errors = validatePortfolio(p, fixtureSnapshot()).join('\n');
   assert.match(errors, /work\/deadhead highlights\[0\]: a version is a Fact/);
   assert.match(errors, /work\/deadhead highlights\[0\]: CV-shared Story is verb-led and pronoun-free/);
+});
+
+test('a cvLine is CV-shared Story and its tokens must resolve', () => {
+  const p = fixturePortfolio();
+  p.works[0]!.data.cvLine = 'My linter, {pkgbuilds} rules, {stars} stars.';
+  assert.deepEqual(validatePortfolio(p, fixtureSnapshot()), [
+    'work/deadhead cvLine: CV-shared Story is verb-led and pronoun-free',
+    'work/deadhead cvLine: {pkgbuilds} has no Fact in the Snapshot',
+    'work/deadhead cvLine: unknown token {stars}',
+  ]);
 });
 
 test('services, Uses notes, Metric labels and interests are linted too', () => {

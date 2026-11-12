@@ -40,6 +40,9 @@ const story = {
   summary: line(160),
   role: line(80),
   highlights: z.array(line(240)).max(3),
+  // The one line a grouped CV entry prints for this Work, after its title. `{pkgbuilds}` is
+  // replaced by the Snapshot's PKGBUILD count (see fillCvLine), so no count is typed by hand.
+  cvLine: line(200).optional(),
 };
 
 export const workSchema = z.strictObject({ ...neutral, ...story });

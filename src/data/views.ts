@@ -1,4 +1,4 @@
-import type { Contribution, PackageFacts, Snapshot } from '../facts/schema.ts';
+import type { Contribution, PackageFacts, Snapshot, WorkFacts } from '../facts/schema.ts';
 import type { ContributionOverrides } from '../schemas/contributions.ts';
 import { techCategories, type Tech, type TechCategory } from '../schemas/tech.ts';
 import type { UsesSection } from '../schemas/uses.ts';
@@ -87,6 +87,25 @@ export function workFactsView(id: string, snapshot: Snapshot): WorkFactsView {
     ...(facts.pkgbuilds ? { pkgbuildCount: facts.pkgbuilds.length } : {}),
     ...(facts.icon ? { icon: facts.icon.file } : {}),
   };
+}
+
+// Tokens a cvLine may hold, each filled from the Work's Facts.
+const cvLineTokens = new Map<string, (facts: WorkFacts | undefined) => number | undefined>([
+  ['pkgbuilds', facts => facts?.pkgbuilds?.length],
+]);
+const count = new Intl.NumberFormat('en');
+
+/** Replaces each `{token}` in a cvLine with its Fact; `problems` lists what could not be filled. */
+export function fillCvLine(text: string, facts: WorkFacts | undefined): { text: string; problems: string[] } {
+  const problems: string[] = [];
+  const filled = text.replace(/\{(\w+)\}/g, (token, name: string) => {
+    const fill = cvLineTokens.get(name);
+    if (!fill) { problems.push(`unknown token ${token}`); return token; }
+    const value = fill(facts);
+    if (value === undefined) { problems.push(`${token} has no Fact in the Snapshot`); return token; }
+    return count.format(value);
+  });
+  return { text: filled, problems };
 }
 
 export function usesSections<T extends { id: string; data: UsesSection }>(uses: readonly T[]): T[] {

@@ -6,6 +6,7 @@ import type { Tech } from '../schemas/tech.ts';
 import type { UsesSection } from '../schemas/uses.ts';
 import type { Work } from '../schemas/work.ts';
 import { caseStudyHeadings, caseStudySections, lintText } from './story-lint.ts';
+import { fillCvLine } from './views.ts';
 
 export interface WorkEntry { id: string; data: Work; body: string }
 export interface Portfolio {
@@ -57,7 +58,8 @@ export function validatePortfolio(p: Portfolio, facts: Snapshot): string[] {
       errors.push(`${at}: Case study sections must be ${caseStudySections.join(', ')}; found ${headings.join(', ') || 'none'}`);
     }
     errors.push(...lintAll(at, { title: data.title, tagline: data.tagline, role: data.role }, false));
-    errors.push(...lintAll(at, { summary: data.summary, highlights: data.highlights }, true));
+    errors.push(...lintAll(at, { summary: data.summary, highlights: data.highlights, cvLine: data.cvLine }, true));
+    if (data.cvLine) errors.push(...fillCvLine(data.cvLine, facts.works[id]).problems.map(problem => `${at} cvLine: ${problem}`));
     errors.push(...lintAll(at, { body }, false).filter(problem => problem.endsWith('placeholder text')));
     data.metrics.forEach((metric, index) => errors.push(...lintAll(`${at} metrics[${index}]`, { label: metric.label }, false)));
     const sourced = data.repo || data.site || data.packages.length > 0 || data.pkgbuilds;
