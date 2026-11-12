@@ -28,6 +28,18 @@ test('Uses, Maintains, Services, Writing and Upstream links must resolve', () =>
   ]);
 });
 
+test("an interest that links a Work names that Work's site in its details", () => {
+  const p = fixturePortfolio();
+  p.profile.interests[0]!.work = 'blog';
+  assert.deepEqual(validatePortfolio(p, fixtureSnapshot()), ['profile interests[0]: unknown Work "blog"']);
+  p.profile.interests[0]!.work = 'one';
+  p.profile.interests[0]!.details = 'Philosophical essays';
+  assert.deepEqual(validatePortfolio(p, fixtureSnapshot()), ['profile interests[0]: details must name one.cevdet.ch, the site it links']);
+  p.profile.interests[0]!.work = 'deadhead';
+  p.works[0]!.data.site = undefined;
+  assert.deepEqual(validatePortfolio(p, fixtureSnapshot()), ['profile interests[0]: Work "deadhead" has no site to link']);
+});
+
 test('the slug equals the repo name', () => {
   const p = fixturePortfolio();
   p.works[0]!.data.repo = 'cevdetch/dead-head';
@@ -83,7 +95,7 @@ test('services, Uses notes, Metric labels and interests are linted too', () => {
   p.profile.services[0]!.summary = 'Astro 7.4.2 sites.';
   p.uses[0]!.data.entries[0]!.note = 'TODO: describe';
   p.works[0]!.data.metrics = [{ label: 'Rules in v0.3.1', value: '203', measuredAt: '2026-11-01', source: { label: 'README' } }];
-  p.profile.interests = [{ label: 'Pursuits', details: 'My bouldering and hiking' }];
+  p.profile.interests = [{ label: 'Pursuits', details: 'My bouldering and hiking', cv: false }];
   assert.deepEqual(validatePortfolio(p, fixtureSnapshot()), [
     'work/deadhead metrics[0] label: a version is a Fact; remove it from Story',
     'uses/phone entries[0] note: placeholder text',

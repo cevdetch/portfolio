@@ -57,7 +57,8 @@ test('tech categories form a closed list; app is never a skill or on the CV', ()
 test('profile pins the public identity and carries no location field', () => {
   const profile = {
     name: 'Cevdet', handle: 'cevdetch', jobTitle: 'Software Developer',
-    headline: 'Builds fast sites.', bio: 'Builds and publishes developer tools.',
+    headline: 'Builds fast sites.', specialisation: 'Web performance · Developer tooling · Open source', country: 'Switzerland',
+    bio: 'Builds and publishes developer tools.',
     email: 'hello@cevdet.ch', website: 'https://cevdet.ch/', contactSubject: 'Enquiry from cevdet.ch', writing: 'one',
     socials: [{ network: 'github', url: 'https://github.com/cevdetch' }],
     availability: { capacity: 'part-time', timeZone: 'Europe/Zurich', reply: 'within 2 working days', openTo: ['employment'], workplace: ['remote'] },
@@ -69,6 +70,20 @@ test('profile pins the public identity and carries no location field', () => {
   assert.throws(() => profileSchema.parse({ ...profile, location: 'Exampleville' }));
   assert.throws(() => profileSchema.parse({ ...profile, availability: { ...profile.availability, timeZone: 'Mars/Olympus' } }));
   assert.throws(() => profileSchema.parse({ ...profile, availability: { ...profile.availability, hours: 'after 17:00' } }));
+  assert.throws(() => profileSchema.parse({ ...profile, country: undefined }));
+});
+
+test('every interest says whether the CV prints it', () => {
+  const profile = profileSchema.parse({
+    name: 'Cevdet', handle: 'cevdetch', jobTitle: 'Software Developer', headline: 'Builds fast sites.',
+    specialisation: 'Web performance', country: 'Switzerland', bio: 'Builds tools.', email: 'hello@cevdet.ch',
+    website: 'https://cevdet.ch/', contactSubject: 'Enquiry', writing: 'one', socials: [{ network: 'github', url: 'https://github.com/cevdetch' }],
+    availability: { capacity: 'part-time', timeZone: 'Europe/Zurich', reply: 'within 2 working days', openTo: ['employment'], workplace: ['remote'] },
+    services: [{ id: 'static-sites', name: 'Fast static sites', summary: 'Astro sites.' }], languages: [{ name: 'English', level: 'C1' }],
+    interests: [{ label: 'Writing', details: 'Essays, published at one.cevdet.ch', cv: true, work: 'one' }],
+  });
+  assert.deepEqual(profile.interests, [{ label: 'Writing', details: 'Essays, published at one.cevdet.ch', cv: true, work: 'one' }]);
+  assert.throws(() => profileSchema.parse({ ...profile, interests: [{ label: 'Writing', details: 'Essays' }] }));
 });
 
 test('education has no location field', () => {

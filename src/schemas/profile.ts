@@ -19,6 +19,10 @@ export const profileSchema = z.strictObject({
   name: z.literal('Cevdet'),
   handle: z.literal('cevdetch'),
   jobTitle: line(60),
+  // The line under the name on the CV and the site, e.g. "Web performance · Developer tooling · Open source".
+  specialisation: line(70),
+  // Privacy: the country only, never the city.
+  country: line(40),
   headline: line(120),
   bio: line(400),
   email: z.email(),
@@ -38,6 +42,13 @@ export const profileSchema = z.strictObject({
     name: line(30),
     level: z.enum(['native', 'C2', 'C1', 'B2', 'B1', 'A2', 'A1']),
   })).min(1),
-  interests: z.array(z.strictObject({ label: line(30), details: line(120) })).default([]),
+  interests: z.array(z.strictObject({
+    label: line(30),
+    details: line(120),
+    // The CV prints only the interests marked true; /about/ prints them all.
+    cv: z.boolean(),
+    // A Work whose site the details name, so the CV can link it.
+    work: id.optional(),
+  })).default([]),
 });
 export type Profile = z.infer<typeof profileSchema>;

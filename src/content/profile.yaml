@@ -1,6 +1,8 @@
 name: Cevdet
 handle: cevdetch
 jobTitle: Software Developer
+specialisation: Web performance · Developer tooling · Open source
+country: Switzerland
 headline: Software developer who ships fast sites, developer tools and the infrastructure underneath.
 bio: >-
   Builds web tools and fast sites in TypeScript and Astro. Created deadhead, an HTML head linter
@@ -44,5 +46,8 @@ languages:
 interests:
   - label: Writing
     details: Philosophical essays, published at one.cevdet.ch
+    cv: true
+    work: one
   - label: Pursuits
     details: Bouldering, hiking, mathematics, language learning, reading
+    cv: false

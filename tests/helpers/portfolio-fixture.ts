@@ -14,13 +14,17 @@ export function fixturePortfolio(): Portfolio {
     profile: profileSchema.parse({
       name: 'Cevdet', handle: 'cevdetch', jobTitle: 'Software Developer',
       headline: 'Software developer who ships fast sites and developer tools.',
+      specialisation: 'Web performance · Developer tooling · Open source', country: 'Switzerland',
       bio: 'Builds and publishes open-source developer tools.',
       email: 'hello@cevdet.ch', website: 'https://cevdet.ch/', contactSubject: 'Enquiry from cevdet.ch', writing: 'one',
       socials: [{ network: 'github', url: 'https://github.com/cevdetch' }, { network: 'linkedin', url: 'https://www.linkedin.com/in/cevdetch/' }],
       availability: { capacity: 'part-time', timeZone: 'Europe/Zurich', reply: 'within 2 working days', openTo: ['employment', 'contract', 'freelance'], workplace: ['remote', 'local'] },
       services: [{ id: 'static-sites', name: 'Fast static sites', summary: 'Astro sites.', evidence: ['deadhead'] }],
       languages: [{ name: 'Turkish', level: 'native' }, { name: 'Kurdish', level: 'native' }, { name: 'English', level: 'C1' }, { name: 'French', level: 'C1' }, { name: 'German', level: 'B1' }],
-      interests: [{ label: 'Pursuits', details: 'Bouldering, hiking' }],
+      interests: [
+        { label: 'Writing', details: 'Philosophical essays, published at one.cevdet.ch', cv: true, work: 'one' },
+        { label: 'Pursuits', details: 'Bouldering, hiking', cv: false },
+      ],
     }),
     techs: [
       { id: 'typescript', label: 'TypeScript', category: 'language', url: 'https://www.typescriptlang.org/' },

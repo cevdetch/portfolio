@@ -26,6 +26,14 @@ function lintAll(where: string, fields: Record<string, string | readonly string[
   });
 }
 
+/** The CV links the Work's site where the details name its host, so the host must appear in them. */
+function interestLinkErrors(at: string, details: string, linked: WorkEntry | undefined, ref: string): string[] {
+  if (!linked) return [`${at}: unknown Work "${ref}"`];
+  if (!linked.data.site) return [`${at}: Work "${ref}" has no site to link`];
+  const host = new URL(linked.data.site).host;
+  return details.includes(host) ? [] : [`${at}: details must name ${host}, the site it links`];
+}
+
 export function validatePortfolio(p: Portfolio, facts: Snapshot): string[] {
   const errors: string[] = [];
   const techIds = new Set(p.techs.map(tech => tech.id));
@@ -86,7 +94,9 @@ export function validatePortfolio(p: Portfolio, facts: Snapshot): string[] {
   }
   // Interests go on the CV, so they follow the CV-shared rules.
   p.profile.interests.forEach((interest, index) => {
-    errors.push(...lintAll(`profile interests[${index}]`, { label: interest.label, details: interest.details }, true));
+    const at = `profile interests[${index}]`;
+    errors.push(...lintAll(at, { label: interest.label, details: interest.details }, true));
+    if (interest.work) errors.push(...interestLinkErrors(at, interest.details, p.works.find(entry => entry.id === interest.work), interest.work));
   });
 
   const merged = new Map<string, Set<number>>();
