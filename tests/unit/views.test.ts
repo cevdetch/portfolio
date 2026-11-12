@@ -66,9 +66,18 @@ test('an Upstream links to the merged pulls by the Handle, never to a count', ()
   assert.equal(mergedPullsUrl('withastro/astro', 'cevdetch'), 'https://github.com/withastro/astro/pulls?q=is%3Apr+is%3Amerged+author%3Acevdetch');
 });
 
-test('availability reads as one line', () => {
-  assert.equal(availabilityLine(fixturePortfolio().profile.availability),
-    'Part-time; open to employment, contract and freelance work, remote or local. Time zone Europe/Zurich; replies within 2 working days.');
+test('availability reads as one line, with the capacity on employment and the country in place of the time zone', () => {
+  const profile = fixturePortfolio().profile;
+  assert.equal(availabilityLine(profile.availability, profile.country),
+    'Open to part-time employment, contract and freelance work, remote or on site in Switzerland. Replies within 2 working days.');
+});
+
+test('availability still reads naturally with one workplace, or with no employment on offer', () => {
+  const availability = fixturePortfolio().profile.availability;
+  assert.equal(availabilityLine({ ...availability, workplace: ['remote'] }, 'Switzerland'),
+    'Open to part-time employment, contract and freelance work, remote in Switzerland. Replies within 2 working days.');
+  assert.equal(availabilityLine({ ...availability, openTo: ['contract', 'freelance'] }, 'Switzerland'),
+    'Open to contract and freelance work, remote or on site in Switzerland. Replies within 2 working days.');
 });
 
 test('a social URL yields the handle in its path', () => {

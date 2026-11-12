@@ -30,15 +30,15 @@ availability:
 services:
   - id: static-sites
     name: Fast static sites
-    summary: Astro sites built for a Lighthouse 100, with no client JavaScript unless a feature earns it.
+    summary: Astro sites built for Lighthouse 100, with no client JavaScript unless a feature needs it.
     evidence: [astro-minimal-template, deadhead]
   - id: metadata-audit
     name: Metadata and SEO audit
-    summary: A review of the HTML head, structured data and indexing, backed by deadhead and the astro-metadata-lab findings.
+    summary: The HTML head, structured data and indexing, checked with deadhead.
     evidence: [deadhead, astro-metadata-lab]
   - id: maintenance
     name: Site maintenance
-    summary: Dependency updates, fixes and verification for existing sites.
+    summary: Dependency updates, fixes and verified deploys.
 languages:
   - { name: Turkish, level: native }
   - { name: Kurdish, level: native }

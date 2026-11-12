@@ -1,9 +1,11 @@
 import { joinList } from '../lib/format.ts';
 import type { Availability, Profile } from '../schemas/profile.ts';
 
-export function availabilityLine(a: Availability): string {
-  const capacity = a.capacity === 'part-time' ? 'Part-time' : 'Full-time';
-  return `${capacity}; open to ${joinList(a.openTo, 'and')} work, ${joinList(a.workplace, 'or')}. Time zone ${a.timeZone}; replies ${a.reply}.`;
+// The capacity qualifies "employment" only: contract and freelance work are not part- or full-time.
+export function availabilityLine(a: Availability, country: string): string {
+  const openTo = a.openTo.map(item => item === 'employment' ? `${a.capacity} employment` : item);
+  const workplace = a.workplace.map(item => item === 'local' ? 'on site' : item);
+  return `Open to ${joinList(openTo, 'and')} work, ${joinList(workplace, 'or')} in ${country}. Replies ${a.reply}.`;
 }
 
 export type SocialNetwork = Profile['socials'][number]['network'];

@@ -8,14 +8,15 @@ import { availabilityLine } from '../data/profile.ts';
 const data = await loadPortfolio();
 const { profile } = data;
 const works = new Map(data.works.map(work => [work.id, work]));
-const availability = availabilityLine(profile.availability);
+const availability = availabilityLine(profile.availability, profile.country);
 const mailto = `mailto:${profile.email}?subject=${encodeURIComponent(profile.contactSubject)}`;
 ---
 
 <Layout title="Hire - Cevdet" description="Services, Availability and how to contact Cevdet.">
   <SiteNav />
   <main>
-    <h1>Hire</h1>
+    <h1>Work with me</h1>
+    <p>{availability}</p>
     <section aria-labelledby="services">
       <h2 id="services">Services</h2>
       <ul>
@@ -31,14 +32,10 @@ const mailto = `mailto:${profile.email}?subject=${encodeURIComponent(profile.con
         ))}
       </ul>
     </section>
-    <section aria-labelledby="availability">
-      <h2 id="availability">Availability</h2>
-      <p>{availability}</p>
-    </section>
     <section aria-labelledby="contact">
       <h2 id="contact">Contact</h2>
       <p><a href={mailto}>{profile.email}</a></p>
-      <SocialLinks socials={profile.socials} />
+      <SocialLinks socials={profile.socials.filter(social => social.network !== 'npm')} />
     </section>
   </main>
 </Layout>
