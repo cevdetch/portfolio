@@ -47,10 +47,8 @@ test('a Translation holds only Story fields', () => {
   assert.throws(() => workTranslationSchema.parse({ stack: ['typescript'] }));
 });
 
-test('tech categories form a closed list; app is never a skill or on the CV', () => {
+test('tech categories form a closed list; app is never a skill', () => {
   assert.equal(techCategories.app.skills, false);
-  assert.equal(techCategories.app.cv, false);
-  assert.equal(techCategories.desktop.cv, false);
   assert.throws(() => techSchema.parse({ id: 'x', label: 'X', category: 'misc', url: 'https://x.test/' }));
   assert.throws(() => techSchema.parse({ id: 'Type Script', label: 'TS', category: 'language', url: 'https://x.test/' }));
 });

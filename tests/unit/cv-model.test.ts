@@ -1,57 +1,142 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { buildCv, contributionLine, escapeMarkdown, languagesLine, socialNetworks } from '../../src/cv/model.ts';
-import { availabilityLine } from '../../src/data/profile.ts';
-import { upstreamGroups } from '../../src/data/views.ts';
+import { buildCv, escapeMarkdown, languagesLine, socialNetworks } from '../../src/cv/model.ts';
 import { fixturePortfolio, fixtureSnapshot } from '../helpers/portfolio-fixture.ts';
 
 const data = () => ({ ...fixturePortfolio(), facts: fixtureSnapshot() });
+const pulls = (repo: string) => `https://github.com/${repo}/pulls?q=is%3Apr+is%3Amerged+author%3Acevdetch`;
 
-test('sections: education above experience, projects strongest', () => {
+test('sections: summary and education first, then projects, open source and experience; no availability', () => {
   assert.deepEqual(Object.keys(buildCv(data()).cv.sections),
-    ['summary', 'availability', 'education', 'experience', 'projects', 'open_source', 'skills', 'languages', 'interests']);
+    ['summary', 'education', 'projects', 'open_source', 'experience', 'skills', 'languages_&_writing']);
 });
 
-test('the public CV carries the email as its only contact detail', () => {
+test('the header: name, title with specialisation, then country and time zone before email, GitHub and LinkedIn', () => {
   const { cv } = buildCv(data());
-  assert.equal(cv.email, 'hello@cevdet.ch');
+  // No website: fewer contact items; cevdet.ch already appears in the project headings and the One link.
+  assert.deepEqual(Object.keys(cv), ['name', 'headline', 'location', 'email', 'social_networks', 'sections']);
   assert.equal(cv.name, 'Cevdet');
-  assert.equal('phone' in cv, false);
-  assert.equal('location' in cv, false);
-  assert.equal(JSON.stringify(cv.sections.education).includes('location'), false);
+  assert.equal(cv.headline, 'Software Developer · Web performance · Developer tooling · Open source');
+  assert.equal(cv.location, 'Switzerland · Remote-friendly (Europe/Zurich)');
+  assert.equal(cv.email, 'hello@cevdet.ch');
 });
 
-test('project dates are Facts; Highlights are shared with the Case study', () => {
+test('the location names no city and drops "Remote-friendly" when remote work is not offered', () => {
+  const p = data();
+  p.profile.availability.workplace = ['local'];
+  assert.equal(buildCv(p).cv.location, 'Switzerland · Europe/Zurich');
+});
+
+test('the public CV has no phone, and no entry carries a location but Remote', () => {
+  const { cv } = buildCv(data());
+  assert.equal('phone' in cv, false);
+  assert.equal(JSON.stringify(cv.sections.education).includes('location'), false);
+  assert.equal(JSON.stringify(cv.sections.projects).includes('location'), false);
+});
+
+test('education prints an expected end date alone, marked Expected, and the note as a highlight', () => {
+  const p = data();
+  assert.deepEqual(buildCv(p).cv.sections.education, [{
+    institution: 'Collège Sismondi', degree: 'Maturité gymnasiale', area: 'Physics and Applied Mathematics',
+    date: '2028-06', expected: 'Expected', highlights: [],
+  }]);
+  p.education = [{ ...p.education[0]!, expected: false, note: 'Matura thesis: a grade_tracker.' }];
+  assert.deepEqual(buildCv(p).cv.sections.education[0], {
+    institution: 'Collège Sismondi', degree: 'Maturité gymnasiale', area: 'Physics and Applied Mathematics',
+    start_date: '2024-08', end_date: '2028-06', highlights: ['Matura thesis: a grade\\_tracker.'],
+  });
+});
+
+test('a single-Work project prints its highlights, its repo and site, and Fact dates', () => {
   const [project] = buildCv(data()).cv.sections.projects;
   assert.deepEqual(project, {
-    name: '[deadhead](https://github.com/cevdetch/deadhead)',
+    name: '[deadhead](https://github.com/cevdetch/deadhead) · [deadhead.cevdet.ch](https://deadhead.cevdet.ch/)',
     start_date: '2026-09', end_date: 'present',
-    summary: 'Lints the HTML head against sourced rules. [Live site](https://deadhead.cevdet.ch/)',
     highlights: ['Generates the linter and its documentation from the same Markdown.'],
   });
 });
 
-test('availability, languages and contributions read as one line each', () => {
-  const p = fixturePortfolio();
-  assert.equal(availabilityLine(p.profile.availability),
-    'Part-time; open to employment, contract and freelance work, remote or local. Time zone Europe/Zurich; replies within 2 working days.');
-  assert.equal(languagesLine(p.profile.languages), '**Turkish, Kurdish** native · **English, French** C1 · **German** B1');
-  assert.equal(contributionLine(upstreamGroups(fixtureSnapshot().contributions, p.contributions)),
-    '3 merged pull requests to 2 upstream projects, including withastro/astro (2) and sveltejs/svelte.');
+test('a finished single Work ends at its last commit', () => {
+  const p = data();
+  p.works[0]!.data.status = 'complete';
+  delete p.works[0]!.data.site;
+  const [project] = buildCv(p).cv.sections.projects;
+  assert.equal(project!['name'], '[deadhead](https://github.com/cevdetch/deadhead)');
+  assert.equal(project!['end_date'], '2026-11');
 });
 
-test('CV social networks come from the profile socials: LinkedIn, then GitHub, never npm', () => {
-  assert.deepEqual(buildCv(data()).cv.social_networks, [{ network: 'LinkedIn', username: 'cevdetch' }, { network: 'GitHub', username: 'cevdetch' }]);
+test('projects follow cv.yaml, decoupled from Featured, and optional entries stay off', () => {
+  assert.deepEqual(buildCv(data()).cv.sections.projects.map(project => project['name']),
+    ['[deadhead](https://github.com/cevdetch/deadhead) · [deadhead.cevdet.ch](https://deadhead.cevdet.ch/)', 'Astro templates']);
+});
+
+test('a titled entry prints one cvLine per Work, from its first commit to its latest status', () => {
+  assert.deepEqual(buildCv(data()).cv.sections.projects[1], {
+    name: 'Astro templates', start_date: '2026-10', end_date: 'present',
+    highlights: ['[Astro Minimal Template](https://github.com/cevdetch/astro-minimal-template): strictest TypeScript, with no client JavaScript.'],
+  });
+});
+
+test('a group fills {pkgbuilds} from the Snapshot and takes its earliest start', () => {
+  const p = data();
+  p.cv.projects[2]!.optional = false;
+  assert.deepEqual(buildCv(p).cv.sections.projects[2], {
+    name: 'Linux & infrastructure', start_date: '2025-12', end_date: 'present',
+    highlights: [
+      '[arch-waypure](https://github.com/cevdetch/arch-waypure): 3 PKGBUILDs with Python audit tools.',
+      'Homelab: self-hosted services with no public ports.',
+    ],
+  });
+});
+
+test('a group of finished Works ends at the latest last commit; a group without Facts has no dates', () => {
+  const p = data();
+  for (const work of p.works) work.data.status = 'complete';
+  p.cv.projects = [{ title: 'Packaging', works: ['astro-minimal-template', 'arch-waypure'], optional: false }, { title: 'Server', works: ['homelab'], optional: false }];
+  const [packaging, server] = buildCv(p).cv.sections.projects;
+  assert.equal(packaging!['start_date'], '2025-12');
+  assert.equal(packaging!['end_date'], '2026-11');
+  assert.deepEqual(Object.keys(server!), ['name', 'highlights']);
+});
+
+test('open source prints one line per theme: lead, linked labels, note; no counts', () => {
+  assert.deepEqual(buildCv(data()).cv.sections.open_source, [{
+    bullet: `HTML-head fixes merged into [Astro](${pulls('withastro/astro')}) and [Svelte](${pulls('sveltejs/svelte')}), including a sitemap\\_index fix in Astro.`,
+  }]);
+  const p = data();
+  delete p.contributions.themes[0]!.note;
+  p.contributions.themes[0]!.upstreams.pop();
+  assert.deepEqual(buildCv(p).cv.sections.open_source, [{ bullet: `HTML-head fixes merged into [Astro](${pulls('withastro/astro')}).` }]);
+});
+
+test('skills come from cv.yaml with its labels, and a display label names several Techs', () => {
+  assert.deepEqual(buildCv(data()).cv.sections.skills, [
+    { label: 'Languages', details: 'TypeScript' },
+    { label: 'Desktop', details: 'Sway\\_and Molly, Astro' },
+  ]);
+});
+
+test('languages and the cv interests close the CV as one section, linking the Work site the details name', () => {
+  assert.deepEqual(buildCv(data()).cv.sections['languages_&_writing'], [
+    { label: 'Languages', details: '**Turkish, Kurdish** native · **English, French** C1 · **German** B1' },
+    { label: 'Writing', details: 'Philosophical essays, published at [one.cevdet.ch](https://one.cevdet.ch/)' },
+  ]);
+  const p = data();
+  p.profile.interests = p.profile.interests.map(interest => ({ ...interest, cv: false }));
+  const { sections } = buildCv(p).cv;
+  assert.equal('languages_&_writing' in sections, false);
+  assert.deepEqual(sections['languages'], [{ label: 'Languages', details: '**Turkish, Kurdish** native · **English, French** C1 · **German** B1' }]);
+});
+
+test('languages read as one line', () => {
+  assert.equal(languagesLine(fixturePortfolio().profile.languages), '**Turkish, Kurdish** native · **English, French** C1 · **German** B1');
+});
+
+test('CV social networks come from the profile socials: GitHub, then LinkedIn, never npm', () => {
+  assert.deepEqual(buildCv(data()).cv.social_networks, [{ network: 'GitHub', username: 'cevdetch' }, { network: 'LinkedIn', username: 'cevdetch' }]);
   assert.deepEqual(socialNetworks([
     { network: 'npm', url: 'https://www.npmjs.com/~cevdetch' }, { network: 'github', url: 'https://github.com/someone-else' },
   ]), [{ network: 'GitHub', username: 'someone-else' }]);
-});
-
-test('skills print CV categories only, in registry order', () => {
-  assert.deepEqual(buildCv(data()).cv.sections.skills, [
-    { label: 'Languages', details: 'TypeScript' },
-    { label: 'Frameworks & styling', details: 'Astro' },
-  ]);
 });
 
 test('Story text cannot inject Markdown', () => {

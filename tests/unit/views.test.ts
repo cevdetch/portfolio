@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { socialUsername } from '../../src/data/profile.ts';
+import { availabilityLine, socialUsername } from '../../src/data/profile.ts';
 import { contributionTotals, featuredWorks, fillCvLine, inSourceOrder, mergedPullsUrl, newestFirst, skillGroups, upstreamGroups, workFactsView } from '../../src/data/views.ts';
 import { formatDay, formatMonth, joinList } from '../../src/lib/format.ts';
 import { fixturePortfolio, fixtureSnapshot } from '../helpers/portfolio-fixture.ts';
@@ -43,6 +43,11 @@ test('contribution totals count visible pulls and their upstreams once, for ever
 
 test('an Upstream links to the merged pulls by the Handle, never to a count', () => {
   assert.equal(mergedPullsUrl('withastro/astro', 'cevdetch'), 'https://github.com/withastro/astro/pulls?q=is%3Apr+is%3Amerged+author%3Acevdetch');
+});
+
+test('availability reads as one line', () => {
+  assert.equal(availabilityLine(fixturePortfolio().profile.availability),
+    'Part-time; open to employment, contract and freelance work, remote or local. Time zone Europe/Zurich; replies within 2 working days.');
 });
 
 test('a social URL yields the handle in its path', () => {

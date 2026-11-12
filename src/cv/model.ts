@@ -1,18 +1,20 @@
 import type { LoadedPortfolio } from '../data/portfolio.ts';
-import { availabilityLine, socialUsername } from '../data/profile.ts';
-import { contributionTotals, featuredWorks, upstreamGroups, type UpstreamGroup } from '../data/views.ts';
-import type { WorkFacts } from '../facts/schema.ts';
+import { socialUsername } from '../data/profile.ts';
+import { fillCvLine, mergedPullsUrl } from '../data/views.ts';
 import type { WorkEntry } from '../data/validate.ts';
+import type { Snapshot } from '../facts/schema.ts';
 import { joinList } from '../lib/format.ts';
+import type { ContributionOverrides } from '../schemas/contributions.ts';
+import type { CvChoices } from '../schemas/cv.ts';
 import type { Profile } from '../schemas/profile.ts';
-import { techCategories, type Tech, type TechCategory } from '../schemas/tech.ts';
+import type { Tech } from '../schemas/tech.ts';
 
 type Entry = Record<string, string | readonly string[]>;
 export interface RenderCvDocument {
   cv: {
-    name: string; headline: string; email: string; website: string;
+    name: string; headline: string; location: string; email: string;
     social_networks: { network: 'LinkedIn' | 'GitHub'; username: string }[];
-    sections: Record<string, readonly (string | Entry)[]> & { projects: Entry[]; education: Entry[]; skills: Entry[] };
+    sections: Record<string, readonly (string | Entry)[]> & { projects: Entry[]; education: Entry[]; skills: Entry[]; open_source: Entry[] };
   };
   locale: { language: 'english' };
   settings: { current_date: string; bold_keywords: string[]; pdf_title: string };
@@ -29,14 +31,8 @@ export function languagesLine(languages: Profile['languages']): string {
   return [...byLevel].map(([level, names]) => `**${names.join(', ')}** ${level}`).join(' · ');
 }
 
-export function contributionLine(groups: readonly UpstreamGroup[], top = 5): string {
-  const { pulls, upstreams } = contributionTotals(groups);
-  const named = groups.slice(0, top).map(group => escapeMarkdown(group.pulls.length > 1 ? `${group.repo} (${group.pulls.length})` : group.repo));
-  return `${pulls} merged pull requests to ${upstreams} upstream projects, including ${joinList(named, 'and')}.`;
-}
-
 // RenderCV's own network names, in header order; it has no npm network, so npm stays off the CV.
-const cvNetworks = [['linkedin', 'LinkedIn'], ['github', 'GitHub']] as const;
+const cvNetworks = [['github', 'GitHub'], ['linkedin', 'LinkedIn']] as const;
 
 export function socialNetworks(socials: Profile['socials']): RenderCvDocument['cv']['social_networks'] {
   return cvNetworks.flatMap(([network, name]) => {
@@ -45,55 +41,105 @@ export function socialNetworks(socials: Profile['socials']): RenderCvDocument['c
   });
 }
 
-function project(work: WorkEntry, facts: WorkFacts | undefined): Entry {
-  const { data } = work;
-  const link = data.repo ? `https://github.com/${data.repo}` : data.site;
-  const ongoing = data.status === 'active' || data.status === 'maintained';
+/** Country and time zone only: the city stays in the locally rendered full CV. */
+function location({ country, availability }: Profile): string {
+  const zone = availability.workplace.includes('remote') ? `Remote-friendly (${availability.timeZone})` : availability.timeZone;
+  return `${escapeMarkdown(country)} · ${zone}`;
+}
+
+const month = (iso: string) => iso.slice(0, 7);
+const ongoing = (work: WorkEntry) => work.data.status === 'active' || work.data.status === 'maintained';
+const host = (url: string) => new URL(url).host;
+
+function linkedTitle({ data }: WorkEntry): string {
   const title = escapeMarkdown(data.title);
+  const link = data.repo ? `https://github.com/${data.repo}` : data.site;
+  return link ? `[${title}](${link})` : title;
+}
+
+/** From the earliest first commit to "present" while any Work is ongoing, else to the latest last commit. */
+function dates(works: readonly WorkEntry[], facts: Snapshot): Entry {
+  const repos = works.flatMap(work => facts.works[work.id]?.repo ?? []);
+  if (!repos.length) return {};
+  const start = repos.map(repo => repo.firstCommit).sort()[0]!;
+  const end = repos.map(repo => repo.lastCommit).sort().at(-1)!;
+  return { start_date: month(start), end_date: works.some(ongoing) ? 'present' : month(end) };
+}
+
+function project(entry: CvChoices['projects'][number], works: ReadonlyMap<string, WorkEntry>, facts: Snapshot): Entry {
+  const members = entry.works.map(id => works.get(id)!);
+  if (!entry.title) {
+    const [work] = members as [WorkEntry];
+    const site = work.data.repo && work.data.site ? ` · [${host(work.data.site)}](${work.data.site})` : '';
+    return { name: `${linkedTitle(work)}${site}`, ...dates(members, facts), highlights: work.data.highlights.map(escapeMarkdown) };
+  }
   return {
-    name: link ? `[${title}](${link})` : title,
-    ...(facts?.repo ? { start_date: facts.repo.firstCommit.slice(0, 7), end_date: ongoing ? 'present' : facts.repo.lastCommit.slice(0, 7) } : {}),
-    summary: data.site && data.repo ? `${escapeMarkdown(data.summary)} [Live site](${data.site})` : escapeMarkdown(data.summary),
-    highlights: data.highlights.map(escapeMarkdown),
+    name: escapeMarkdown(entry.title),
+    ...dates(members, facts),
+    highlights: members.map(work => `${linkedTitle(work)}: ${fillCvLine(escapeMarkdown(work.data.cvLine!), facts.works[work.id]).text}`),
   };
 }
 
-function skills(techs: readonly Tech[]): Entry[] {
-  return (Object.keys(techCategories) as TechCategory[])
-    .filter(category => techCategories[category].cv)
-    .map(category => ({ label: techCategories[category].label, details: techs.filter(t => t.category === category).map(t => escapeMarkdown(t.label)).join(', ') }))
-    .filter(entry => entry.details);
+function openSource(themes: ContributionOverrides['themes'], handle: string): Entry[] {
+  return themes.map(theme => {
+    const links = theme.upstreams.map(({ repo, label }) => `[${escapeMarkdown(label)}](${mergedPullsUrl(repo, handle)})`);
+    return { bullet: `${escapeMarkdown(theme.lead)} ${joinList(links, 'and')}${theme.note ? `, ${escapeMarkdown(theme.note)}` : ''}.` };
+  });
+}
+
+function skills(groups: CvChoices['skills'], techs: readonly Tech[]): Entry[] {
+  const label = new Map(techs.map(tech => [tech.id, tech.label]));
+  return groups.map(group => ({
+    label: escapeMarkdown(group.label),
+    details: group.items.map(item => escapeMarkdown(item.display ?? item.techs.map(id => label.get(id)!).join(', '))).join(', '),
+  }));
+}
+
+/** The details name the linked Work's host (validated), so that host becomes the link. */
+function interests(profile: Profile, works: ReadonlyMap<string, WorkEntry>): Entry[] {
+  return profile.interests.filter(interest => interest.cv).map(interest => {
+    const site = interest.work ? works.get(interest.work)?.data.site : undefined;
+    const details = escapeMarkdown(interest.details);
+    return { label: escapeMarkdown(interest.label), details: site ? details.replace(host(site), `[${host(site)}](${site})`) : details };
+  });
 }
 
 export function buildCv(data: LoadedPortfolio): RenderCvDocument {
   const { profile, facts } = data;
+  const works = new Map(data.works.map(work => [work.id, work]));
+  const cvInterests = interests(profile, works);
+  const languages = { label: 'Languages', details: languagesLine(profile.languages) };
   return {
     cv: {
       name: profile.name,
-      headline: profile.jobTitle,
+      headline: `${escapeMarkdown(profile.jobTitle)} · ${escapeMarkdown(profile.specialisation)}`,
+      location: location(profile),
       email: profile.email,
-      website: profile.website,
+      // No website link: fewer contact items; cevdet.ch already appears in the project headings and the One link.
       social_networks: socialNetworks(profile.socials),
       sections: {
         summary: [escapeMarkdown(profile.bio)],
-        availability: [availabilityLine(profile.availability)],
         // A student profile: education sits above experience.
         education: data.education.map(e => ({
           institution: escapeMarkdown(e.institution), degree: escapeMarkdown(e.credential),
           ...(e.field ? { area: escapeMarkdown(e.field) } : {}),
-          start_date: e.start, end_date: e.end, highlights: e.note ? [escapeMarkdown(e.note)] : [],
+          // An expected end date prints alone as "Expected June 2028": `expected` fills the
+          // EXPECTED placeholder in cv/design.yaml, and RenderCV formats the date.
+          ...(e.expected ? { date: e.end, expected: 'Expected' } : { start_date: e.start, end_date: e.end }),
+          highlights: e.note ? [escapeMarkdown(e.note)] : [],
         })),
+        projects: data.cv.projects.filter(entry => !entry.optional).map(entry => project(entry, works, facts)),
+        open_source: openSource(data.contributions.themes, profile.handle),
         experience: data.experience.map(x => ({
           company: escapeMarkdown(x.organisation), position: escapeMarkdown(x.role),
           start_date: x.start, end_date: x.end ?? 'present',
           ...(x.workplace === 'remote' ? { location: 'Remote' } : {}),
           highlights: x.highlights.map(escapeMarkdown),
         })),
-        projects: featuredWorks(data.works).map(work => project(work, facts.works[work.id])),
-        open_source: [contributionLine(upstreamGroups(facts.contributions, data.contributions))],
-        skills: skills(data.techs),
-        languages: [languagesLine(profile.languages)],
-        ...(profile.interests.length ? { interests: profile.interests.map(i => ({ label: escapeMarkdown(i.label), details: escapeMarkdown(i.details) })) } : {}),
+        skills: skills(data.cv.skills, data.techs),
+        // One closing section, "Languages & Writing", so the CV holds one page; RenderCV
+        // title-cases the key like every other section title.
+        ...(cvInterests.length ? { 'languages_&_writing': [languages, ...cvInterests] } : { languages: [languages] }),
       },
     },
     locale: { language: 'english' },

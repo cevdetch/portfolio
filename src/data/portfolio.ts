@@ -29,7 +29,7 @@ async function load(): Promise<LoadedPortfolio> {
   }
   const portfolio: Portfolio = {
     profile: profile.data,
-    // The registry's order is the order /skills/, knowsAbout and the CV show.
+    // The registry's order is the order /skills/ and knowsAbout show.
     techs: inSourceOrder(techs.map(entry => entry.data), (parse(techYaml) as { id: string }[]).map(tech => tech.id)),
     works: works.map(entry => ({ id: entry.id, data: entry.data, body: entry.body ?? '' })),
     experience: newestFirst(experience.map(entry => entry.data)),

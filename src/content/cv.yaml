@@ -4,8 +4,10 @@ projects:
   - works: [favseed]
   - title: Astro templates
     works: [astro-minimal-template, astro-reels-template]
+  # Printed only while the page has room; at the last check it pushed the CV onto a second page.
   - title: Linux & infrastructure
     works: [arch-waypure, homelab]
+    optional: true
 skills:
   - label: Languages
     items:

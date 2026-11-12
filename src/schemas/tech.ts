@@ -1,15 +1,15 @@
 import { z } from 'astro/zod';
 import { httpsUrl, id, line } from './common.ts';
 
-// Order is display order on /skills/ and the CV. `skills` also drives knowsAbout.
+// Order is display order on /skills/. `skills` also drives knowsAbout; the CV labels its skills in cv.yaml.
 export const techCategories = {
-  language: { label: 'Languages', skills: true, cv: true },
-  framework: { label: 'Frameworks & styling', skills: true, cv: true },
-  tooling: { label: 'Runtimes & tooling', skills: true, cv: true },
-  data: { label: 'Data', skills: true, cv: true },
-  infrastructure: { label: 'Infrastructure', skills: true, cv: true },
-  desktop: { label: 'Operating systems & desktop', skills: true, cv: false },
-  app: { label: 'Apps', skills: false, cv: false },
+  language: { label: 'Languages', skills: true },
+  framework: { label: 'Frameworks & styling', skills: true },
+  tooling: { label: 'Runtimes & tooling', skills: true },
+  data: { label: 'Data', skills: true },
+  infrastructure: { label: 'Infrastructure', skills: true },
+  desktop: { label: 'Operating systems & desktop', skills: true },
+  app: { label: 'Apps', skills: false },
 } as const;
 
 export type TechCategory = keyof typeof techCategories;
