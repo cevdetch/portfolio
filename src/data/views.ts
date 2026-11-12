@@ -4,6 +4,18 @@ import { techCategories, type Tech, type TechCategory } from '../schemas/tech.ts
 import type { UsesSection } from '../schemas/uses.ts';
 import type { WorkEntry } from './validate.ts';
 
+/** Entries in the order of their ids in the source file; `getCollection` returns them sorted by id. */
+export function inSourceOrder<T extends { id: string }>(entries: readonly T[], ids: readonly string[]): T[] {
+  const index = new Map(ids.map((id, position) => [id, position]));
+  const rank = (entry: T) => index.get(entry.id) ?? Number.MAX_SAFE_INTEGER;
+  return [...entries].sort((a, b) => rank(a) - rank(b));
+}
+
+/** Experience and Education, most recent start first. */
+export function newestFirst<T extends { start: string }>(entries: readonly T[]): T[] {
+  return [...entries].sort((a, b) => b.start.localeCompare(a.start));
+}
+
 export function orderWorks(works: readonly WorkEntry[]): WorkEntry[] {
   const rank = (work: WorkEntry) => work.data.featured && work.data.order !== undefined ? work.data.order : Number.MAX_SAFE_INTEGER;
   return [...works].sort((a, b) => rank(a) - rank(b) || a.data.title.localeCompare(b.data.title));

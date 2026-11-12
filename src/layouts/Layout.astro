@@ -1,9 +1,12 @@
 ---
+import brand from '../brand.json';
 import { siteConfig } from '../config.ts';
+import { serializeJsonLd } from '../lib/jsonld.ts';
 import { parseSiteNoindex, resolveSeo, type LayoutProps } from '../lib/seo.ts';
 
-type Props = LayoutProps;
+type Props = LayoutProps & { jsonLd?: object };
 
+const { jsonLd } = Astro.props;
 const seo = await resolveSeo(Astro.props, {
   site: Astro.site?.href,
   base: import.meta.env.BASE_URL,
@@ -27,6 +30,8 @@ const seo = await resolveSeo(Astro.props, {
     <link rel="icon" href={seo.faviconHref} />
     <meta name="color-scheme" content="light dark" />
     <meta name="description" content={seo.description} />
+    <meta name="theme-color" content={brand.themeColor} />
+    {jsonLd && <script is:inline type="application/ld+json" set:html={serializeJsonLd(jsonLd)} />}
     {seo.canonicalUrl && <link rel="canonical" href={seo.canonicalUrl} />}
     {seo.robotsNoindex && <meta name="robots" content="noindex" />}
     {seo.social && (

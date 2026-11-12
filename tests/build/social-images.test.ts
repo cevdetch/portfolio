@@ -25,7 +25,11 @@ async function consumer(t: { after(fn: () => Promise<void>): void }, options: { 
     'index.astro': page(), 'robots.txt.ts': "export {GET} from '../pages-source/robots.txt.ts';", ...options.pages,
   }, ...(options.publicFiles ? { publicFiles: options.publicFiles } : {}) });
   t.after(() => fixture.cleanup());
-  for (const path of ['lib', 'integrations', 'layouts', 'assets', 'config.ts']) {
+  // Layout.astro now also reaches for brand.json and jsonld.ts's Portfolio schema/Facts types,
+  // so the fixture needs those alongside the generic template files. data/portfolio.ts and
+  // data/icons.ts stay excluded: they need astro:content collections this fixture never defines.
+  for (const path of ['lib', 'integrations', 'layouts', 'assets', 'config.ts', 'brand.json', 'schemas', 'facts',
+    'data/validate.ts', 'data/story-lint.ts']) {
     await cp(new URL(`../../src/${path}`, import.meta.url), new URL(`src/${path}`, fixture.root), { recursive: true });
   }
   await mkdir(new URL('src/pages-source/', fixture.root));

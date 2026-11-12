@@ -1,0 +1,11 @@
+---
+import { socialLabels } from '../data/profile.ts';
+import type { Profile } from '../schemas/profile.ts';
+
+interface Props { socials: Profile['socials'] }
+const { socials } = Astro.props;
+---
+
+<ul>
+  {socials.map(social => <li><a href={social.url}>{socialLabels[social.network]}</a></li>)}
+</ul>

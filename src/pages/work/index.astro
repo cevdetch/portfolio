@@ -1,0 +1,27 @@
+---
+import SiteNav from '../../components/SiteNav.astro';
+import Layout from '../../layouts/Layout.astro';
+import { iconUrl } from '../../data/icons.ts';
+import { loadPortfolio } from '../../data/portfolio.ts';
+import { orderWorks, workFactsView } from '../../data/views.ts';
+
+const data = await loadPortfolio();
+---
+
+<Layout title="Work - Cevdet" description="Every Work Cevdet built and presents: packages, templates, sites, research, tools and infrastructure.">
+  <SiteNav />
+  <main>
+    <h1>Work</h1>
+    <ul>
+      {orderWorks(data.works).map(work => {
+        const icon = iconUrl(workFactsView(work.id, data.facts).icon);
+        return (
+          <li>
+            {icon ? <img src={icon} alt="" width="32" height="32" /> : <span aria-hidden="true">{work.data.title.charAt(0).toUpperCase()}</span>}
+            <a href={`/work/${work.id}/`}>{work.data.title}</a> ({work.data.kind}, {work.data.status}): {work.data.tagline}
+          </li>
+        );
+      })}
+    </ul>
+  </main>
+</Layout>

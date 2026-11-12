@@ -1,0 +1,71 @@
+---
+import SiteNav from '../components/SiteNav.astro';
+import Layout from '../layouts/Layout.astro';
+import { loadPortfolio } from '../data/portfolio.ts';
+import { orderWorks, upstreamGroups, workFactsView } from '../data/views.ts';
+import { formatDay } from '../lib/format.ts';
+import { techCategories } from '../schemas/tech.ts';
+
+const data = await loadPortfolio();
+const techs = new Map(data.techs.map(tech => [tech.id, tech]));
+const works = new Map(data.works.map(work => [work.id, work]));
+const packageWorks = orderWorks(data.works).map(work => ({ work, facts: workFactsView(work.id, data.facts) }))
+  .filter(({ facts }) => facts.packages.length > 0 || facts.pkgbuildCount !== undefined);
+const groups = upstreamGroups(data.facts.contributions, data.contributions);
+---
+
+<Layout title="Open source - Cevdet" description="Published Packages and merged upstream Contributions.">
+  <SiteNav />
+  <main>
+    <h1>Open source</h1>
+    <section aria-labelledby="packages">
+      <h2 id="packages">Packages</h2>
+      <ul>
+        {packageWorks.map(({ work, facts }) => (
+          <li>
+            <a href={`/work/${work.id}/`}>{work.data.title}</a>
+            <ul>
+              {facts.packages.map(pkg => (
+                <li>
+                  {pkg.registry} {pkg.name}: {pkg.published
+                    ? <>released <a href={pkg.url}>{pkg.version}</a>, {formatDay(pkg.releasedAt)}</>
+                    : `not published on ${pkg.registry}`}
+                </li>
+              ))}
+              {facts.pkgbuildCount !== undefined && work.data.repo && (
+                <li>{facts.pkgbuildCount} PKGBUILDs in <a href={`https://github.com/${work.data.repo}`}>{work.data.repo}</a></li>
+              )}
+            </ul>
+          </li>
+        ))}
+      </ul>
+    </section>
+    <section aria-labelledby="contributions">
+      <h2 id="contributions">Contributions</h2>
+      {groups.map(group => (
+        <>
+          <h3><a href={group.url}>{group.repo}</a></h3>
+          {(group.techs.length > 0 || group.works.length > 0) && (
+            <p>
+              {group.techs.map((id, index) => {
+                const tech = techs.get(id)!;
+                const href = techCategories[tech.category].skills ? `/skills/#${id}` : tech.url;
+                return <>{index > 0 && ', '}<a href={href}>{tech.label}</a></>;
+              })}
+              {group.works.length > 0 && group.techs.length > 0 && ' · '}
+              {group.works.map((id, index) => <>{index > 0 && ', '}<a href={`/work/${id}/`}>{works.get(id)!.data.title}</a></>)}
+            </p>
+          )}
+          <ul>
+            {group.pulls.map(pull => (
+              <li>
+                <a href={pull.url}>#{pull.number}</a> {pull.title}, merged {formatDay(pull.mergedAt)}
+                {pull.note && <> ({pull.note})</>}
+              </li>
+            ))}
+          </ul>
+        </>
+      ))}
+    </section>
+  </main>
+</Layout>

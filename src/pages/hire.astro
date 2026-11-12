@@ -1,0 +1,46 @@
+---
+import SiteNav from '../components/SiteNav.astro';
+import SocialLinks from '../components/SocialLinks.astro';
+import Layout from '../layouts/Layout.astro';
+import { loadPortfolio } from '../data/portfolio.ts';
+import { joinList } from '../lib/format.ts';
+
+const data = await loadPortfolio();
+const { profile } = data;
+const works = new Map(data.works.map(work => [work.id, work]));
+const { capacity, openTo, workplace, timeZone, reply } = profile.availability;
+const availabilityLine = `Available ${capacity} for ${joinList(openTo, 'or')} work, ${joinList(workplace, 'or')}, `
+  + `in the ${timeZone} time zone. Replies ${reply}.`;
+const mailto = `mailto:${profile.email}?subject=${encodeURIComponent(profile.contactSubject)}`;
+---
+
+<Layout title="Hire - Cevdet" description="Services, Availability and how to contact Cevdet.">
+  <SiteNav />
+  <main>
+    <h1>Hire</h1>
+    <section aria-labelledby="services">
+      <h2 id="services">Services</h2>
+      <ul>
+        {profile.services.map(service => (
+          <li>
+            <p>{service.name}: {service.summary}</p>
+            {service.evidence.length > 0 && (
+              <p>Evidence: {service.evidence.map((id, index) => (
+                <>{index > 0 && ', '}<a href={`/work/${id}/`}>{works.get(id)!.data.title}</a></>
+              ))}</p>
+            )}
+          </li>
+        ))}
+      </ul>
+    </section>
+    <section aria-labelledby="availability">
+      <h2 id="availability">Availability</h2>
+      <p>{availabilityLine}</p>
+    </section>
+    <section aria-labelledby="contact">
+      <h2 id="contact">Contact</h2>
+      <p><a href={mailto}>{profile.email}</a></p>
+      <SocialLinks socials={profile.socials} />
+    </section>
+  </main>
+</Layout>

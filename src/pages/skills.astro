@@ -1,0 +1,31 @@
+---
+import SiteNav from '../components/SiteNav.astro';
+import Layout from '../layouts/Layout.astro';
+import { loadPortfolio } from '../data/portfolio.ts';
+import { skillGroups } from '../data/views.ts';
+
+const data = await loadPortfolio();
+const groups = skillGroups(data.techs, data.works);
+---
+
+<Layout title="Skills - Cevdet" description="Every language, framework, tool and platform Cevdet works with, with the Work that shows it.">
+  <SiteNav />
+  <main>
+    <h1>Skills</h1>
+    {groups.map(group => (
+      <section aria-labelledby={group.category}>
+        <h2 id={group.category}>{group.label}</h2>
+        <ul>
+          {group.techs.map(({ tech, works }) => (
+            <li id={tech.id}>
+              <a href={tech.url}>{tech.label}</a>
+              {works.length > 0 && <>, used in {works.map((work, index) => (
+                <>{index > 0 && ', '}<a href={`/work/${work.id}/`}>{work.data.title}</a></>
+              ))}</>}
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))}
+  </main>
+</Layout>

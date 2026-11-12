@@ -79,7 +79,9 @@ export default { site: 'https://example.test', base: ${JSON.stringify(base)},
       assert.ok(charset >= 0 && charset < 1024);
       assert.ok(home.indexOf('charset=') < home.indexOf('name="viewport"'));
       assert.ok(home.indexOf('name="viewport"') < home.indexOf('<title>'));
-      assert.doesNotMatch(home, /<style\b|<script\b|data-starter-|_social\/|name="generator"|rel="manifest"|apple-touch-icon|name="theme-color"/);
+      // theme-color now comes from src/brand.json (Task 10): every page carries it unconditionally.
+      assert.doesNotMatch(home, /<style\b|<script\b|data-starter-|_social\/|name="generator"|rel="manifest"|apple-touch-icon/);
+      assert.deepEqual(meta(home, 'theme-color'), ['#5685AD']);
       noSocial(home);
 
       const manual = await read(routeFile('nested/manual'));

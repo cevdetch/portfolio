@@ -1,0 +1,15 @@
+---
+const links = [
+  ['/', 'Cevdet'], ['/work/', 'Work'], ['/open-source/', 'Open source'], ['/skills/', 'Skills'],
+  ['/uses/', 'Uses'], ['/about/', 'About'], ['/hire/', 'Hire'],
+] as const;
+const current = Astro.url.pathname;
+---
+
+<header>
+  <nav aria-label="Site">
+    <ul>
+      {links.map(([href, label]) => <li><a href={href} aria-current={current === href ? 'page' : undefined}>{label}</a></li>)}
+    </ul>
+  </nav>
+</header>

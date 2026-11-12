@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { featuredWorks, skillGroups, upstreamGroups, workFactsView } from '../../src/data/views.ts';
+import { featuredWorks, inSourceOrder, newestFirst, skillGroups, upstreamGroups, workFactsView } from '../../src/data/views.ts';
 import { formatDay, formatMonth, joinList } from '../../src/lib/format.ts';
 import { fixturePortfolio, fixtureSnapshot } from '../helpers/portfolio-fixture.ts';
 
@@ -10,6 +10,18 @@ test('skills group by category in registry order, without apps, with evidence', 
   assert.deepEqual(groups.map(g => g.category), ['language', 'framework', 'desktop']);
   assert.deepEqual(groups[0]!.techs.map(t => [t.tech.id, t.works.map(w => w.id)]), [['typescript', ['deadhead']]]);
   assert.deepEqual(groups[2]!.techs[0]!.works, []);
+});
+
+test('collection entries return to the order of the source file', () => {
+  const sortedById = [{ id: 'bash' }, { id: 'css' }, { id: 'typescript' }];
+  assert.deepEqual(inSourceOrder(sortedById, ['typescript', 'css', 'bash']).map(entry => entry.id), ['typescript', 'css', 'bash']);
+  assert.deepEqual(inSourceOrder(sortedById, ['css']).map(entry => entry.id), ['css', 'bash', 'typescript']);
+});
+
+test('experience and education run newest start first', () => {
+  const entries = [{ id: 'a', start: '2019-09' }, { id: 'b', start: '2024-08' }, { id: 'c', start: '2022-03' }];
+  assert.deepEqual(newestFirst(entries).map(entry => entry.id), ['b', 'c', 'a']);
+  assert.deepEqual(entries.map(entry => entry.id), ['a', 'b', 'c']);
 });
 
 test('Upstreams: Story order first, then PR count, then name; hidden pulls vanish', () => {

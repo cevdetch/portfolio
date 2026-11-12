@@ -1,0 +1,72 @@
+---
+import { getCollection, render } from 'astro:content';
+import SiteNav from '../../components/SiteNav.astro';
+import Layout from '../../layouts/Layout.astro';
+import { iconUrl } from '../../data/icons.ts';
+import { loadPortfolio } from '../../data/portfolio.ts';
+import { workFactsView } from '../../data/views.ts';
+import { formatDay, formatMonth } from '../../lib/format.ts';
+import { graph, personReference, workNode } from '../../lib/jsonld.ts';
+import { techCategories } from '../../schemas/tech.ts';
+
+export async function getStaticPaths() {
+  return (await getCollection('work')).map(entry => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const data = await loadPortfolio();
+const work = data.works.find(item => item.id === entry.id)!;
+const facts = workFactsView(entry.id, data.facts);
+const techs = new Map(data.techs.map(tech => [tech.id, tech]));
+const icon = iconUrl(facts.icon);
+const { Content } = await render(entry);
+---
+
+<Layout title={`${work.data.title} - Cevdet`} description={work.data.summary}
+  jsonLd={graph([workNode(work, data.facts.works[work.id], data.techs), personReference(data.profile)])}>
+  <SiteNav />
+  <main>
+    <article>
+      <header>
+        {icon ? <img src={icon} alt="" width="48" height="48" /> : <span aria-hidden="true">{work.data.title.charAt(0).toUpperCase()}</span>}
+        <h1>{work.data.title}</h1>
+        <p>{work.data.tagline}</p>
+        <p>{work.data.summary}</p>
+      </header>
+      <dl>
+        <dt>Role</dt><dd>{work.data.role}</dd>
+        <dt>Kind</dt><dd>{work.data.kind}</dd>
+        <dt>Status</dt><dd>{work.data.status}</dd>
+        {work.data.site && <><dt>Site</dt><dd><a href={work.data.site}>{new URL(work.data.site).host}</a></dd></>}
+        {work.data.repo && <><dt>Repository</dt><dd><a href={`https://github.com/${work.data.repo}`}>{work.data.repo}</a></dd></>}
+        {facts.packages.map(pkg => <>
+          <dt>{pkg.registry} {pkg.name}</dt>
+          <dd>{pkg.published ? <><a href={pkg.url}>{pkg.version}</a>, released {formatDay(pkg.releasedAt)}</> : `not published on ${pkg.registry}`}</dd>
+        </>)}
+        {facts.release && <><dt>Latest release</dt><dd>{facts.release.tag}, {formatDay(facts.release.publishedAt)}</dd></>}
+        {facts.license && <><dt>Licence</dt><dd>{facts.license}</dd></>}
+        {facts.active && <><dt>Active</dt><dd>{formatMonth(facts.active.from)} to {formatMonth(facts.active.to)}</dd></>}
+        {facts.commitCount !== undefined && <><dt>Commits</dt><dd>{facts.commitCount}</dd></>}
+        {facts.pkgbuildCount !== undefined && <><dt>PKGBUILDs</dt><dd>{facts.pkgbuildCount}</dd></>}
+      </dl>
+      <section aria-labelledby="stack">
+        <h2 id="stack">Stack</h2>
+        <ul>{work.data.stack.map(id => {
+          const tech = techs.get(id)!;
+          const href = techCategories[tech.category].skills ? `/skills/#${id}` : tech.url;
+          return <li><a href={href}>{tech.label}</a></li>;
+        })}</ul>
+      </section>
+      {work.data.highlights.length > 0 && (
+        <section aria-labelledby="highlights"><h2 id="highlights">Highlights</h2><ul>{work.data.highlights.map(text => <li>{text}</li>)}</ul></section>
+      )}
+      {work.data.metrics.length > 0 && (
+        <section aria-labelledby="metrics">
+          <h2 id="metrics">Metrics</h2>
+          <ul>{work.data.metrics.map(metric => <li>{metric.label}: {metric.value}, measured {formatDay(metric.measuredAt)} ({metric.source.url ? <a href={metric.source.url}>{metric.source.label}</a> : metric.source.label})</li>)}</ul>
+        </section>
+      )}
+      <Content />
+    </article>
+  </main>
+</Layout>

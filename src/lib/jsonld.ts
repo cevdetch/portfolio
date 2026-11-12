@@ -1,0 +1,60 @@
+import type { WorkEntry } from '../data/validate.ts';
+import type { WorkFacts } from '../facts/schema.ts';
+import type { Profile } from '../schemas/profile.ts';
+import { techCategories, type Tech } from '../schemas/tech.ts';
+
+// Fixed identifiers: One (one.cevdet.ch) references #person.
+export const PERSON_ID = 'https://cevdet.ch/#person';
+export const WEBSITE_ID = 'https://cevdet.ch/#website';
+export const PROFILE_ID = 'https://cevdet.ch/#profile';
+
+type JsonLdNode = Record<string, unknown>;
+
+export function personNode(profile: Profile, techs: readonly Tech[]): JsonLdNode {
+  return {
+    '@type': 'Person', '@id': PERSON_ID,
+    name: profile.name, givenName: profile.name, alternateName: [profile.handle],
+    url: profile.website, jobTitle: profile.jobTitle, description: profile.bio, email: `mailto:${profile.email}`,
+    knowsAbout: techs.filter(tech => techCategories[tech.category].skills).map(tech => tech.label),
+    sameAs: profile.socials.map(social => social.url),
+  };
+}
+
+export function personReference(profile: Profile): JsonLdNode {
+  return { '@type': 'Person', '@id': PERSON_ID, name: profile.name, url: profile.website };
+}
+
+export function websiteNode(profile: Profile): JsonLdNode {
+  return { '@type': 'WebSite', '@id': WEBSITE_ID, url: profile.website, name: profile.name, alternateName: 'cevdet.ch', publisher: { '@id': PERSON_ID } };
+}
+
+export function profilePageNode(profile: Profile): JsonLdNode {
+  return {
+    '@type': 'ProfilePage', '@id': PROFILE_ID, url: profile.website, name: `${profile.name} - ${profile.jobTitle}`,
+    isPartOf: { '@id': WEBSITE_ID }, mainEntity: { '@id': PERSON_ID },
+  };
+}
+
+export function workNode(work: WorkEntry, facts: WorkFacts | undefined, techs: readonly Tech[]): JsonLdNode {
+  const page = `https://cevdet.ch/work/${work.id}/`;
+  const base = {
+    '@id': `${page}#work`, name: work.data.title, description: work.data.summary,
+    url: work.data.site ?? page, mainEntityOfPage: page, author: { '@id': PERSON_ID },
+  };
+  if (work.data.kind === 'site') return { '@type': 'WebSite', ...base };
+  const languages = work.data.stack.map(id => techs.find(tech => tech.id === id)).filter(tech => tech?.category === 'language').map(tech => tech!.label);
+  return {
+    '@type': 'SoftwareSourceCode', ...base,
+    ...(work.data.repo ? { codeRepository: `https://github.com/${work.data.repo}` } : {}),
+    ...(facts?.repo?.license ? { license: `https://spdx.org/licenses/${facts.repo.license}.html` } : {}),
+    ...(languages.length ? { programmingLanguage: languages } : {}),
+  };
+}
+
+export function graph(nodes: readonly JsonLdNode[]): JsonLdNode {
+  return { '@context': 'https://schema.org', '@graph': nodes };
+}
+
+export function serializeJsonLd(value: unknown): string {
+  return JSON.stringify(value).replace(/</g, '\\u003c');
+}
