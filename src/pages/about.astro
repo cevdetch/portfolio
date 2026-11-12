@@ -6,7 +6,8 @@ import { formatMonth } from '../lib/format.ts';
 
 const data = await loadPortfolio();
 const { profile } = data;
-const writing = data.works.find(work => work.id === profile.writing)!;
+const works = new Map(data.works.map(work => [work.id, work]));
+const writing = works.get(profile.writing)!;
 ---
 
 <Layout title="About - Cevdet" description={profile.headline}>
@@ -46,7 +47,11 @@ const writing = data.works.find(work => work.id === profile.writing)!;
     <section aria-labelledby="interests">
       <h2 id="interests">Interests</h2>
       <ul>
-        {profile.interests.map(interest => <li>{interest.label}: {interest.details}</li>)}
+        {profile.interests.map(interest => (
+          <li>{interest.label}: {interest.work
+            ? <a href={works.get(interest.work)!.data.site}>{interest.details}</a>
+            : interest.details}</li>
+        ))}
       </ul>
     </section>
     <section aria-labelledby="writing">
