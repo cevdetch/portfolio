@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { availabilityLine, socialUsername } from '../../src/data/profile.ts';
-import { contributionHighlights, contributionTotals, featuredWorks, fillCvLine, inSourceOrder, mergedPullsUrl, newestFirst, skillGroups, splitOnTitles, upstreamGroups, workFactsView } from '../../src/data/views.ts';
+import { contributionHighlights, contributionTotals, featuredWorks, fillCvLine, homeMetrics, inSourceOrder, mergedPullsUrl, newestFirst, recentlyShipped, skillGroups, splitOnTitles, upstreamGroups, workFactsView } from '../../src/data/views.ts';
 import { formatDay, formatMonth, joinList } from '../../src/lib/format.ts';
 import { fixturePortfolio, fixtureSnapshot } from '../helpers/portfolio-fixture.ts';
 
@@ -118,6 +118,36 @@ test('a cvLine fills {pkgbuilds} from the Snapshot and reports what it cannot fi
   assert.deepEqual(fillCvLine('No tokens here.', undefined), { text: 'No tokens here.', problems: [] });
   assert.deepEqual(fillCvLine('{pkgbuilds} recipes', facts['deadhead']), { text: '{pkgbuilds} recipes', problems: ['{pkgbuilds} has no Fact in the Snapshot'] });
   assert.deepEqual(fillCvLine('{stars} stars, {constructor}', facts['deadhead']).problems, ['unknown token {stars}', 'unknown token {constructor}']);
+});
+
+test("homeMetrics resolves each pin to its Work's Metric, by label", () => {
+  const p = fixturePortfolio();
+  assert.deepEqual(homeMetrics(p.profile.homeMetrics, p.works), [{ work: p.works[0], metric: p.works[0]!.data.metrics[0] }]);
+});
+
+test('Recently shipped merges published releases and merged Contributions, newest first, limited', () => {
+  const p = fixturePortfolio();
+  const snapshot = fixtureSnapshot();
+  const shipped = recentlyShipped(snapshot, p.works, p.contributions, 3);
+  assert.deepEqual(shipped.map(item => item.kind), ['release', 'contribution', 'contribution']);
+  assert.deepEqual(shipped[0], {
+    kind: 'release', at: '2026-10-20T10:00:00.000Z', work: p.works[0], package: 'deadhead', version: '0.3.1',
+    url: 'https://www.npmjs.com/package/deadhead',
+  });
+  assert.deepEqual(shipped.slice(1).map(item => item.kind === 'contribution' ? [item.at, item.number] : []), [
+    ['2026-07-01T08:22:12Z', 102],
+    ['2026-06-30T10:00:00Z', 7],
+  ]);
+});
+
+test('Recently shipped drops hidden Contributions and unpublished packages', () => {
+  const p = fixturePortfolio();
+  const snapshot = fixtureSnapshot();
+  p.contributions.upstreams[0]!.pulls['102'] = { hidden: true, highlight: false };
+  const shipped = recentlyShipped(snapshot, p.works, p.contributions, 10);
+  assert.ok(!shipped.some(item => item.kind === 'contribution' && item.number === 102));
+  assert.equal(shipped.filter(item => item.kind === 'release').length, 1);
+  assert.equal(shipped.length, 3);
 });
 
 test('formatting', () => {

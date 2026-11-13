@@ -4,8 +4,8 @@ import SocialLinks from '../components/SocialLinks.astro';
 import Layout from '../layouts/Layout.astro';
 import { fullName } from '../data/profile.ts';
 import { loadPortfolio } from '../data/portfolio.ts';
-import { contributionHighlights, featuredWorks, splitOnTitles, upstreamGroups } from '../data/views.ts';
-import { joinList } from '../lib/format.ts';
+import { contributionHighlights, featuredWorks, homeMetrics, recentlyShipped, splitOnTitles, upstreamGroups } from '../data/views.ts';
+import { formatDay, joinList } from '../lib/format.ts';
 import { graph, personNode, profilePageNode, websiteNode } from '../lib/jsonld.ts';
 
 const data = await loadPortfolio();
@@ -13,6 +13,8 @@ const { profile } = data;
 const groups = upstreamGroups(data.facts.contributions, data.contributions);
 const highlights = contributionHighlights(groups);
 const labels = new Map(data.contributions.themes.flatMap(theme => theme.upstreams.map(upstream => [upstream.repo, upstream.label] as const)));
+const metrics = homeMetrics(profile.homeMetrics, data.works);
+const shipped = recentlyShipped(data.facts, data.works, data.contributions, 5);
 
 // The proof line names each proofWorks entry by title (validated); each becomes a link to its Work page.
 const proofWorks = profile.proofWorks.map(id => data.works.find(work => work.id === id)!);
@@ -28,6 +30,17 @@ const proofParts = splitOnTitles(profile.proof, proofWorks.map(work => work.data
     <p>{profile.specialisation}</p>
     <p>{proofParts.map(part => proofLinks.has(part) ? <a href={proofLinks.get(part)}>{part}</a> : part)}</p>
     <p><a href="/hire/">Work with me</a> · <a href="/cv.pdf">CV (PDF)</a></p>
+    <section aria-labelledby="numbers">
+      <h2 id="numbers">Numbers</h2>
+      <dl>
+        {metrics.map(({ metric }) => (
+          <div>
+            <dt>{metric.value}</dt>
+            <dd>{metric.label}{metric.source.url ? <> (<a href={metric.source.url}>{metric.source.label}</a>)</> : ` (${metric.source.label})`}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
     <section aria-labelledby="featured">
       <h2 id="featured">Featured work</h2>
       <ul>
@@ -46,6 +59,20 @@ const proofParts = splitOnTitles(profile.proof, proofWorks.map(work => work.data
             </li>
           ))}
         </ul>
+      )}
+      {shipped.length > 0 && (
+        <>
+          <h3>Recently shipped</h3>
+          <ul>
+            {shipped.map(item => (
+              <li>
+                {item.kind === 'release'
+                  ? <><a href={`/work/${item.work.id}/`}>{item.work.data.title}</a> released <a href={item.url}>{item.package} {item.version}</a>, {formatDay(item.at)}</>
+                  : <>{item.label} merged <a href={item.url}>#{item.number}</a>: {item.title}, {formatDay(item.at)}</>}
+              </li>
+            ))}
+          </ul>
+        </>
       )}
       <ul>
         {data.contributions.themes.map(theme => (

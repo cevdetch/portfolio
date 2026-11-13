@@ -1,7 +1,9 @@
 import type { Contribution, PackageFacts, Snapshot, WorkFacts } from '../facts/schema.ts';
 import type { ContributionOverrides } from '../schemas/contributions.ts';
+import type { Profile } from '../schemas/profile.ts';
 import { techCategories, type Tech, type TechCategory } from '../schemas/tech.ts';
 import type { UsesSection } from '../schemas/uses.ts';
+import type { Metric } from '../schemas/work.ts';
 import type { WorkEntry } from './validate.ts';
 
 export function escapeRegExp(text: string): string {
@@ -136,4 +138,37 @@ export function fillCvLine(text: string, facts: WorkFacts | undefined): { text: 
 
 export function usesSections<T extends { id: string; data: UsesSection }>(uses: readonly T[]): T[] {
   return [...uses].sort((a, b) => a.data.order - b.data.order);
+}
+
+export interface HomeMetric { work: WorkEntry; metric: Metric }
+
+/** The home page's numbers strip, resolved from profile.homeMetrics; validatePortfolio guarantees every pin resolves. */
+export function homeMetrics(pins: Profile['homeMetrics'], works: readonly WorkEntry[]): HomeMetric[] {
+  return pins.map(pin => {
+    const work = works.find(entry => entry.id === pin.work)!;
+    const metric = work.data.metrics.find(entry => entry.label === pin.label)!;
+    return { work, metric };
+  });
+}
+
+export type ShippedItem =
+  | { kind: 'release'; at: string; work: WorkEntry; package: string; version: string; url: string }
+  | { kind: 'contribution'; at: string; repo: string; label: string; number: number; title: string; url: string };
+
+/** Published package releases and merged, non-hidden Contributions, newest first, for the home page's "Recently shipped". */
+export function recentlyShipped(
+  snapshot: Snapshot, works: readonly WorkEntry[], overrides: ContributionOverrides, limit: number,
+): ShippedItem[] {
+  const releases: ShippedItem[] = works.flatMap(work => {
+    const facts = snapshot.works[work.id];
+    if (!facts) return [];
+    return facts.packages.filter(pkg => pkg.published)
+      .map(pkg => ({ kind: 'release' as const, at: pkg.releasedAt, work, package: pkg.name, version: pkg.version, url: pkg.url }));
+  });
+  const labels = new Map(overrides.themes.flatMap(theme => theme.upstreams.map(upstream => [upstream.repo, upstream.label] as const)));
+  const contributions: ShippedItem[] = upstreamGroups(snapshot.contributions, overrides).flatMap(group => group.pulls.map(pull => ({
+    kind: 'contribution' as const, at: pull.mergedAt, repo: group.repo, label: labels.get(group.repo) ?? group.repo,
+    number: pull.number, title: pull.title, url: pull.url,
+  })));
+  return [...releases, ...contributions].sort((a, b) => b.at.localeCompare(a.at)).slice(0, limit);
 }
