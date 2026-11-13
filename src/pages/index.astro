@@ -59,6 +59,11 @@ const proofParts = splitOnTitles(profile.proof, proofWorks.map(work => work.data
           ))}
         </ul>
       )}
+      <ul>
+        {data.contributions.themes.map(theme => (
+          <li><a href="/open-source/">{theme.lead} {joinList(theme.upstreams.map(repo => upstreamLabel(repo, data.contributions)), 'and')}{theme.note ? `, ${theme.note}` : ''}.</a></li>
+        ))}
+      </ul>
       {shipped.length > 0 && (
         <>
           <h3>Recently shipped</h3>
@@ -73,11 +78,6 @@ const proofParts = splitOnTitles(profile.proof, proofWorks.map(work => work.data
           </ul>
         </>
       )}
-      <ul>
-        {data.contributions.themes.map(theme => (
-          <li><a href="/open-source/">{theme.lead} {joinList(theme.upstreams.map(repo => upstreamLabel(repo, data.contributions)), 'and')}{theme.note ? `, ${theme.note}` : ''}.</a></li>
-        ))}
-      </ul>
     </section>
     <section aria-labelledby="about">
       <h2 id="about">About</h2>
