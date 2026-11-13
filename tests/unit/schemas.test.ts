@@ -107,6 +107,27 @@ test('profile pins the public identity and carries no location field', () => {
   assert.throws(() => profileSchema.parse({ ...profile, country: undefined }));
 });
 
+test('the home proof line stretches to a full sentence of real, sourced claims', () => {
+  const profile = {
+    name: 'Cevdet', familyName: 'Haran', handle: 'cevdetch', jobTitle: 'Software Developer',
+    headline: 'Builds fast sites.', specialisation: 'Web performance', country: 'Switzerland',
+    bio: 'Builds and publishes developer tools.', proofWorks: ['deadhead'],
+    homeMetrics: [{ work: 'deadhead', label: 'Sourced rules' }],
+    email: 'hello@cevdet.ch', website: 'https://cevdet.ch/', contactSubject: 'Enquiry from cevdet.ch', writing: 'one',
+    socials: [{ network: 'github', url: 'https://github.com/cevdetch' }],
+    availability: { capacity: 'part-time', timeZone: 'Europe/Zurich', openTo: ['employment'], workplace: ['remote'] },
+    process: [
+      { title: 'Reply', detail: 'Reply by email with a first take.' },
+      { title: 'Scope', detail: 'Scope the work and agree an estimate in writing.' },
+      { title: 'Build', detail: 'Build with checks the client can verify.' },
+    ],
+    services: [{ id: 'static-sites', name: 'Fast static sites', summary: 'Astro sites.' }],
+    languages: [{ name: 'English', level: 'C1' }],
+  };
+  assert.equal(profileSchema.parse({ ...profile, proof: 'x'.repeat(160) }).proof.length, 160);
+  assert.throws(() => profileSchema.parse({ ...profile, proof: 'x'.repeat(161) }));
+});
+
 test('every interest says whether the CV prints it', () => {
   const profile = profileSchema.parse({
     name: 'Cevdet', familyName: 'Haran', handle: 'cevdetch', jobTitle: 'Software Developer', headline: 'Builds fast sites.',

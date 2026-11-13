@@ -4,12 +4,12 @@ handle: cevdetch
 jobTitle: Software Developer
 specialisation: Web performance · Developer tooling · Open source
 country: Switzerland
-headline: Software developer who ships fast sites, developer tools and the infrastructure underneath.
+headline: Builds the tools that make websites fast and correct, and ships the fixes upstream.
 bio: >-
   Builds web tools and fast sites in TypeScript and Astro. Created deadhead, an HTML head linter
   published on npm, and favseed, a favicon generator; HTML-head and metadata fixes merged into Astro,
   Svelte, Immich and GrapheneOS. Works end to end, from tests and docs to Linux packaging.
-proof: Creator of deadhead and favseed. HTML-head fixes merged into Astro, Svelte, Immich and GrapheneOS.
+proof: Built deadhead, the HTML head linter that audited 4,570 of the web's top homepages, and favseed. Fixes merged into Astro, Svelte, Immich and GrapheneOS.
 proofWorks: [deadhead, favseed]
 homeMetrics:
   - { work: deadhead, label: Sourced rules }
