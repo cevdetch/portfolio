@@ -42,7 +42,7 @@ const writing = works.get(profile.writing)!;
     <section aria-labelledby="languages">
       <h2 id="languages">Languages</h2>
       <ul>
-        {profile.languages.map(language => <li>{language.name}: {language.level}</li>)}
+        {profile.languages.map(language => <li>{language.name}: {language.level === 'native' ? 'Native' : language.level}</li>)}
       </ul>
     </section>
     <section aria-labelledby="interests">

@@ -25,10 +25,10 @@ export function escapeMarkdown(text: string): string {
   return text.replace(/[\\`*_[\]]/g, match => `\\${match}`);
 }
 
+/** One item per language with its own level, e.g. "Turkish (Native) · English (C1)". */
 export function languagesLine(languages: Profile['languages']): string {
-  const byLevel = new Map<string, string[]>();
-  for (const { name, level } of languages) byLevel.set(level, [...(byLevel.get(level) ?? []), escapeMarkdown(name)]);
-  return [...byLevel].map(([level, names]) => `**${names.join(', ')}** ${level}`).join(' · ');
+  const label = (level: string) => level === 'native' ? 'Native' : level;
+  return languages.map(({ name, level }) => `${escapeMarkdown(name)} (${label(level)})`).join(' · ');
 }
 
 // RenderCV's own network names, in header order; it has no npm network, so npm stays off the CV.

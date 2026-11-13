@@ -118,18 +118,18 @@ test('skills come from cv.yaml with its labels, and a display label names severa
 
 test('languages and the cv interests close the CV as one section, linking the Work site the details name', () => {
   assert.deepEqual(buildCv(data()).cv.sections['languages_&_writing'], [
-    { label: 'Languages', details: '**Turkish, Kurdish** native · **English, French** C1 · **German** B1' },
+    { label: 'Languages', details: 'Turkish (Native) · Kurdish (Native) · English (C1) · French (C1) · German (B1)' },
     { label: 'Writing', details: 'Philosophical essays, published at [one.cevdet.ch](https://one.cevdet.ch/)' },
   ]);
   const p = data();
   p.profile.interests = p.profile.interests.map(interest => ({ ...interest, cv: false }));
   const { sections } = buildCv(p).cv;
   assert.equal('languages_&_writing' in sections, false);
-  assert.deepEqual(sections['languages'], [{ label: 'Languages', details: '**Turkish, Kurdish** native · **English, French** C1 · **German** B1' }]);
+  assert.deepEqual(sections['languages'], [{ label: 'Languages', details: 'Turkish (Native) · Kurdish (Native) · English (C1) · French (C1) · German (B1)' }]);
 });
 
-test('languages read as one line', () => {
-  assert.equal(languagesLine(fixturePortfolio().profile.languages), '**Turkish, Kurdish** native · **English, French** C1 · **German** B1');
+test('languages read as one line, one item per language with its own level', () => {
+  assert.equal(languagesLine(fixturePortfolio().profile.languages), 'Turkish (Native) · Kurdish (Native) · English (C1) · French (C1) · German (B1)');
 });
 
 test('CV social networks come from the profile socials: GitHub, then LinkedIn, never npm', () => {
