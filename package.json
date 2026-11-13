@@ -19,6 +19,7 @@
     "verify:portfolio": "node scripts/verify-portfolio.ts",
     "verify": "pnpm check && pnpm test && pnpm test:build && pnpm build && pnpm verify:output && pnpm lint:html && pnpm verify:portfolio",
     "fetch-facts": "node scripts/fetch-facts.ts",
+    "capture-screenshots": "node scripts/capture-screenshots.ts",
     "cv:private": "node scripts/cv-private.ts",
     "lighthouse": "astro build --site http://127.0.0.1:4321 && lhci autorun --config=lighthouse/mobile.json && lhci autorun --config=lighthouse/desktop.json",
     "preview": "astro preview",

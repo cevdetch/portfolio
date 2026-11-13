@@ -68,7 +68,7 @@ test('an empty deny list fails in CI and only warns locally', () => {
 });
 
 test('tracked binaries are not scanned as text', () => {
-  for (const path of ['public/icon-192.png', 'public/favicon.ico', 'src/assets/social-fonts/NotoSans-Regular.ttf', 'a.pdf', 'a.woff', 'a.WOFF2']) {
+  for (const path of ['public/icon-192.png', 'public/favicon.ico', 'src/assets/social-fonts/NotoSans-Regular.ttf', 'a.pdf', 'a.woff', 'a.WOFF2', 'src/assets/screenshots/deadhead.webp']) {
     assert.equal(isScannedTextFile(path), false, path);
   }
   for (const path of ['README.md', 'public/icon.svg', 'src/facts/snapshot.json']) {

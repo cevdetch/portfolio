@@ -34,7 +34,7 @@ export function denylistStatus(terms: number, ci: boolean): { error?: string; wa
 /** Tracked files whose content the deny list scans: everything but binaries and vendored packages. */
 export function isScannedTextFile(path: string): boolean {
   if (/^cv\/typst-packages\//.test(path)) return false;
-  return !/\.(?:png|ico|ttf|pdf|woff2?)$/i.test(path);
+  return !/\.(?:png|ico|ttf|pdf|woff2?|webp)$/i.test(path);
 }
 
 /** Splits `git log -z --format=%h%n%B` into commits and their messages. */

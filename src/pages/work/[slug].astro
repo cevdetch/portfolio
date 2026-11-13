@@ -4,6 +4,7 @@ import SiteNav from '../../components/SiteNav.astro';
 import Layout from '../../layouts/Layout.astro';
 import { iconUrl } from '../../data/icons.ts';
 import { loadPortfolio } from '../../data/portfolio.ts';
+import { findScreenshot, screenshotAlt, type ScreenshotImage } from '../../data/screenshots.ts';
 import { workFactsView } from '../../data/views.ts';
 import { formatDay, formatMonth } from '../../lib/format.ts';
 import { graph, personReference, workNode } from '../../lib/jsonld.ts';
@@ -19,6 +20,9 @@ const work = data.works.find(item => item.id === entry.id)!;
 const facts = workFactsView(entry.id, data.facts);
 const techs = new Map(data.techs.map(tech => [tech.id, tech]));
 const icon = iconUrl(facts.icon);
+// Present only when `pnpm capture-screenshots` has captured this Work's site; the build never fails or fetches for it.
+const screenshots = import.meta.glob<{ default: ScreenshotImage }>('/src/assets/screenshots/*.webp', { eager: true });
+const screenshot = findScreenshot(screenshots, entry.id);
 const { Content } = await render(entry);
 ---
 
@@ -33,6 +37,7 @@ const { Content } = await render(entry);
         <p>{work.data.tagline}</p>
         <p>{work.data.summary}</p>
       </header>
+      {screenshot && <img src={screenshot.src} width={screenshot.width} height={screenshot.height} alt={screenshotAlt(work.data.title)} />}
       <dl>
         <dt>Role</dt><dd>{work.data.role}</dd>
         <dt>Kind</dt><dd>{work.data.kind}</dd>
