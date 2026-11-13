@@ -3,11 +3,11 @@ const version = /\bv?\d+\.\d+\.\d+\b/;
 const firstPerson = /\bI\b/;
 const pronoun = /\b(?:me|my|mine|we|our|ours|he|him|his|she|her|hers|they|them|their|theirs)\b/i;
 
-export function lintText(where: string, text: string, cvShared: boolean): string[] {
+export function lintText(where: string, text: string, pronounFree: boolean): string[] {
   const problems: string[] = [];
   if (placeholder.test(text)) problems.push(`${where}: placeholder text`);
   if (version.test(text)) problems.push(`${where}: a version is a Fact; remove it from Story`);
-  if (cvShared && (firstPerson.test(text) || pronoun.test(text))) problems.push(`${where}: CV-shared Story is verb-led and pronoun-free`);
+  if (pronounFree && (firstPerson.test(text) || pronoun.test(text))) problems.push(`${where}: Story is verb-led and pronoun-free`);
   return problems;
 }
 

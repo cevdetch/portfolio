@@ -96,7 +96,7 @@ test('cv titles and labels are CV-shared Story', () => {
   p.cv.projects[1]!.title = 'My templates';
   p.cv.skills[0]!.label = 'TODO';
   assert.deepEqual(validatePortfolio(p, fixtureSnapshot()), [
-    'cv projects[1] title: CV-shared Story is verb-led and pronoun-free',
+    'cv projects[1] title: Story is verb-led and pronoun-free',
     'cv skills[0] label: placeholder text',
   ]);
 });
@@ -166,7 +166,7 @@ test('theme leads and notes are CV-shared Story', () => {
   p.contributions.themes[0]!.lead = 'Our fixes merged into';
   p.contributions.themes[0]!.note = 'including a fix in Astro 7.4.2';
   assert.deepEqual(validatePortfolio(p, fixtureSnapshot()), [
-    'contributions theme head-metadata lead: CV-shared Story is verb-led and pronoun-free',
+    'contributions theme head-metadata lead: Story is verb-led and pronoun-free',
     'contributions theme head-metadata note: a version is a Fact; remove it from Story',
   ]);
 });
@@ -176,14 +176,14 @@ test('CV-shared Story is linted', () => {
   p.works[0]!.data.highlights = ['I wrote 203 rules for v0.3.1'];
   const errors = validatePortfolio(p, fixtureSnapshot()).join('\n');
   assert.match(errors, /work\/deadhead highlights\[0\]: a version is a Fact/);
-  assert.match(errors, /work\/deadhead highlights\[0\]: CV-shared Story is verb-led and pronoun-free/);
+  assert.match(errors, /work\/deadhead highlights\[0\]: Story is verb-led and pronoun-free/);
 });
 
 test('a cvLine is CV-shared Story and its tokens must resolve', () => {
   const p = fixturePortfolio();
   p.works[0]!.data.cvLine = 'My linter, {pkgbuilds} rules, {stars} stars.';
   assert.deepEqual(validatePortfolio(p, fixtureSnapshot()), [
-    'work/deadhead cvLine: CV-shared Story is verb-led and pronoun-free',
+    'work/deadhead cvLine: Story is verb-led and pronoun-free',
     'work/deadhead cvLine: {pkgbuilds} has no Fact in the Snapshot',
     'work/deadhead cvLine: unknown token {stars}',
   ]);
@@ -195,7 +195,7 @@ test('process steps are linted and their token must resolve', () => {
   p.profile.process[1]!.detail = 'Scope the work in v0.3.1.';
   p.profile.process[2]!.detail = '{price} fixed, agreed in writing.';
   assert.deepEqual(validatePortfolio(p, fixtureSnapshot()), [
-    'profile process[0] title: CV-shared Story is verb-led and pronoun-free',
+    'profile process[0] title: Story is verb-led and pronoun-free',
     'profile process[1] detail: a version is a Fact; remove it from Story',
     'profile process[2] detail: unknown token {price}',
   ]);
@@ -213,7 +213,7 @@ test('services, Uses notes, Metric labels and interests are linted too', () => {
     'uses/phone entries[0] note: placeholder text',
     'profile service static-sites name: placeholder text',
     'profile service static-sites summary: a version is a Fact; remove it from Story',
-    'profile interests[0] details: CV-shared Story is verb-led and pronoun-free',
+    'profile interests[0] details: Story is verb-led and pronoun-free',
   ]);
   p.profile.services[0]!.summary = 'My Astro sites.';
   assert.deepEqual(validatePortfolio(p, fixtureSnapshot()).filter(error => error.includes('summary')), []);

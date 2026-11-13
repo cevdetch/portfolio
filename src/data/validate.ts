@@ -21,11 +21,11 @@ export interface Portfolio {
   cv: CvChoices;
 }
 
-function lintAll(where: string, fields: Record<string, string | readonly string[] | undefined>, cvShared: boolean): string[] {
+function lintAll(where: string, fields: Record<string, string | readonly string[] | undefined>, pronounFree: boolean): string[] {
   return Object.entries(fields).flatMap(([name, value]) => {
     if (value === undefined) return [];
-    if (typeof value === 'string') return lintText(`${where} ${name}`, value, cvShared);
-    return value.flatMap((text, index) => lintText(`${where} ${name}[${index}]`, text, cvShared));
+    if (typeof value === 'string') return lintText(`${where} ${name}`, value, pronounFree);
+    return value.flatMap((text, index) => lintText(`${where} ${name}[${index}]`, text, pronounFree));
   });
 }
 

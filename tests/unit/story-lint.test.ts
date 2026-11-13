@@ -13,7 +13,7 @@ test('a hand-written version is a Fact in the wrong place', () => {
   assert.deepEqual(lintText('x', 'Supports Astro 7 and Node 24', false), []);
 });
 
-test('CV-shared Story is pronoun-free; i.e. and US are not pronouns', () => {
+test('Story is pronoun-free when pronounFree is set; i.e. and US are not pronouns', () => {
   assert.match(lintText('x', 'I built a linter', true).join(), /pronoun/);
   assert.match(lintText('x', 'Their sites load fast', true).join(), /pronoun/);
   assert.deepEqual(lintText('x', 'Builds linters, i.e. tools for HTML', true), []);
