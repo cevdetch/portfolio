@@ -78,15 +78,15 @@ test('an Upstream links to the merged pulls by the Handle, never to a count', ()
 test('availability reads as one line, with the capacity on employment and the country in place of the time zone', () => {
   const profile = fixturePortfolio().profile;
   assert.equal(availabilityLine(profile.availability, profile.country),
-    'Open to part-time employment, contract and freelance work, remote or on site in Switzerland. Replies within 2 working days.');
+    'Open to part-time employment, contract and freelance work, remote or on site in Switzerland.');
 });
 
 test('availability still reads naturally with one workplace, or with no employment on offer', () => {
   const availability = fixturePortfolio().profile.availability;
   assert.equal(availabilityLine({ ...availability, workplace: ['remote'] }, 'Switzerland'),
-    'Open to part-time employment, contract and freelance work, remote in Switzerland. Replies within 2 working days.');
+    'Open to part-time employment, contract and freelance work, remote in Switzerland.');
   assert.equal(availabilityLine({ ...availability, openTo: ['contract', 'freelance'] }, 'Switzerland'),
-    'Open to contract and freelance work, remote or on site in Switzerland. Replies within 2 working days.');
+    'Open to contract and freelance work, remote or on site in Switzerland.');
 });
 
 test('a language reads as its name and level, with native spelled out', () => {

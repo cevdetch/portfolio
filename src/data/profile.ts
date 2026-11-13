@@ -5,7 +5,7 @@ import type { Availability, Profile } from '../schemas/profile.ts';
 export function availabilityLine(a: Availability, country: string): string {
   const openTo = a.openTo.map(item => item === 'employment' ? `${a.capacity} employment` : item);
   const workplace = a.workplace.map(item => item === 'local' ? 'on site' : item);
-  return `Open to ${joinList(openTo, 'and')} work, ${joinList(workplace, 'or')} in ${country}. Replies ${a.reply}.`;
+  return `Open to ${joinList(openTo, 'and')} work, ${joinList(workplace, 'or')} in ${country}.`;
 }
 
 // The full name is published; the CV header, the home h1 and title, /about/ and the JSON-LD

@@ -7,7 +7,7 @@ import type { Tech } from '../schemas/tech.ts';
 import type { UsesSection } from '../schemas/uses.ts';
 import type { Work } from '../schemas/work.ts';
 import { caseStudyHeadings, caseStudySections, lintText } from './story-lint.ts';
-import { escapeRegExp, fillCvLine, fillProcessStep } from './views.ts';
+import { escapeRegExp, fillCvLine } from './views.ts';
 
 export interface WorkEntry { id: string; data: Work; body: string }
 export interface Portfolio {
@@ -151,7 +151,6 @@ export function validatePortfolio(p: Portfolio, facts: Snapshot): string[] {
   p.profile.process.forEach((step, index) => {
     const at = `profile process[${index}]`;
     errors.push(...lintAll(at, { title: step.title, detail: step.detail }, true));
-    errors.push(...fillProcessStep(step.detail, p.profile.availability.reply).problems.map(problem => `${at} detail: ${problem}`));
   });
   for (const service of p.profile.services) {
     errors.push(...lintAll(`profile service ${service.id}`, { name: service.name, summary: service.summary }, false));

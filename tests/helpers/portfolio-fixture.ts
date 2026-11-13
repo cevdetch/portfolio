@@ -21,9 +21,9 @@ export function fixturePortfolio(): Portfolio {
       homeMetrics: [{ work: 'deadhead', label: 'Sourced rules' }],
       email: 'hello@cevdet.ch', website: 'https://cevdet.ch/', contactSubject: 'Enquiry from cevdet.ch', writing: 'one',
       socials: [{ network: 'github', url: 'https://github.com/cevdetch' }, { network: 'linkedin', url: 'https://www.linkedin.com/in/cevdetch/' }],
-      availability: { capacity: 'part-time', timeZone: 'Europe/Zurich', reply: 'within 2 working days', openTo: ['employment', 'contract', 'freelance'], workplace: ['remote', 'local'] },
+      availability: { capacity: 'part-time', timeZone: 'Europe/Zurich', openTo: ['employment', 'contract', 'freelance'], workplace: ['remote', 'local'] },
       process: [
-        { title: 'Reply', detail: 'Reply {reply} with a first take.' },
+        { title: 'Reply', detail: 'Reply by email with a first take.' },
         { title: 'Scope', detail: 'Scope the work and agree an estimate in writing.' },
         { title: 'Build', detail: 'Build with checks the client can verify.' },
       ],

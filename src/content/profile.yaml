@@ -30,12 +30,11 @@ socials:
 availability:
   capacity: part-time
   timeZone: Europe/Zurich
-  reply: within 2 working days
   openTo: [employment, contract, freelance]
   workplace: [remote, local]
 process:
   - title: Reply
-    detail: Reply {reply} with questions or a first take.
+    detail: Start with a short call or email to pin down the goal.
   - title: Scope
     detail: Scope the work and agree an estimate in writing before starting.
   - title: Build
@@ -43,15 +42,20 @@ process:
 services:
   - id: static-sites
     name: Fast static sites
-    summary: Astro sites built for Lighthouse 100, with no client JavaScript unless a feature needs it.
-    evidence: [astro-minimal-template, deadhead]
+    summary: Astro sites that ship no JavaScript unless a feature needs it and score 100 in Lighthouse, checked by the same tools published on npm.
+    evidence: [deadhead, astro-minimal-template, astro-reels-template]
+  - id: css-experiences
+    name: App-like experiences without JavaScript
+    summary: 'Reels-style vertical feeds, snap galleries and page transitions built with CSS scroll-snap and view transitions alone: no framework, no bundle to download, light on any phone.'
+    evidence: [astro-reels-template]
   - id: metadata-audit
     name: Metadata and SEO audit
-    summary: The HTML head, structured data and indexing, checked with deadhead.
+    summary: A full review of the HTML head, structured data, social previews and indexing with deadhead, the linter that audited 4,570 of the web's top homepages; every fix comes with its source.
     evidence: [deadhead, astro-metadata-lab]
-  - id: maintenance
-    name: Site maintenance
-    summary: Dependency updates, fixes and verified deploys.
+  - id: starters-maintenance
+    name: Starters and maintenance
+    summary: 'A tuned Astro starter for a new project, or an existing site kept fast: dependency updates, fixes and verified deploys.'
+    evidence: [astro-minimal-template]
 languages:
   - { name: Turkish, level: native }
   - { name: Kurdish, level: native }

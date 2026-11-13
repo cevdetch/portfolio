@@ -88,9 +88,9 @@ test('profile pins the public identity and carries no location field', () => {
     homeMetrics: [{ work: 'deadhead', label: 'Sourced rules' }],
     email: 'hello@cevdet.ch', website: 'https://cevdet.ch/', contactSubject: 'Enquiry from cevdet.ch', writing: 'one',
     socials: [{ network: 'github', url: 'https://github.com/cevdetch' }],
-    availability: { capacity: 'part-time', timeZone: 'Europe/Zurich', reply: 'within 2 working days', openTo: ['employment'], workplace: ['remote'] },
+    availability: { capacity: 'part-time', timeZone: 'Europe/Zurich', openTo: ['employment'], workplace: ['remote'] },
     process: [
-      { title: 'Reply', detail: 'Reply {reply} with a first take.' },
+      { title: 'Reply', detail: 'Reply by email with a first take.' },
       { title: 'Scope', detail: 'Scope the work and agree an estimate in writing.' },
       { title: 'Build', detail: 'Build with checks the client can verify.' },
     ],
@@ -114,9 +114,9 @@ test('every interest says whether the CV prints it', () => {
     homeMetrics: [{ work: 'deadhead', label: 'Sourced rules' }],
     email: 'hello@cevdet.ch',
     website: 'https://cevdet.ch/', contactSubject: 'Enquiry', writing: 'one', socials: [{ network: 'github', url: 'https://github.com/cevdetch' }],
-    availability: { capacity: 'part-time', timeZone: 'Europe/Zurich', reply: 'within 2 working days', openTo: ['employment'], workplace: ['remote'] },
+    availability: { capacity: 'part-time', timeZone: 'Europe/Zurich', openTo: ['employment'], workplace: ['remote'] },
     process: [
-      { title: 'Reply', detail: 'Reply {reply} with a first take.' },
+      { title: 'Reply', detail: 'Reply by email with a first take.' },
       { title: 'Scope', detail: 'Scope the work and agree an estimate in writing.' },
       { title: 'Build', detail: 'Build with checks the client can verify.' },
     ],
