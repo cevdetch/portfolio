@@ -29,7 +29,7 @@ export const metricSchema = z.strictObject({
   // can never drift from the sourced Metric it summarises.
   headline: z.strictObject({ value: line(12), label: line(60) }).optional(),
 }).refine(metric => !metric.headline || headlineMatchesValue(metric.value, metric.headline.value), {
-  message: 'headline value must be a substring of value, or its value rounded to a whole percentage',
+  message: 'headline value must be the value\'s leading number, or that percentage rounded to whole units',
   path: ['headline', 'value'],
 });
 export type Metric = z.infer<typeof metricSchema>;
