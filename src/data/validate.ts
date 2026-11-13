@@ -191,15 +191,27 @@ export function validatePortfolio(p: Portfolio, facts: Snapshot): string[] {
 
   const upstreamLabels = new Map(p.contributions.upstreams.map(upstream => [upstream.repo, upstream.label] as const));
   const themeIds = new Set<string>();
-  for (const theme of p.contributions.themes) {
+  // A repo's theme line only makes sense once: tracked by theme position, so two themes that happen to
+  // share an (invalid, duplicate) id still count as two themes for this check.
+  const seenInThemes = new Map<string, number>();
+  p.contributions.themes.forEach((theme, themeIndex) => {
     const at = `contributions theme ${theme.id}`;
     errors.push(...lintAll(at, { lead: theme.lead, note: theme.note }, true));
+    const seenInThisTheme = new Set<string>();
     for (const repo of theme.upstreams) {
       if (!merged.has(repo)) errors.push(`${at}: no merged Contribution to ${repo} in the Snapshot`);
       if (!upstreamLabels.get(repo)) errors.push(`${at}: ${repo} has no label in the base Upstreams`);
+      if (seenInThisTheme.has(repo)) errors.push(`${at}: ${repo} appears twice`);
+      seenInThisTheme.add(repo);
+      const firstThemeIndex = seenInThemes.get(repo);
+      if (firstThemeIndex !== undefined && firstThemeIndex !== themeIndex) {
+        errors.push(`${at}: ${repo} already appears in theme ${p.contributions.themes[firstThemeIndex]!.id}`);
+      } else if (firstThemeIndex === undefined) {
+        seenInThemes.set(repo, themeIndex);
+      }
     }
     if (themeIds.has(theme.id)) errors.push(`${at}: duplicate id`);
     themeIds.add(theme.id);
-  }
+  });
   return errors;
 }

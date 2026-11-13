@@ -150,6 +150,7 @@ test('every theme Upstream has merged Contributions, and theme ids are unique', 
     'contributions theme head-metadata: duplicate id',
     'contributions theme head-metadata: no merged Contribution to nope/nope in the Snapshot',
     'contributions theme head-metadata: nope/nope has no label in the base Upstreams',
+    'contributions theme head-metadata: sveltejs/svelte already appears in theme head-metadata',
   ]);
 });
 
@@ -176,6 +177,22 @@ test('a hidden pull does not need a base label', () => {
   const p = fixturePortfolio();
   p.contributions.upstreams.push({ repo: 'test/merged', techs: [], works: [], pulls: { '1': { hidden: true, highlight: false } } });
   assert.deepEqual(validatePortfolio(p, facts), []);
+});
+
+test('a repo cannot appear twice within one theme', () => {
+  const p = fixturePortfolio();
+  p.contributions.themes[0]!.upstreams.push('withastro/astro');
+  assert.deepEqual(validatePortfolio(p, fixtureSnapshot()), [
+    'contributions theme head-metadata: withastro/astro appears twice',
+  ]);
+});
+
+test('a repo cannot appear in two different themes', () => {
+  const p = fixturePortfolio();
+  p.contributions.themes.push({ id: 'second-theme', lead: 'More fixes merged into', upstreams: ['withastro/astro'] });
+  assert.deepEqual(validatePortfolio(p, fixtureSnapshot()), [
+    'contributions theme second-theme: withastro/astro already appears in theme head-metadata',
+  ]);
 });
 
 test('theme leads and notes are CV-shared Story', () => {
