@@ -4,6 +4,13 @@ exclude = [
   '^https://cevdet\.ch/',
   # LinkedIn answers bots with HTTP 999.
   '^https://www\.linkedin\.com/',
+  # npm registry answers automated checkers with 403
+  '^https://www\.npmjs\.com/',
+  # MySQL site answers automated checkers with 403
+  '^https://www\.mysql\.com/',
+  # Paperless documentation answers automated checkers with 403
+  '^https://docs\.paperless-ngx\.com/',
 ]
 max_retries = 3
+timeout = 30
 accept = ["200", "429"]
