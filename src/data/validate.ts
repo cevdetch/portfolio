@@ -145,7 +145,7 @@ export function validatePortfolio(p: Portfolio, facts: Snapshot): string[] {
       errors.push(`${at}: Work "${pin.work}" has no Metric "${pin.label}"`);
     }
   });
-  // Process steps are not CV-shared, but the site's copy is pronoun-free throughout, so they follow the same rule.
+  // Process steps are Story, so they are pronoun-free.
   p.profile.process.forEach((step, index) => {
     const at = `profile process[${index}]`;
     errors.push(...lintAll(at, { title: step.title, detail: step.detail }, true));

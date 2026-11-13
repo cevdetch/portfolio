@@ -37,7 +37,7 @@ const mailto = `mailto:${profile.email}?subject=${encodeURIComponent(profile.con
       <h2 id="how-i-work">How I work</h2>
       <ol>
         {profile.process.map(step => (
-          <li>{step.title}: {fillProcessStep(step.detail, profile.availability.reply).text}</li>
+          <li>{fillProcessStep(step.detail, profile.availability.reply).text}</li>
         ))}
       </ol>
     </section>
