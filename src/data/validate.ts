@@ -174,12 +174,14 @@ export function validatePortfolio(p: Portfolio, facts: Snapshot): string[] {
   }
   errors.push(...cvErrors(p.cv, new Map(p.works.map(entry => [entry.id, entry])), techIds));
 
+  const upstreamLabels = new Map(p.contributions.upstreams.map(upstream => [upstream.repo, upstream.label] as const));
   const themeIds = new Set<string>();
   for (const theme of p.contributions.themes) {
     const at = `contributions theme ${theme.id}`;
     errors.push(...lintAll(at, { lead: theme.lead, note: theme.note }, true));
-    for (const { repo } of theme.upstreams) {
+    for (const repo of theme.upstreams) {
       if (!merged.has(repo)) errors.push(`${at}: no merged Contribution to ${repo} in the Snapshot`);
+      if (!upstreamLabels.get(repo)) errors.push(`${at}: ${repo} has no label in the base Upstreams`);
     }
     if (themeIds.has(theme.id)) errors.push(`${at}: duplicate id`);
     themeIds.add(theme.id);

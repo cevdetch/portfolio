@@ -144,11 +144,20 @@ test('overrides must point at Contributions in the Snapshot', () => {
 
 test('every theme Upstream has merged Contributions, and theme ids are unique', () => {
   const p = fixturePortfolio();
-  p.contributions.themes[0]!.upstreams.push({ repo: 'nope/nope', label: 'Nope' });
-  p.contributions.themes.push({ ...p.contributions.themes[0]!, upstreams: [{ repo: 'sveltejs/svelte', label: 'Svelte' }] });
-  assert.deepEqual(validatePortfolio(p, fixtureSnapshot()), [
-    'contributions theme head-metadata: no merged Contribution to nope/nope in the Snapshot',
+  p.contributions.themes[0]!.upstreams.push('nope/nope');
+  p.contributions.themes.push({ ...p.contributions.themes[0]!, upstreams: ['sveltejs/svelte'] });
+  assert.deepEqual(validatePortfolio(p, fixtureSnapshot()).sort(), [
     'contributions theme head-metadata: duplicate id',
+    'contributions theme head-metadata: no merged Contribution to nope/nope in the Snapshot',
+    'contributions theme head-metadata: nope/nope has no label in the base Upstreams',
+  ]);
+});
+
+test('a theme Upstream must carry a label in the base Upstreams, even when merged', () => {
+  const p = fixturePortfolio();
+  delete p.contributions.upstreams.find(upstream => upstream.repo === 'sveltejs/svelte')!.label;
+  assert.deepEqual(validatePortfolio(p, fixtureSnapshot()), [
+    'contributions theme head-metadata: sveltejs/svelte has no label in the base Upstreams',
   ]);
 });
 

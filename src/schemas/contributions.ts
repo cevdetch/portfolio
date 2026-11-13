@@ -9,6 +9,8 @@ export const contributionOverridesSchema = z.strictObject({
     repo,
     // Best-known projects first; unordered Upstreams follow by PR count, then name.
     order: z.number().int().positive().optional(),
+    // The display name shown in Contribution highlights, themed lines and the CV; falls back to the repo id when absent.
+    label: line(40).optional(),
     techs: z.array(id).default([]),
     works: z.array(id).default([]),
     pulls: z.record(z.string().regex(/^\d+$/), z.strictObject({
@@ -20,11 +22,12 @@ export const contributionOverridesSchema = z.strictObject({
     })).default({}),
   })),
   // One line each on the CV and the home page: "<lead> <labels, linked>, <note>." No counts.
+  // Each repo must appear in the base `upstreams` list above, with a label; validatePortfolio checks this.
   themes: z.array(z.strictObject({
     id,
     lead: line(80),
     note: line(120).optional(),
-    upstreams: z.array(z.strictObject({ repo, label: line(40) })).min(1),
+    upstreams: z.array(repo).min(1),
   })).default([]),
 });
 export type ContributionOverrides = z.infer<typeof contributionOverridesSchema>;

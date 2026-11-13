@@ -4,7 +4,7 @@ import SocialLinks from '../components/SocialLinks.astro';
 import Layout from '../layouts/Layout.astro';
 import { fullName } from '../data/profile.ts';
 import { loadPortfolio } from '../data/portfolio.ts';
-import { contributionHighlights, featuredWorks, homeMetrics, recentlyShipped, splitOnTitles, upstreamGroups } from '../data/views.ts';
+import { contributionHighlights, featuredWorks, homeMetrics, recentlyShipped, splitOnTitles, upstreamGroups, upstreamLabel } from '../data/views.ts';
 import { formatDay, joinList } from '../lib/format.ts';
 import { graph, personNode, profilePageNode, websiteNode } from '../lib/jsonld.ts';
 
@@ -12,7 +12,6 @@ const data = await loadPortfolio();
 const { profile } = data;
 const groups = upstreamGroups(data.facts.contributions, data.contributions);
 const highlights = contributionHighlights(groups);
-const labels = new Map(data.contributions.themes.flatMap(theme => theme.upstreams.map(upstream => [upstream.repo, upstream.label] as const)));
 const metrics = homeMetrics(profile.homeMetrics, data.works);
 const shipped = recentlyShipped(data.facts, data.works, data.contributions, 5);
 
@@ -54,7 +53,7 @@ const proofParts = splitOnTitles(profile.proof, proofWorks.map(work => work.data
         <ul>
           {highlights.map(({ group, pull }) => (
             <li>
-              <a href={group.url}>{labels.get(group.repo) ?? group.repo}</a> <a href={pull.url}>#{pull.number}</a>: {pull.title}
+              <a href={group.url}>{upstreamLabel(group.repo, data.contributions)}</a> <a href={pull.url}>#{pull.number}</a>: {pull.title}
               {pull.note && <> ({pull.note})</>}
             </li>
           ))}
@@ -76,7 +75,7 @@ const proofParts = splitOnTitles(profile.proof, proofWorks.map(work => work.data
       )}
       <ul>
         {data.contributions.themes.map(theme => (
-          <li><a href="/open-source/">{theme.lead} {joinList(theme.upstreams.map(upstream => upstream.label), 'and')}{theme.note ? `, ${theme.note}` : ''}.</a></li>
+          <li><a href="/open-source/">{theme.lead} {joinList(theme.upstreams.map(repo => upstreamLabel(repo, data.contributions)), 'and')}{theme.note ? `, ${theme.note}` : ''}.</a></li>
         ))}
       </ul>
     </section>

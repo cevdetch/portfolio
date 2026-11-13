@@ -67,10 +67,13 @@ export function fixturePortfolio(): Portfolio {
     education: [educationSchema.parse({ id: 'sismondi', institution: 'Collège Sismondi', credential: 'Maturité gymnasiale', field: 'Physics and Applied Mathematics', start: '2024-08', end: '2028-06', expected: true })],
     uses: [{ id: 'phone', data: usesSectionSchema.parse({ title: 'Phone', order: 1, entries: [{ tech: 'molly' }] }) }],
     contributions: contributionOverridesSchema.parse({
-      upstreams: [{ repo: 'withastro/astro', order: 1, techs: ['astro'], pulls: { '101': { highlight: true, note: 'Fixed a sitemap edge case.' } } }],
+      upstreams: [
+        { repo: 'withastro/astro', order: 1, label: 'Astro', techs: ['astro'], pulls: { '101': { highlight: true, note: 'Fixed a sitemap edge case.' } } },
+        { repo: 'sveltejs/svelte', label: 'Svelte' },
+      ],
       themes: [{
         id: 'head-metadata', lead: 'HTML-head fixes merged into', note: 'including a sitemap_index fix in Astro',
-        upstreams: [{ repo: 'withastro/astro', label: 'Astro' }, { repo: 'sveltejs/svelte', label: 'Svelte' }],
+        upstreams: ['withastro/astro', 'sveltejs/svelte'],
       }],
     }),
     cv: cvSchema.parse({

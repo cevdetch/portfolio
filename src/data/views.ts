@@ -151,11 +151,19 @@ export function homeMetrics(pins: Profile['homeMetrics'], works: readonly WorkEn
   });
 }
 
+/** An Upstream's display name, from its base `overrides.upstreams` entry; falls back to the repo id when unset. */
+export function upstreamLabel(repo: string, overrides: ContributionOverrides): string {
+  return overrides.upstreams.find(upstream => upstream.repo === repo)?.label ?? repo;
+}
+
 export type ShippedItem =
   | { kind: 'release'; at: string; work: WorkEntry; package: string; version: string; url: string }
   | { kind: 'contribution'; at: string; repo: string; label: string; number: number; title: string; url: string };
 
-/** Published package releases and merged, non-hidden Contributions, newest first, for the home page's "Recently shipped". */
+/**
+ * Published package releases and merged, non-hidden, non-highlighted Contributions, newest first, for the home
+ * page's "Recently shipped". Highlighted pulls already show as Contribution highlights, so they never repeat here.
+ */
 export function recentlyShipped(
   snapshot: Snapshot, works: readonly WorkEntry[], overrides: ContributionOverrides, limit: number,
 ): ShippedItem[] {
@@ -165,10 +173,11 @@ export function recentlyShipped(
     return facts.packages.filter(pkg => pkg.published)
       .map(pkg => ({ kind: 'release' as const, at: pkg.releasedAt, work, package: pkg.name, version: pkg.version, url: pkg.url }));
   });
-  const labels = new Map(overrides.themes.flatMap(theme => theme.upstreams.map(upstream => [upstream.repo, upstream.label] as const)));
-  const contributions: ShippedItem[] = upstreamGroups(snapshot.contributions, overrides).flatMap(group => group.pulls.map(pull => ({
-    kind: 'contribution' as const, at: pull.mergedAt, repo: group.repo, label: labels.get(group.repo) ?? group.repo,
-    number: pull.number, title: pull.title, url: pull.url,
-  })));
+  const contributions: ShippedItem[] = upstreamGroups(snapshot.contributions, overrides).flatMap(group => group.pulls
+    .filter(pull => !pull.highlight)
+    .map(pull => ({
+      kind: 'contribution' as const, at: pull.mergedAt, repo: group.repo, label: upstreamLabel(group.repo, overrides),
+      number: pull.number, title: pull.title, url: pull.url,
+    })));
   return [...releases, ...contributions].sort((a, b) => b.at.localeCompare(a.at)).slice(0, limit);
 }

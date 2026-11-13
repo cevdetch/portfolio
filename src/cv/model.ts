@@ -1,6 +1,6 @@
 import type { LoadedPortfolio } from '../data/portfolio.ts';
 import { fullName, socialUsername } from '../data/profile.ts';
-import { fillCvLine, mergedPullsUrl } from '../data/views.ts';
+import { fillCvLine, mergedPullsUrl, upstreamLabel } from '../data/views.ts';
 import type { WorkEntry } from '../data/validate.ts';
 import type { Snapshot } from '../facts/schema.ts';
 import { joinList } from '../lib/format.ts';
@@ -80,9 +80,9 @@ function project(entry: CvChoices['projects'][number], works: ReadonlyMap<string
   };
 }
 
-function openSource(themes: ContributionOverrides['themes'], handle: string): Entry[] {
-  return themes.map(theme => {
-    const links = theme.upstreams.map(({ repo, label }) => `[${escapeMarkdown(label)}](${mergedPullsUrl(repo, handle)})`);
+function openSource(overrides: ContributionOverrides, handle: string): Entry[] {
+  return overrides.themes.map(theme => {
+    const links = theme.upstreams.map(repo => `[${escapeMarkdown(upstreamLabel(repo, overrides))}](${mergedPullsUrl(repo, handle)})`);
     return { bullet: `${escapeMarkdown(theme.lead)} ${joinList(links, 'and')}${theme.note ? `, ${escapeMarkdown(theme.note)}` : ''}.` };
   });
 }
@@ -129,7 +129,7 @@ export function buildCv(data: LoadedPortfolio): RenderCvDocument {
           highlights: e.note ? [escapeMarkdown(e.note)] : [],
         })),
         projects: data.cv.projects.filter(entry => !entry.optional).map(entry => project(entry, works, facts)),
-        open_source: openSource(data.contributions.themes, profile.handle),
+        open_source: openSource(data.contributions, profile.handle),
         experience: data.experience.map(x => ({
           company: escapeMarkdown(x.organisation), position: escapeMarkdown(x.role),
           start_date: x.start, end_date: x.end ?? 'present',

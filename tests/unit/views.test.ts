@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { availabilityLine, socialUsername } from '../../src/data/profile.ts';
-import { contributionHighlights, contributionTotals, featuredWorks, fillCvLine, homeMetrics, inSourceOrder, mergedPullsUrl, newestFirst, recentlyShipped, skillGroups, splitOnTitles, upstreamGroups, workFactsView } from '../../src/data/views.ts';
+import { contributionHighlights, contributionTotals, featuredWorks, fillCvLine, homeMetrics, inSourceOrder, mergedPullsUrl, newestFirst, recentlyShipped, skillGroups, splitOnTitles, upstreamGroups, upstreamLabel, workFactsView } from '../../src/data/views.ts';
 import { formatDay, formatMonth, joinList } from '../../src/lib/format.ts';
 import { fixturePortfolio, fixtureSnapshot } from '../helpers/portfolio-fixture.ts';
 
@@ -120,6 +120,12 @@ test('a cvLine fills {pkgbuilds} from the Snapshot and reports what it cannot fi
   assert.deepEqual(fillCvLine('{stars} stars, {constructor}', facts['deadhead']).problems, ['unknown token {stars}', 'unknown token {constructor}']);
 });
 
+test('an Upstream label comes from the base Upstreams entry, or falls back to the repo id', () => {
+  const p = fixturePortfolio();
+  assert.equal(upstreamLabel('withastro/astro', p.contributions), 'Astro');
+  assert.equal(upstreamLabel('unknown/unknown', p.contributions), 'unknown/unknown');
+});
+
 test("homeMetrics resolves each pin to its Work's Metric, by label", () => {
   const p = fixturePortfolio();
   assert.deepEqual(homeMetrics(p.profile.homeMetrics, p.works), [{ work: p.works[0], metric: p.works[0]!.data.metrics[0] }]);
@@ -147,7 +153,17 @@ test('Recently shipped drops hidden Contributions and unpublished packages', () 
   const shipped = recentlyShipped(snapshot, p.works, p.contributions, 10);
   assert.ok(!shipped.some(item => item.kind === 'contribution' && item.number === 102));
   assert.equal(shipped.filter(item => item.kind === 'release').length, 1);
-  assert.equal(shipped.length, 3);
+  // Only svelte#7 remains a Contribution: astro#101 is highlighted (excluded below) and astro#102 is hidden.
+  assert.equal(shipped.length, 2);
+});
+
+test('Recently shipped excludes highlighted pulls, so the same PR never shows twice on home', () => {
+  const p = fixturePortfolio();
+  const snapshot = fixtureSnapshot();
+  // The fixture marks astro#101 as a highlight; it must never also appear in Recently shipped.
+  const shipped = recentlyShipped(snapshot, p.works, p.contributions, 10);
+  assert.ok(!shipped.some(item => item.kind === 'contribution' && item.number === 101));
+  assert.deepEqual(shipped.flatMap(item => item.kind === 'contribution' ? [item.number] : []), [102, 7]);
 });
 
 test('formatting', () => {
