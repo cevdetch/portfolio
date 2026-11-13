@@ -1,0 +1,35 @@
+---
+// One device's screenshot, light by default and dark where the reader prefers it and the site has a dark
+// theme. Written by hand because <Picture> can't switch sources on `prefers-color-scheme`. Browsers take
+// the first <source> that matches both `media` and `type`, so dark comes before light within each
+// format, and lossless WebP before the PNG fallback.
+import type { ImageMetadata } from 'astro';
+import { getImage } from 'astro:assets';
+import { screenshotSizes, type DeviceScreenshots } from '../data/screenshots.ts';
+
+interface Props {
+  images: DeviceScreenshots<ImageMetadata>;
+  /** CSS size of the captured viewport, which the <img> keeps whatever the master's pixel size. */
+  width: number;
+  height: number;
+  widths: readonly number[];
+  alt: string;
+}
+
+const { images, width, height, widths, alt } = Astro.props;
+const sizes = screenshotSizes(width);
+const derive = (src: ImageMetadata, format: 'webp' | 'png') => getImage({ src, format, width, height, widths: [...widths], sizes });
+const [lightWebp, lightPng, darkWebp, darkPng] = await Promise.all([
+  derive(images.light, 'webp'),
+  derive(images.light, 'png'),
+  images.dark && derive(images.dark, 'webp'),
+  images.dark && derive(images.dark, 'png'),
+]);
+---
+
+<picture>
+  {darkWebp && <source media="(prefers-color-scheme: dark)" type="image/webp" srcset={darkWebp.srcSet.attribute} sizes={sizes} />}
+  <source type="image/webp" srcset={lightWebp.srcSet.attribute} sizes={sizes} />
+  {darkPng && <source media="(prefers-color-scheme: dark)" type="image/png" srcset={darkPng.srcSet.attribute} sizes={sizes} />}
+  <img src={lightPng.src} srcset={lightPng.srcSet.attribute} sizes={sizes} width={width} height={height} alt={alt} loading="lazy" decoding="async" />
+</picture>
