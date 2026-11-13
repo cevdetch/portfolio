@@ -252,3 +252,11 @@ test('services, Uses notes, Metric labels and interests are linted too', () => {
   p.profile.services[0]!.summary = 'My Astro sites.';
   assert.deepEqual(validatePortfolio(p, fixtureSnapshot()).filter(error => error.includes('summary')), []);
 });
+
+test("a Metric headline's label is linted too, alongside its full label", () => {
+  const p = fixturePortfolio();
+  p.works[0]!.data.metrics[0]!.headline = { value: '203', label: 'TODO headline' };
+  assert.deepEqual(validatePortfolio(p, fixtureSnapshot()), [
+    'work/deadhead metrics[0] headline label: placeholder text',
+  ]);
+});

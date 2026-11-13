@@ -167,6 +167,13 @@ export function homeMetrics(pins: Profile['homeMetrics'], works: readonly WorkEn
   });
 }
 
+export interface MetricDisplay { value: string; label: string }
+
+/** The numbers strip prefers a Metric's short headline; falls back to its full value and label when it has none. */
+export function metricDisplay(metric: Metric): MetricDisplay {
+  return metric.headline ? { value: metric.headline.value, label: metric.headline.label } : { value: metric.value, label: metric.label };
+}
+
 /** An Upstream's display name, from its base `overrides.upstreams` entry; falls back to the repo id when unset. */
 export function upstreamLabel(repo: string, overrides: ContributionOverrides): string {
   return overrides.upstreams.find(upstream => upstream.repo === repo)?.label ?? repo;

@@ -4,11 +4,33 @@ import { httpsUrl, id, isoDate, line } from './common.ts';
 export const workKinds = ['app', 'site', 'package', 'template', 'research', 'tool', 'infrastructure'] as const;
 export const workStatuses = ['active', 'maintained', 'complete', 'archived'] as const;
 
+/**
+ * True when a headline value is safe to print beside its Metric's full value: equal to the full value's
+ * leading number token (digits, thousands separators and a decimal point, with an optional unit such as
+ * `%`), or, for a percentage, that token rounded to whole units with the same unit. A partial match on the
+ * token, such as "4" inside "4,570", never counts: the headline must name the whole number, not a fragment.
+ */
+export function headlineMatchesValue(value: string, headlineValue: string): boolean {
+  const token = /^[\d,]+(?:\.\d+)?%?/.exec(value.trim())?.[0];
+  if (!token) return false;
+  if (token === headlineValue) return true;
+  const full = /^([\d,]+(?:\.\d+)?)%$/.exec(token);
+  const headline = /^(\d+)%$/.exec(headlineValue);
+  if (!full || !headline) return false;
+  return Math.round(Number(full[1]!.replaceAll(',', ''))) === Number(headline[1]!);
+}
+
 export const metricSchema = z.strictObject({
   label: line(60),
   value: line(40),
   measuredAt: isoDate,
   source: z.strictObject({ label: line(120), url: httpsUrl.optional() }),
+  // The numbers strip's short form: value derived from the full value above (see headlineMatchesValue), so it
+  // can never drift from the sourced Metric it summarises.
+  headline: z.strictObject({ value: line(12), label: line(60) }).optional(),
+}).refine(metric => !metric.headline || headlineMatchesValue(metric.value, metric.headline.value), {
+  message: 'headline value must be a substring of value, or its value rounded to a whole percentage',
+  path: ['headline', 'value'],
 });
 export type Metric = z.infer<typeof metricSchema>;
 

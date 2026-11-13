@@ -4,7 +4,7 @@ import SocialLinks from '../components/SocialLinks.astro';
 import Layout from '../layouts/Layout.astro';
 import { fullName } from '../data/profile.ts';
 import { loadPortfolio } from '../data/portfolio.ts';
-import { contributionHighlights, featuredWorks, homeMetrics, recentlyShipped, splitOnTitles, upstreamGroups, upstreamLabel } from '../data/views.ts';
+import { contributionHighlights, featuredWorks, homeMetrics, metricDisplay, recentlyShipped, splitOnTitles, upstreamGroups, upstreamLabel } from '../data/views.ts';
 import { formatDay, joinList } from '../lib/format.ts';
 import { graph, personNode, profilePageNode, websiteNode } from '../lib/jsonld.ts';
 
@@ -32,12 +32,15 @@ const proofParts = splitOnTitles(profile.proof, proofWorks.map(work => work.data
     <section aria-labelledby="numbers">
       <h2 id="numbers">Numbers</h2>
       <dl>
-        {metrics.map(({ metric }) => (
-          <div>
-            <dt>{metric.value}</dt>
-            <dd>{metric.label}{metric.source.url ? <> (<a href={metric.source.url}>{metric.source.label}</a>)</> : ` (${metric.source.label})`}</dd>
-          </div>
-        ))}
+        {metrics.map(({ metric }) => {
+          const display = metricDisplay(metric);
+          return (
+            <div>
+              <dt>{display.value}</dt>
+              <dd>{display.label}{metric.source.url ? <> (<a href={metric.source.url}>{metric.source.label}</a>)</> : ` (${metric.source.label})`}</dd>
+            </div>
+          );
+        })}
       </dl>
     </section>
     <section aria-labelledby="featured">

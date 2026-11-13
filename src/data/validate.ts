@@ -101,7 +101,9 @@ export function validatePortfolio(p: Portfolio, facts: Snapshot): string[] {
     errors.push(...lintAll(at, { summary: data.summary, highlights: data.highlights, cvLine: data.cvLine }, true));
     if (data.cvLine) errors.push(...fillCvLine(data.cvLine, facts.works[id]).problems.map(problem => `${at} cvLine: ${problem}`));
     errors.push(...lintAll(at, { body }, false).filter(problem => problem.endsWith('placeholder text')));
-    data.metrics.forEach((metric, index) => errors.push(...lintAll(`${at} metrics[${index}]`, { label: metric.label }, false)));
+    data.metrics.forEach((metric, index) => {
+      errors.push(...lintAll(`${at} metrics[${index}]`, { label: metric.label, 'headline label': metric.headline?.label }, false));
+    });
     const sourced = data.repo || data.site || data.packages.length > 0 || data.pkgbuilds;
     if (sourced && !facts.works[id]) errors.push(`${at}: no Facts in the Snapshot; run pnpm fetch-facts`);
   }

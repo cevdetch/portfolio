@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { availabilityLine, languageItem, socialUsername } from '../../src/data/profile.ts';
-import { contributionHighlights, contributionTotals, featuredWorks, fillCvLine, fillProcessStep, homeMetrics, inSourceOrder, mergedPullsUrl, newestFirst, recentlyShipped, skillGroups, splitOnTitles, upstreamGroups, upstreamLabel, workFactsView } from '../../src/data/views.ts';
+import { contributionHighlights, contributionTotals, featuredWorks, fillCvLine, homeMetrics, inSourceOrder, mergedPullsUrl, metricDisplay, newestFirst, recentlyShipped, skillGroups, splitOnTitles, upstreamGroups, upstreamLabel, workFactsView } from '../../src/data/views.ts';
 import { formatDay, formatMonth, joinList } from '../../src/lib/format.ts';
 import { fixturePortfolio, fixtureSnapshot } from '../helpers/portfolio-fixture.ts';
 
@@ -125,10 +125,11 @@ test('a cvLine fills {pkgbuilds} from the Snapshot and reports what it cannot fi
   assert.deepEqual(fillCvLine('{stars} stars, {constructor}', facts['deadhead']).problems, ['unknown token {stars}', 'unknown token {constructor}']);
 });
 
-test('a process step fills {reply} from availability.reply and reports what it cannot fill', () => {
-  assert.deepEqual(fillProcessStep('Reply {reply} with a first take.', 'within 2 working days'), { text: 'Reply within 2 working days with a first take.', problems: [] });
-  assert.deepEqual(fillProcessStep('Scope the work.', 'within 2 working days'), { text: 'Scope the work.', problems: [] });
-  assert.deepEqual(fillProcessStep('{price} fixed.', 'within 2 working days').problems, ['unknown token {price}']);
+test('the numbers strip prefers a short headline, falling back to the full value and label', () => {
+  const metric = { label: 'Sourced rules', value: '203', measuredAt: '2026-10-26', source: { label: 'deadhead release notes' } };
+  assert.deepEqual(metricDisplay(metric), { value: '203', label: 'Sourced rules' });
+  assert.deepEqual(metricDisplay({ ...metric, headline: { value: '203', label: 'sourced lint rules in deadhead' } }),
+    { value: '203', label: 'sourced lint rules in deadhead' });
 });
 
 test('an Upstream label comes from the base Upstreams entry, or falls back to the repo id', () => {

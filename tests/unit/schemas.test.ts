@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { isoDate } from '../../src/schemas/common.ts';
 import { techSchema, techCategories } from '../../src/schemas/tech.ts';
-import { workSchema, workTranslationSchema } from '../../src/schemas/work.ts';
+import { headlineMatchesValue, metricSchema, workSchema, workTranslationSchema } from '../../src/schemas/work.ts';
 import { profileSchema } from '../../src/schemas/profile.ts';
 import { educationSchema } from '../../src/schemas/background.ts';
 import { contributionOverridesSchema } from '../../src/schemas/contributions.ts';
@@ -30,6 +30,33 @@ test('work applies defaults and enforces Story lengths', () => {
   assert.throws(() => workSchema.parse({ ...work, tagline: 'x'.repeat(71) }));
   assert.throws(() => workSchema.parse({ ...work, summary: 'x'.repeat(161) }));
   assert.throws(() => workSchema.parse({ ...work, highlights: ['a', 'b', 'c', 'd'] }));
+});
+
+test('a headline value derives from the full value, as its leading number or a rounded percentage', () => {
+  assert.equal(headlineMatchesValue('203', '203'), true);
+  assert.equal(headlineMatchesValue('4,570 of 10,000 targets', '4,570'), true);
+  assert.equal(headlineMatchesValue('100 each', '100'), true);
+  assert.equal(headlineMatchesValue('20.4% over 568 rasters', '20%'), true);
+  assert.equal(headlineMatchesValue('20.4% over 568 rasters', '20.4%'), true);
+  assert.equal(headlineMatchesValue('19.5% over 568 rasters', '20%'), true);
+  assert.equal(headlineMatchesValue('203', '204'), false);
+  assert.equal(headlineMatchesValue('20.4% over 568 rasters', '25'), false);
+  assert.equal(headlineMatchesValue('20.4% over 568 rasters', '21%'), false);
+  // A partial match on the leading number token must never pass: these are digits within the full
+  // value's number or an unrelated digit, not the number itself.
+  assert.equal(headlineMatchesValue('4,570 of 10,000 targets', '4'), false);
+  assert.equal(headlineMatchesValue('4,570 of 10,000 targets', '57'), false);
+  assert.equal(headlineMatchesValue('100 each', '0'), false);
+});
+
+test('a Metric headline must be derivable from its full value', () => {
+  const metric = {
+    label: 'Raster bytes saved', value: '20.4% over 568 rasters', measuredAt: '2026-11-08',
+    source: { label: 'favseed README' },
+  };
+  assert.equal(metricSchema.parse({ ...metric, headline: { value: '20%', label: 'fewer favicon bytes than a fixed-quality encode' } }).headline?.value, '20%');
+  assert.throws(() => metricSchema.parse({ ...metric, headline: { value: '21%', label: 'fewer favicon bytes than a fixed-quality encode' } }));
+  assert.deepEqual(metricSchema.parse(metric).headline, undefined);
 });
 
 test('work rejects unknown keys, so a typo never vanishes silently', () => {
