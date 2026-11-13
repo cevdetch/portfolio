@@ -27,6 +27,12 @@ test('the location names no city and drops "Remote-friendly" when remote work is
   assert.equal(buildCv(p).cv.location, 'Switzerland · Europe/Zurich');
 });
 
+test('the time zone is Markdown-escaped too, so an underscore does not italicise the rest of the line', () => {
+  const p = data();
+  p.profile.availability.timeZone = 'America/Los_Angeles';
+  assert.equal(buildCv(p).cv.location, 'Switzerland · Remote-friendly (America/Los\\_Angeles)');
+});
+
 test('the public CV has no phone, and no entry carries a location but Remote', () => {
   const { cv } = buildCv(data());
   assert.equal('phone' in cv, false);

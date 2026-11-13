@@ -42,7 +42,8 @@ export function socialNetworks(socials: Profile['socials']): RenderCvDocument['c
 
 /** Country and time zone only: the city stays in the locally rendered full CV. */
 function location({ country, availability }: Profile): string {
-  const zone = availability.workplace.includes('remote') ? `Remote-friendly (${availability.timeZone})` : availability.timeZone;
+  const timeZone = escapeMarkdown(availability.timeZone);
+  const zone = availability.workplace.includes('remote') ? `Remote-friendly (${timeZone})` : timeZone;
   return `${escapeMarkdown(country)} · ${zone}`;
 }
 
