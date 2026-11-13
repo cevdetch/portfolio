@@ -28,8 +28,7 @@ test('the Person publishes the full name, split into given and family names', ()
 });
 
 test('the Person reference on other pages carries only the @id: the full Person lives once, on home', () => {
-  const { profile } = fixturePortfolio();
-  assert.deepEqual(personReference(profile), { '@type': 'Person', '@id': 'https://cevdet.ch/#person' });
+  assert.deepEqual(personReference(), { '@type': 'Person', '@id': 'https://cevdet.ch/#person' });
 });
 
 test('a package Work is SoftwareSourceCode with Facts; a site Work is a WebSite', () => {

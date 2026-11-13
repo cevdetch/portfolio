@@ -27,7 +27,7 @@ const { Content } = await render(entry);
 ---
 
 <Layout title={`${work.data.title} - Cevdet`} description={work.data.summary}
-  jsonLd={graph([workNode(work, data.facts.works[work.id], data.techs), personReference(data.profile)])}>
+  jsonLd={graph([workNode(work, data.facts.works[work.id], data.techs), personReference()])}>
   <SiteNav />
   <main>
     <article>

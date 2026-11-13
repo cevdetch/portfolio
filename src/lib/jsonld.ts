@@ -21,7 +21,7 @@ export function personNode(profile: Profile, techs: readonly Tech[]): JsonLdNode
   };
 }
 
-export function personReference(_profile: Profile): JsonLdNode {
+export function personReference(): JsonLdNode {
   return { '@type': 'Person', '@id': PERSON_ID };
 }
 
@@ -31,7 +31,7 @@ export function websiteNode(profile: Profile): JsonLdNode {
 
 export function profilePageNode(profile: Profile): JsonLdNode {
   return {
-    // The name mirrors the home page's <title>, not body text (see the gate's exclusion below).
+    // The name mirrors the home page's <title>, not body text (see the exclusion in src/gates/jsonld.ts).
     '@type': 'ProfilePage', '@id': PROFILE_ID, url: profile.website, name: `${fullName(profile)} - ${profile.jobTitle}`,
     isPartOf: { '@id': WEBSITE_ID }, mainEntity: { '@id': PERSON_ID },
   };
