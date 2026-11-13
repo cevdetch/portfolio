@@ -1,5 +1,5 @@
 import type { LoadedPortfolio } from '../data/portfolio.ts';
-import { socialUsername } from '../data/profile.ts';
+import { fullName, socialUsername } from '../data/profile.ts';
 import { fillCvLine, mergedPullsUrl } from '../data/views.ts';
 import type { WorkEntry } from '../data/validate.ts';
 import type { Snapshot } from '../facts/schema.ts';
@@ -111,7 +111,7 @@ export function buildCv(data: LoadedPortfolio): RenderCvDocument {
   const languages = { label: 'Languages', details: languagesLine(profile.languages) };
   return {
     cv: {
-      name: profile.name,
+      name: fullName(profile),
       headline: `${escapeMarkdown(profile.jobTitle)} · ${escapeMarkdown(profile.specialisation)}`,
       location: location(profile),
       email: profile.email,
@@ -143,6 +143,6 @@ export function buildCv(data: LoadedPortfolio): RenderCvDocument {
       },
     },
     locale: { language: 'english' },
-    settings: { current_date: facts.refreshedAt.slice(0, 10), bold_keywords: [], pdf_title: `${profile.name} - CV` },
+    settings: { current_date: facts.refreshedAt.slice(0, 10), bold_keywords: [], pdf_title: `${fullName(profile)} - CV` },
   };
 }

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { graph, personNode, profilePageNode, serializeJsonLd, websiteNode, workNode } from '../../src/lib/jsonld.ts';
+import { graph, personNode, personReference, profilePageNode, serializeJsonLd, websiteNode, workNode } from '../../src/lib/jsonld.ts';
 import { fixturePortfolio, fixtureSnapshot } from '../helpers/portfolio-fixture.ts';
 
 test('the @ids One already references stay stable', () => {
@@ -9,13 +9,27 @@ test('the @ids One already references stay stable', () => {
   assert.equal(websiteNode(profile)['@id'], 'https://cevdet.ch/#website');
   assert.deepEqual(profilePageNode(profile), {
     '@type': 'ProfilePage', '@id': 'https://cevdet.ch/#profile', url: 'https://cevdet.ch/',
-    name: 'Cevdet - Software Developer', isPartOf: { '@id': 'https://cevdet.ch/#website' }, mainEntity: { '@id': 'https://cevdet.ch/#person' },
+    name: 'Cevdet Haran - Software Developer', isPartOf: { '@id': 'https://cevdet.ch/#website' }, mainEntity: { '@id': 'https://cevdet.ch/#person' },
   });
 });
 
 test('knowsAbout comes from the registry and excludes apps', () => {
   const { profile, techs } = fixturePortfolio();
   assert.deepEqual(personNode(profile, techs)['knowsAbout'], ['TypeScript', 'Astro', 'Sway']);
+});
+
+test('the Person publishes the full name, split into given and family names', () => {
+  const { profile, techs } = fixturePortfolio();
+  const node = personNode(profile, techs);
+  assert.equal(node['name'], 'Cevdet Haran');
+  assert.equal(node['givenName'], 'Cevdet');
+  assert.equal(node['familyName'], 'Haran');
+  assert.deepEqual(node['alternateName'], ['cevdetch']);
+});
+
+test('the Person reference on other pages carries only the @id: the full Person lives once, on home', () => {
+  const { profile } = fixturePortfolio();
+  assert.deepEqual(personReference(profile), { '@type': 'Person', '@id': 'https://cevdet.ch/#person' });
 });
 
 test('a package Work is SoftwareSourceCode with Facts; a site Work is a WebSite', () => {

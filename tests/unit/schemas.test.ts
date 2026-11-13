@@ -55,7 +55,7 @@ test('tech categories form a closed list; app is never a skill', () => {
 
 test('profile pins the public identity and carries no location field', () => {
   const profile = {
-    name: 'Cevdet', handle: 'cevdetch', jobTitle: 'Software Developer',
+    name: 'Cevdet', familyName: 'Haran', handle: 'cevdetch', jobTitle: 'Software Developer',
     headline: 'Builds fast sites.', specialisation: 'Web performance · Developer tooling · Open source', country: 'Switzerland',
     bio: 'Builds and publishes developer tools.', proof: 'Creator of deadhead. HTML-head fixes merged into Astro.', proofWorks: ['deadhead'],
     email: 'hello@cevdet.ch', website: 'https://cevdet.ch/', contactSubject: 'Enquiry from cevdet.ch', writing: 'one',
@@ -65,7 +65,9 @@ test('profile pins the public identity and carries no location field', () => {
     languages: [{ name: 'English', level: 'C1' }],
   };
   assert.equal(profileSchema.parse(profile).name, 'Cevdet');
+  assert.equal(profileSchema.parse(profile).familyName, 'Haran');
   assert.throws(() => profileSchema.parse({ ...profile, name: 'Cevdet Someone' }));
+  assert.throws(() => profileSchema.parse({ ...profile, familyName: 'Someone' }));
   assert.throws(() => profileSchema.parse({ ...profile, location: 'Exampleville' }));
   assert.throws(() => profileSchema.parse({ ...profile, availability: { ...profile.availability, timeZone: 'Mars/Olympus' } }));
   assert.throws(() => profileSchema.parse({ ...profile, availability: { ...profile.availability, hours: 'after 17:00' } }));
@@ -74,7 +76,7 @@ test('profile pins the public identity and carries no location field', () => {
 
 test('every interest says whether the CV prints it', () => {
   const profile = profileSchema.parse({
-    name: 'Cevdet', handle: 'cevdetch', jobTitle: 'Software Developer', headline: 'Builds fast sites.',
+    name: 'Cevdet', familyName: 'Haran', handle: 'cevdetch', jobTitle: 'Software Developer', headline: 'Builds fast sites.',
     specialisation: 'Web performance', country: 'Switzerland', bio: 'Builds tools.', proof: 'Creator of deadhead.', proofWorks: ['deadhead'],
     email: 'hello@cevdet.ch',
     website: 'https://cevdet.ch/', contactSubject: 'Enquiry', writing: 'one', socials: [{ network: 'github', url: 'https://github.com/cevdetch' }],

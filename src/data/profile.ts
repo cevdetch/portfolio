@@ -8,6 +8,12 @@ export function availabilityLine(a: Availability, country: string): string {
   return `Open to ${joinList(openTo, 'and')} work, ${joinList(workplace, 'or')} in ${country}. Replies ${a.reply}.`;
 }
 
+// The full name is published; the CV header, the home h1 and title, /about/ and the JSON-LD
+// Person all derive it from here, so it stays one decision.
+export function fullName(profile: Pick<Profile, 'name' | 'familyName'>): string {
+  return `${profile.name} ${profile.familyName}`;
+}
+
 export type SocialNetwork = Profile['socials'][number]['network'];
 
 export const socialLabels: Record<SocialNetwork, string> = { github: 'GitHub', linkedin: 'LinkedIn', npm: 'npm' };

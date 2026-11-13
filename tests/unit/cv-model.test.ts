@@ -15,7 +15,7 @@ test('the header: name, title with specialisation, then country and time zone be
   const { cv } = buildCv(data());
   // No website: fewer contact items; cevdet.ch already appears in the project headings and the One link.
   assert.deepEqual(Object.keys(cv), ['name', 'headline', 'location', 'email', 'social_networks', 'sections']);
-  assert.equal(cv.name, 'Cevdet');
+  assert.equal(cv.name, 'Cevdet Haran');
   assert.equal(cv.headline, 'Software Developer · Web performance · Developer tooling · Open source');
   assert.equal(cv.location, 'Switzerland · Remote-friendly (Europe/Zurich)');
   assert.equal(cv.email, 'hello@cevdet.ch');

@@ -1,6 +1,7 @@
 ---
 import SiteNav from '../components/SiteNav.astro';
 import Layout from '../layouts/Layout.astro';
+import { fullName } from '../data/profile.ts';
 import { loadPortfolio } from '../data/portfolio.ts';
 import { formatMonth } from '../lib/format.ts';
 
@@ -13,7 +14,7 @@ const writing = works.get(profile.writing)!;
 <Layout title="About - Cevdet" description={profile.headline}>
   <SiteNav />
   <main>
-    <h1>About</h1>
+    <h1>About {fullName(profile)}</h1>
     <p>{profile.bio}</p>
     <section aria-labelledby="experience">
       <h2 id="experience">Experience</h2>

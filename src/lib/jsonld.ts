@@ -1,3 +1,4 @@
+import { fullName } from '../data/profile.ts';
 import type { WorkEntry } from '../data/validate.ts';
 import type { WorkFacts } from '../facts/schema.ts';
 import type { Profile } from '../schemas/profile.ts';
@@ -13,15 +14,15 @@ type JsonLdNode = Record<string, unknown>;
 export function personNode(profile: Profile, techs: readonly Tech[]): JsonLdNode {
   return {
     '@type': 'Person', '@id': PERSON_ID,
-    name: profile.name, givenName: profile.name, alternateName: [profile.handle],
+    name: fullName(profile), givenName: profile.name, familyName: profile.familyName, alternateName: [profile.handle],
     url: profile.website, jobTitle: profile.jobTitle, description: profile.bio, email: `mailto:${profile.email}`,
     knowsAbout: techs.filter(tech => techCategories[tech.category].skills).map(tech => tech.label),
     sameAs: profile.socials.map(social => social.url),
   };
 }
 
-export function personReference(profile: Profile): JsonLdNode {
-  return { '@type': 'Person', '@id': PERSON_ID, name: profile.name, url: profile.website };
+export function personReference(_profile: Profile): JsonLdNode {
+  return { '@type': 'Person', '@id': PERSON_ID };
 }
 
 export function websiteNode(profile: Profile): JsonLdNode {
@@ -30,7 +31,8 @@ export function websiteNode(profile: Profile): JsonLdNode {
 
 export function profilePageNode(profile: Profile): JsonLdNode {
   return {
-    '@type': 'ProfilePage', '@id': PROFILE_ID, url: profile.website, name: `${profile.name} - ${profile.jobTitle}`,
+    // The name mirrors the home page's <title>, not body text (see the gate's exclusion below).
+    '@type': 'ProfilePage', '@id': PROFILE_ID, url: profile.website, name: `${fullName(profile)} - ${profile.jobTitle}`,
     isPartOf: { '@id': WEBSITE_ID }, mainEntity: { '@id': PERSON_ID },
   };
 }

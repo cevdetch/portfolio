@@ -13,7 +13,7 @@ export const caseStudyBody = '## Problem\n\nA.\n\n## Constraints\n\nB.\n\n## Dec
 export function fixturePortfolio(): Portfolio {
   return {
     profile: profileSchema.parse({
-      name: 'Cevdet', handle: 'cevdetch', jobTitle: 'Software Developer',
+      name: 'Cevdet', familyName: 'Haran', handle: 'cevdetch', jobTitle: 'Software Developer',
       headline: 'Software developer who ships fast sites and developer tools.',
       specialisation: 'Web performance · Developer tooling · Open source', country: 'Switzerland',
       bio: 'Builds and publishes open-source developer tools.',

@@ -15,8 +15,9 @@ const availability = z.strictObject({
 export type Availability = z.infer<typeof availability>;
 
 export const profileSchema = z.strictObject({
-  // Privacy: the public name is Cevdet, never the surname.
+  // Privacy: the full name is published; the city, phone and street stay private.
   name: z.literal('Cevdet'),
+  familyName: z.literal('Haran'),
   handle: z.literal('cevdetch'),
   jobTitle: line(60),
   // The line under the name on the CV and the site, e.g. "Web performance · Developer tooling · Open source".

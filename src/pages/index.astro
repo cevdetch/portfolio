@@ -2,6 +2,7 @@
 import SiteNav from '../components/SiteNav.astro';
 import SocialLinks from '../components/SocialLinks.astro';
 import Layout from '../layouts/Layout.astro';
+import { fullName } from '../data/profile.ts';
 import { loadPortfolio } from '../data/portfolio.ts';
 import { contributionHighlights, featuredWorks, splitOnTitles, upstreamGroups } from '../data/views.ts';
 import { joinList } from '../lib/format.ts';
@@ -19,11 +20,11 @@ const proofLinks = new Map(proofWorks.map(work => [work.data.title, `/work/${wor
 const proofParts = splitOnTitles(profile.proof, proofWorks.map(work => work.data.title));
 ---
 
-<Layout title={`${profile.name} - ${profile.jobTitle}`} description={profile.headline}
+<Layout title={`${fullName(profile)} - ${profile.jobTitle}`} description={profile.headline}
   jsonLd={graph([profilePageNode(profile), personNode(profile, data.techs), websiteNode(profile)])}>
   <SiteNav />
   <main>
-    <h1>{profile.name}</h1>
+    <h1>{fullName(profile)}</h1>
     <p>{profile.specialisation}</p>
     <p>{proofParts.map(part => proofLinks.has(part) ? <a href={proofLinks.get(part)}>{part}</a> : part)}</p>
     <p><a href="/hire/">Work with me</a> · <a href="/cv.pdf">CV (PDF)</a></p>
