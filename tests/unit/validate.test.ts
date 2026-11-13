@@ -156,9 +156,26 @@ test('every theme Upstream has merged Contributions, and theme ids are unique', 
 test('a theme Upstream must carry a label in the base Upstreams, even when merged', () => {
   const p = fixturePortfolio();
   delete p.contributions.upstreams.find(upstream => upstream.repo === 'sveltejs/svelte')!.label;
-  assert.deepEqual(validatePortfolio(p, fixtureSnapshot()), [
+  assert.deepEqual(validatePortfolio(p, fixtureSnapshot()).sort(), [
     'contributions theme head-metadata: sveltejs/svelte has no label in the base Upstreams',
+    'contributions/sveltejs/svelte: a merged pull has no label in the base Upstreams',
+  ].sort());
+});
+
+test('any merged Upstream needs a base label, even outside every theme', () => {
+  const facts = fixtureSnapshot();
+  facts.contributions.push({ upstream: 'test/merged', number: 1, title: 'A fix', url: 'https://github.com/test/merged/pull/1', mergedAt: '2026-01-01T00:00:00Z' });
+  assert.deepEqual(validatePortfolio(fixturePortfolio(), facts), [
+    'contributions/test/merged: a merged pull has no label in the base Upstreams',
   ]);
+});
+
+test('a hidden pull does not need a base label', () => {
+  const facts = fixtureSnapshot();
+  facts.contributions.push({ upstream: 'test/merged', number: 1, title: 'A fix', url: 'https://github.com/test/merged/pull/1', mergedAt: '2026-01-01T00:00:00Z' });
+  const p = fixturePortfolio();
+  p.contributions.upstreams.push({ repo: 'test/merged', techs: [], works: [], pulls: { '1': { hidden: true, highlight: false } } });
+  assert.deepEqual(validatePortfolio(p, facts), []);
 });
 
 test('theme leads and notes are CV-shared Story', () => {

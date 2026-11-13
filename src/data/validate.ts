@@ -180,6 +180,15 @@ export function validatePortfolio(p: Portfolio, facts: Snapshot): string[] {
   }
   errors.push(...cvErrors(p.cv, new Map(p.works.map(entry => [entry.id, entry])), techIds));
 
+  // A refresh can surface a merged pull for an Upstream no one has labelled yet; without a base label it
+  // would show its raw repository id in Contribution highlights or Recently shipped.
+  const upstreamsByRepo = new Map(p.contributions.upstreams.map(upstream => [upstream.repo, upstream] as const));
+  for (const [repo, numbers] of merged) {
+    const upstream = upstreamsByRepo.get(repo);
+    const visible = [...numbers].some(number => !upstream?.pulls[String(number)]?.hidden);
+    if (visible && !upstream?.label) errors.push(`contributions/${repo}: a merged pull has no label in the base Upstreams`);
+  }
+
   const upstreamLabels = new Map(p.contributions.upstreams.map(upstream => [upstream.repo, upstream.label] as const));
   const themeIds = new Set<string>();
   for (const theme of p.contributions.themes) {

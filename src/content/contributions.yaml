@@ -9,6 +9,13 @@ upstreams:
   - { repo: CachyOS/firefox-wayland-cachy-hg, order: 8, label: CachyOS }
   - { repo: lumeland/lume.land, order: 9, label: Lume, techs: [lume] }
   - { repo: aerynOS/recipes, order: 10, label: aerynOS }
+  - { repo: nuejs/nue, label: Nue }
+  - { repo: withastro/astro.build, label: astro.build }
+  - { repo: lumeland/blog, label: Lume blog }
+  - { repo: lumeland/theme-boilerplate, label: Lume theme boilerplate }
+  - { repo: glaucuslinux/website, label: glaucus website }
+  - { repo: glaucuslinux/wiki, label: glaucus wiki }
+  - { repo: ventureoo/PKGBUILDs, label: ventureoo PKGBUILDs }
 themes:
   - id: head-metadata
     lead: HTML-head and metadata fixes merged into
