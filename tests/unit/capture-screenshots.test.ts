@@ -3,7 +3,14 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import { chromeArgs, devtoolsUrl, launchBrowser, mainDocumentStatus, send, withTimeout } from '../../scripts/capture-screenshots.ts';
+import sharp from 'sharp';
+import {
+  captureVariants, checkMasterSize, chromeArgs, devtoolsUrl, identicalPixels, launchBrowser, mainDocumentStatus, masterPath,
+  masterSize, mediaFeatures, send, withTimeout,
+} from '../../scripts/capture-screenshots.ts';
+
+const solid = (width: number, height: number, r: number) =>
+  sharp({ create: { width, height, channels: 4, background: { r, g: 0, b: 0, alpha: 1 } } }).png().toBuffer();
 
 test('chromeArgs launches headless at a fixed size with a throwaway profile and no persisted state', () => {
   const args = chromeArgs('/tmp/capture-screenshots-abc123');
@@ -62,12 +69,19 @@ test('send rejects every pending request once the socket closes', async () => {
   assert.equal(pending.size, 0);
 });
 
-test('mainDocumentStatus reads the last main-document response, so a redirect chain resolves to the final status', () => {
+test('mainDocumentStatus reads the navigation\'s last document response, so the final status decides', () => {
   assert.equal(mainDocumentStatus([
-    { type: 'Document', status: 302 }, { type: 'Stylesheet', status: 200 }, { type: 'Document', status: 404 },
-  ]), 404);
-  assert.equal(mainDocumentStatus([{ type: 'Stylesheet', status: 200 }]), undefined);
-  assert.equal(mainDocumentStatus([]), undefined);
+    { type: 'Document', loaderId: 'L1', status: 302 }, { type: 'Stylesheet', loaderId: 'L1', status: 200 },
+    { type: 'Document', loaderId: 'L1', status: 404 },
+  ], 'L1'), 404);
+  assert.equal(mainDocumentStatus([{ type: 'Stylesheet', loaderId: 'L1', status: 200 }], 'L1'), undefined);
+  assert.equal(mainDocumentStatus([], 'L1'), undefined);
+});
+
+test('mainDocumentStatus ignores an iframe\'s document, so a 404 page with a 200 iframe still fails', () => {
+  assert.equal(mainDocumentStatus([
+    { type: 'Document', loaderId: 'L1', status: 404 }, { type: 'Document', loaderId: 'L2', status: 200 },
+  ], 'L1'), 404);
 });
 
 test('launchBrowser rejects promptly when the given binary is not a browser, with nothing left running', async () => {
@@ -80,4 +94,49 @@ test('launchBrowser rejects promptly when the given binary is not a browser, wit
   } finally {
     await rm(userDataDir, { recursive: true, force: true });
   }
+});
+
+test('captureVariants covers desktop and phone, each light then dark, with their viewports and mobile flags', () => {
+  assert.deepEqual(captureVariants(), [
+    { device: 'desktop', scheme: 'light', width: 1280, height: 800, mobile: false },
+    { device: 'desktop', scheme: 'dark', width: 1280, height: 800, mobile: false },
+    { device: 'phone', scheme: 'light', width: 390, height: 844, mobile: true },
+    { device: 'phone', scheme: 'dark', width: 390, height: 844, mobile: true },
+  ]);
+});
+
+test('masterSize doubles the CSS viewport, since captures run at device pixel ratio 2', () => {
+  const [desktop, , phone] = captureVariants();
+  assert.deepEqual(masterSize(desktop!), { width: 2560, height: 1600 });
+  assert.deepEqual(masterSize(phone!), { width: 780, height: 1688 });
+});
+
+test('mediaFeatures emulates the colour scheme and always asks for reduced motion', () => {
+  assert.deepEqual(mediaFeatures('dark'), [
+    { name: 'prefers-color-scheme', value: 'dark' }, { name: 'prefers-reduced-motion', value: 'reduce' },
+  ]);
+  assert.deepEqual(mediaFeatures('light'), [
+    { name: 'prefers-color-scheme', value: 'light' }, { name: 'prefers-reduced-motion', value: 'reduce' },
+  ]);
+});
+
+test('masterPath nests each variant under its Work slug', () => {
+  const [, desktopDark, phoneLight] = captureVariants();
+  assert.equal(masterPath('deadhead', desktopDark!), 'deadhead/desktop-dark.webp');
+  assert.equal(masterPath('one', phoneLight!), 'one/phone-light.webp');
+});
+
+test('checkMasterSize accepts a capture at exactly twice the viewport and rejects anything else', async () => {
+  const [, , phone] = captureVariants();
+  await checkMasterSize(await solid(780, 1688, 10), phone!);
+  await assert.rejects(checkMasterSize(await solid(390, 844, 10), phone!), /390x844.*expected 780x1688/);
+});
+
+test('identicalPixels compares decoded pixels, not encoded bytes', async () => {
+  const red = await solid(4, 3, 200);
+  const sameRedOtherEncoding = await sharp(red).png({ compressionLevel: 0 }).toBuffer();
+  assert.notDeepEqual(red, sameRedOtherEncoding);
+  assert.equal(await identicalPixels(red, sameRedOtherEncoding), true);
+  assert.equal(await identicalPixels(red, await solid(4, 3, 201)), false);
+  assert.equal(await identicalPixels(red, await solid(3, 4, 200)), false);
 });

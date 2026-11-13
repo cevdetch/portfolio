@@ -1,15 +1,63 @@
-// Captures one screenshot per live Work site, committed and refreshed on demand (not on every build).
-// Runs on demand, like fetch-facts; never during the build: the Astro build stays offline, and a page
-// renders a screenshot only when `src/data/screenshots.ts` finds the file this script wrote.
+// Captures the first screen of every live Work site on a desktop and a phone, each in the light and the
+// dark colour scheme, at device pixel ratio 2, and commits them as lossless WebP masters at
+// `src/assets/screenshots/<slug>/<device>-<scheme>.webp`. Runs on demand, like fetch-facts; never during
+// the build: the Astro build stays offline, and a page renders only the variants
+// `src/data/screenshots.ts` finds among the files this script wrote.
 import { spawn } from 'node:child_process';
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import sharp from 'sharp';
+import {
+  screenshotDevices, screenshotScale, screenshotSchemes, type ScreenshotDevice, type ScreenshotScheme,
+} from '../src/data/screenshots.ts';
 import { readWorkSources } from './fetch-facts.ts';
 
 const root = new URL('../', import.meta.url);
-const viewport = { width: 1280, height: 800 };
+const viewport = screenshotDevices.desktop;
+
+export interface CaptureVariant {
+  device: ScreenshotDevice; scheme: ScreenshotScheme; width: number; height: number; mobile: boolean;
+}
+
+/** Every device × scheme pair, light before dark, so a device's dark capture can be compared with its light one. */
+export function captureVariants(): CaptureVariant[] {
+  return (Object.keys(screenshotDevices) as ScreenshotDevice[]).flatMap(device => {
+    const { width, height, mobile } = screenshotDevices[device];
+    return screenshotSchemes.map(scheme => ({ device, scheme, width, height, mobile }));
+  });
+}
+
+/** The pixel size a variant's capture must decode to. */
+export function masterSize(variant: CaptureVariant): { width: number; height: number } {
+  return { width: variant.width * screenshotScale, height: variant.height * screenshotScale };
+}
+
+/** The media features a variant emulates: its colour scheme, and reduced motion so nothing is caught mid-animation. */
+export function mediaFeatures(scheme: ScreenshotScheme): { name: string; value: string }[] {
+  return [{ name: 'prefers-color-scheme', value: scheme }, { name: 'prefers-reduced-motion', value: 'reduce' }];
+}
+
+/** A variant's master, relative to `src/assets/screenshots/`. */
+export function masterPath(slug: string, variant: Pick<CaptureVariant, 'device' | 'scheme'>): string {
+  return `${slug}/${variant.device}-${variant.scheme}.webp`;
+}
+
+/** Fails unless the capture is exactly twice the viewport; a wrong size is never resized into place. */
+export async function checkMasterSize(png: Buffer, variant: CaptureVariant): Promise<void> {
+  const { width, height } = await sharp(png).metadata();
+  const expected = masterSize(variant);
+  if (width !== expected.width || height !== expected.height) {
+    throw new Error(`capture is ${width}x${height}, expected ${expected.width}x${expected.height}`);
+  }
+}
+
+/** True when two images decode to the same RGBA pixels, whatever their encoding. */
+export async function identicalPixels(a: Buffer, b: Buffer): Promise<boolean> {
+  const decode = (image: Buffer) => sharp(image).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const [left, right] = await Promise.all([decode(a), decode(b)]);
+  return left.info.width === right.info.width && left.info.height === right.info.height && left.data.equals(right.data);
+}
 
 export function chromeArgs(userDataDir: string): string[] {
   return [
@@ -38,8 +86,12 @@ export function devtoolsUrl(stderr: string): string | undefined {
 
 interface CdpMessage {
   id?: number; method?: string;
-  params?: { type?: string; response?: { status: number } };
-  result?: { data?: string }; error?: { message: string };
+  params?: { type?: string; loaderId?: string; response?: { status: number } };
+  result?: {
+    data?: string; errorText?: string; loaderId?: string;
+    result?: { value?: unknown }; exceptionDetails?: { text: string; exception?: { description?: string } };
+  };
+  error?: { message: string };
 }
 
 /** Races `promise` against a timeout, but always clears the timer once either settles, so a resolved
@@ -69,10 +121,12 @@ export function send(ws: WebSocket, pending: Map<number, (message: CdpMessage) =
   });
 }
 
-/** The main frame's own document response, last if a redirect chain produced several, so the final
- *  status is the one that decides whether the site loaded. */
-export function mainDocumentStatus(responses: readonly { type: string; status: number }[]): number | undefined {
-  return [...responses].reverse().find(response => response.type === 'Document')?.status;
+/** The navigation's own document response, matched by the loader `Page.navigate` returned so an iframe's
+ *  document can't stand in for it; the last one wins, so the final status is the one that decides whether
+ *  the site loaded. */
+export function mainDocumentStatus(responses: readonly { type: string; loaderId: string; status: number }[],
+  loaderId: string | undefined): number | undefined {
+  return [...responses].reverse().find(response => response.type === 'Document' && response.loaderId === loaderId)?.status;
 }
 
 /** Kills the whole process group the browser's spawn started, not just the top-level PID. Chromium
@@ -112,21 +166,64 @@ export async function launchBrowser(chromePath: string, userDataDir: string) {
   }
 }
 
-async function captureViaCdp(browserWsUrl: string, url: string): Promise<Buffer> {
-  const base = browserWsUrl.replace('ws://', 'http://').replace(/\/devtools\/browser\/.*/, '');
-  const response = await fetch(`${base}/json/new?${encodeURIComponent(url)}`, { method: 'PUT' });
-  if (!response.ok) throw new Error(`could not open a tab for ${url}: HTTP ${response.status}`);
-  const target = await response.json() as { webSocketDebuggerUrl: string };
+// Resolves once the web fonts are ready and every image that can appear on the first screen has loaded
+// and decoded, or reports what is still pending after `ms`. Lazy images outside the viewport are left
+// out: they are not in the capture, and the browser may never load them.
+const settleScript = (ms: number) => `(async () => {
+  const inView = img => { const r = img.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth; };
+  const wanted = () => [...document.images].filter(img => img.loading !== 'lazy' || inView(img));
+  const loaded = img => img.complete ? Promise.resolve() : new Promise(resolve => {
+    img.addEventListener('load', resolve, { once: true }); img.addEventListener('error', resolve, { once: true });
+  });
+  const ready = Promise.all([document.fonts.ready, ...wanted().map(loaded)])
+    .then(() => Promise.all(wanted().map(img => img.decode().catch(() => {}))))
+    .then(() => 'ready');
+  const outcome = await Promise.race([ready, new Promise(resolve => setTimeout(resolve, ${ms}, 'timeout'))]);
+  return { outcome, fonts: document.fonts.status, pending: wanted().filter(img => !img.complete).length };
+})()`;
+
+// Hides the text caret, then finishes every finite animation and cancels the infinite ones (`finish()`
+// throws for those). The style goes in first so a transition it might start is finished with the rest.
+const stillScript = `(() => {
+  const style = document.createElement('style');
+  style.textContent = '*, *::before, *::after { caret-color: transparent !important; }';
+  document.head.append(style);
+  for (const animation of document.getAnimations()) {
+    try { animation.finish(); } catch { animation.cancel(); }
+  }
+  return true;
+})()`;
+
+// Two animation frames: the first runs after the style and animation changes above, the second after
+// that frame has been painted, so the capture shows the settled page without a guessed fixed delay.
+const paintedScript = 'new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve(true))))';
+
+async function evaluate(ws: WebSocket, pending: Map<number, (message: CdpMessage) => void>, counter: { next: number },
+  expression: string, timeoutMs: number): Promise<unknown> {
+  const reply = await send(ws, pending, counter, 'Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true }, timeoutMs);
+  const exception = reply.result?.exceptionDetails;
+  if (reply.error || exception) {
+    throw new Error(`page script failed: ${reply.error?.message ?? exception?.exception?.description ?? exception?.text}`);
+  }
+  return reply.result?.result?.value;
+}
+
+/** Captures one variant in its own tab. The tab opens on about:blank and every emulation is set before
+ *  `Page.navigate`, so the site's first paint already uses the variant's viewport, scale and colour scheme. */
+export async function captureVariant(endpoint: string, url: string, variant: CaptureVariant): Promise<Buffer> {
+  const response = await fetch(`${endpoint}/json/new?about:blank`, { method: 'PUT' });
+  if (!response.ok) throw new Error(`could not open a tab: HTTP ${response.status}`);
+  const target = await response.json() as { id: string; webSocketDebuggerUrl: string };
   const ws = new WebSocket(target.webSocketDebuggerUrl);
   const pending = new Map<number, (message: CdpMessage) => void>();
   const counter = { next: 1 };
-  const events: string[] = [];
-  const responses: { type: string; status: number }[] = [];
+  let events: string[] = [];
+  const responses: { type: string; loaderId: string; status: number }[] = [];
   ws.addEventListener('message', event => {
     const message = JSON.parse(event.data as string) as CdpMessage;
     if (message.id !== undefined && pending.has(message.id)) { pending.get(message.id)!(message); pending.delete(message.id); }
     else if (message.method === 'Network.responseReceived' && message.params?.response) {
-      responses.push({ type: message.params.type ?? '', status: message.params.response.status });
+      responses.push({ type: message.params.type ?? '', loaderId: message.params.loaderId ?? '', status: message.params.response.status });
     } else if (message.method) events.push(message.method);
   });
   try {
@@ -135,27 +232,47 @@ async function captureViaCdp(browserWsUrl: string, url: string): Promise<Buffer>
       ws.addEventListener('error', () => reject(new Error('DevTools socket error')));
     }), 10_000, 'timed out opening the DevTools socket');
     await send(ws, pending, counter, 'Network.enable');
-    await send(ws, pending, counter, 'Emulation.setDeviceMetricsOverride', { ...viewport, deviceScaleFactor: 1, mobile: false });
     await send(ws, pending, counter, 'Page.enable');
-    // Headless page-load signals can be missed by a listener attached after navigation starts; a bounded
-    // wait with a fallback keeps a slow or already-loaded page from hanging the capture. Both timers are
-    // cleared on whichever path wins, so a fast load doesn't leave the 15s fallback running behind it.
+    await send(ws, pending, counter, 'Page.bringToFront');
+    await send(ws, pending, counter, 'Emulation.setDeviceMetricsOverride', {
+      width: variant.width, height: variant.height, deviceScaleFactor: screenshotScale, mobile: variant.mobile,
+    });
+    await send(ws, pending, counter, 'Emulation.setTouchEmulationEnabled', { enabled: variant.mobile, maxTouchPoints: variant.mobile ? 5 : 1 });
+    await send(ws, pending, counter, 'Emulation.setEmulatedMedia', { features: mediaFeatures(variant.scheme) });
+    await send(ws, pending, counter, 'Emulation.setScrollbarsHidden', { hidden: true });
+    events = [];
+    const navigation = await send(ws, pending, counter, 'Page.navigate', { url }, 20_000);
+    if (navigation.error || navigation.result?.errorText) {
+      throw new Error(`could not load ${url}: ${navigation.error?.message ?? navigation.result?.errorText}`);
+    }
+    // Page events are enabled before navigating, so the load event cannot be missed; the bounded wait
+    // still keeps a page that never fires it from hanging the capture. Both timers are cleared on
+    // whichever path wins, so a fast load doesn't leave the 15s fallback running behind it.
     await new Promise<void>(resolve => {
       const timer = setInterval(() => { if (events.includes('Page.loadEventFired')) { clearInterval(timer); clearTimeout(fallback); resolve(); } }, 100);
       const fallback = setTimeout(() => { clearInterval(timer); resolve(); }, 15_000);
     });
-    const status = mainDocumentStatus(responses);
+    const status = mainDocumentStatus(responses, navigation.result?.loaderId);
     if (status !== undefined && status >= 400) throw new Error(`main document returned HTTP ${status} for ${url}`);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    const shot = await send(ws, pending, counter, 'Page.captureScreenshot', { format: 'png' }, 20_000);
+    const settled = await evaluate(ws, pending, counter, settleScript(10_000), 15_000) as { outcome: string; fonts: string; pending: number };
+    if (settled.outcome !== 'ready') {
+      throw new Error(`page did not settle within 10s (fonts ${settled.fonts}, ${settled.pending} image(s) still loading)`);
+    }
+    await evaluate(ws, pending, counter, stillScript, 5_000);
+    await evaluate(ws, pending, counter, paintedScript, 5_000);
+    const shot = await send(ws, pending, counter, 'Page.captureScreenshot', { format: 'png', captureBeyondViewport: false }, 20_000);
     if (!shot.result?.data) throw new Error(`no screenshot data: ${shot.error?.message ?? 'unknown error'}`);
-    return Buffer.from(shot.result.data, 'base64');
+    const png = Buffer.from(shot.result.data, 'base64');
+    await checkMasterSize(png, variant);
+    return png;
   } finally {
     ws.close();
+    await fetch(`${endpoint}/json/close/${target.id}`).catch(() => {});
   }
 }
 
-export async function captureScreenshot(chromePath: string, url: string): Promise<Buffer> {
+/** Runs `use` against a freshly launched browser with a throwaway profile, then removes both. */
+export async function withBrowser<T>(chromePath: string, use: (endpoint: string) => Promise<T>): Promise<T> {
   const userDataDir = await mkdtemp(join(tmpdir(), 'capture-screenshots-'));
   // One outer cleanup covers every way the steps below can fail: a `launchBrowser` timeout or exit kills
   // its own child before rejecting (see above), so `proc` here stays undefined and only the profile
@@ -164,11 +281,55 @@ export async function captureScreenshot(chromePath: string, url: string): Promis
   try {
     const launched = await launchBrowser(chromePath, userDataDir);
     proc = launched.proc;
-    return await captureViaCdp(launched.browserWsUrl, url);
+    return await use(launched.browserWsUrl.replace('ws://', 'http://').replace(/\/devtools\/browser\/.*/, ''));
   } finally {
     if (proc) killBrowser(proc);
     await rm(userDataDir, { recursive: true, force: true });
   }
+}
+
+/** Lossless, so every size the build derives from a master is pixel-exact; sharp writes no metadata. */
+async function writeMaster(dir: URL, slug: string, variant: CaptureVariant, png: Buffer): Promise<void> {
+  const webp = await sharp(png).webp({ lossless: true, effort: 6 }).toBuffer();
+  const file = new URL(masterPath(slug, variant), dir);
+  await mkdir(new URL('./', file), { recursive: true });
+  await writeFile(file, webp);
+  console.log(`${slug}: wrote ${masterPath(slug, variant)} (${webp.byteLength} bytes)`);
+}
+
+/** Captures one site's four variants in one browser. A device's dark capture that matches its light one
+ *  pixel for pixel means the site has no dark theme: no dark master is written, and a stale one is removed.
+ *  Returns one message per failed variant; a failed light capture skips that device's dark one. */
+async function captureSite(chromePath: string, dir: URL, slug: string, url: string): Promise<string[]> {
+  const failures: string[] = [];
+  const fail = (variant: CaptureVariant, error: unknown) =>
+    failures.push(`${variant.device}-${variant.scheme}: ${error instanceof Error ? error.message : error}`);
+  await withBrowser(chromePath, async endpoint => {
+    const variants = captureVariants();
+    for (const light of variants.filter(variant => variant.scheme === 'light')) {
+      const dark = variants.find(variant => variant.device === light.device && variant.scheme === 'dark')!;
+      let lightPng: Buffer;
+      try {
+        lightPng = await captureVariant(endpoint, url, light);
+        await writeMaster(dir, slug, light, lightPng);
+      } catch (error) {
+        fail(light, error);
+        continue;
+      }
+      try {
+        const darkPng = await captureVariant(endpoint, url, dark);
+        if (await identicalPixels(lightPng, darkPng)) {
+          await rm(new URL(masterPath(slug, dark), dir), { force: true });
+          console.log(`${slug}: ${light.device} has no dark theme (dark capture matches light), so no ${masterPath(slug, dark)}`);
+        } else {
+          await writeMaster(dir, slug, dark, darkPng);
+        }
+      } catch (error) {
+        fail(dark, error);
+      }
+    }
+  });
+  return failures;
 }
 
 if (import.meta.main) {
@@ -176,19 +337,19 @@ if (import.meta.main) {
   const sources = await readWorkSources(new URL('src/content/work/', root));
   const targets = sources.filter((source): source is typeof source & { site: string } => source.site !== undefined);
   const dir = new URL('src/assets/screenshots/', root);
-  await mkdir(dir, { recursive: true });
   let failures = 0;
+  // One browser per site: a crash or hang on one site cannot spoil the next, and each site starts from an
+  // empty profile, with no cache or storage left by another.
   for (const target of targets) {
     try {
-      const png = await captureScreenshot(chromePath, target.site);
-      const webp = await sharp(png).webp({ quality: 82 }).toBuffer();
-      await writeFile(new URL(`${target.id}.webp`, dir), webp);
-      console.log(`${target.id}: captured ${webp.byteLength} bytes from ${target.site}`);
+      const failed = await captureSite(chromePath, dir, target.id, target.site);
+      failures += failed.length;
+      for (const message of failed) console.error(`${target.id}: ${message}`);
     } catch (error) {
       failures += 1;
       console.error(`${target.id}: ${error instanceof Error ? error.message : error}`);
     }
   }
   if (failures) process.exitCode = 1;
-  else console.log(`Captured ${targets.length} screenshot${targets.length === 1 ? '' : 's'}.`);
+  else console.log(`Captured ${targets.length} site${targets.length === 1 ? '' : 's'}.`);
 }
