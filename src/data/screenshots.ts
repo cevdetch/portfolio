@@ -1,4 +1,4 @@
-// `scripts/capture-screenshots.ts` is the only thing that touches the network or a browser; it writes
+// `scripts/capture-screenshots.ts` runs on demand, like fetch-facts; never during the build. It writes
 // one WebP per captured Work into `src/assets/screenshots/<slug>.webp`. The build stays offline and never
 // fails when a file is missing: a page renders a screenshot only when `findScreenshot` finds one among
 // the modules its own `import.meta.glob('/src/assets/screenshots/*.webp', { eager: true })` resolved.

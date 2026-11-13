@@ -1,7 +1,6 @@
 // Captures one screenshot per live Work site, committed and refreshed on demand (not on every build).
-// This is the only place in the repository that opens a network connection or drives a browser: the
-// Astro build stays offline, and a page renders a screenshot only when `src/data/screenshots.ts` finds
-// the file this script wrote.
+// Runs on demand, like fetch-facts; never during the build: the Astro build stays offline, and a page
+// renders a screenshot only when `src/data/screenshots.ts` finds the file this script wrote.
 import { spawn } from 'node:child_process';
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -23,8 +22,6 @@ export function chromeArgs(userDataDir: string): string[] {
     '--disable-extensions',
     '--disable-component-update',
     '--disable-features=Translate',
-    // Running as an unprivileged, disposable process launched by a script, not a browser a person uses.
-    '--no-sandbox',
     '--disable-dev-shm-usage',
     '--disable-gpu',
     '--remote-debugging-port=0',
@@ -39,19 +36,43 @@ export function devtoolsUrl(stderr: string): string | undefined {
   return stderr.match(/DevTools listening on (ws:\/\/\S+)/)?.[1];
 }
 
-interface CdpMessage { id?: number; method?: string; result?: { data?: string }; error?: { message: string } }
+interface CdpMessage {
+  id?: number; method?: string;
+  params?: { type?: string; response?: { status: number } };
+  result?: { data?: string }; error?: { message: string };
+}
 
-function send(ws: WebSocket, pending: Map<number, (message: CdpMessage) => void>, counter: { next: number },
-  method: string, params: Record<string, unknown> = {}): Promise<CdpMessage> {
-  return new Promise(resolve => {
-    const id = counter.next++;
-    pending.set(id, resolve);
+/** Races `promise` against a timeout, but always clears the timer once either settles, so a resolved
+ *  or rejected call never leaves a timer (and the process it would keep alive) behind. */
+export function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(message)), ms);
+    promise.then(
+      value => { clearTimeout(timer); resolve(value); },
+      error => { clearTimeout(timer); reject(error); },
+    );
+  });
+}
+
+/** One CDP call, bounded by its own timeout and rejected if the socket closes before a reply arrives,
+ *  so a dead connection cannot hang the caller, or leak its entry in `pending`, forever. */
+export function send(ws: WebSocket, pending: Map<number, (message: CdpMessage) => void>, counter: { next: number },
+  method: string, params: Record<string, unknown> = {}, timeoutMs = 10_000): Promise<CdpMessage> {
+  const id = counter.next++;
+  return new Promise<CdpMessage>((resolve, reject) => {
+    const cleanup = () => { pending.delete(id); ws.removeEventListener('close', onClose); clearTimeout(timer); };
+    const onClose = () => { cleanup(); reject(new Error(`DevTools socket closed before a reply to ${method}`)); };
+    const timer = setTimeout(() => { cleanup(); reject(new Error(`timed out waiting for a reply to ${method}`)); }, timeoutMs);
+    pending.set(id, message => { cleanup(); resolve(message); });
+    ws.addEventListener('close', onClose, { once: true });
     ws.send(JSON.stringify({ id, method, params }));
   });
 }
 
-function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
-  return Promise.race([promise, new Promise<T>((_, reject) => setTimeout(() => reject(new Error(message)), ms))]);
+/** The main frame's own document response, last if a redirect chain produced several, so the final
+ *  status is the one that decides whether the site loaded. */
+export function mainDocumentStatus(responses: readonly { type: string; status: number }[]): number | undefined {
+  return [...responses].reverse().find(response => response.type === 'Document')?.status;
 }
 
 /** Kills the whole process group the browser's spawn started, not just the top-level PID. Chromium
@@ -100,27 +121,33 @@ async function captureViaCdp(browserWsUrl: string, url: string): Promise<Buffer>
   const pending = new Map<number, (message: CdpMessage) => void>();
   const counter = { next: 1 };
   const events: string[] = [];
+  const responses: { type: string; status: number }[] = [];
   ws.addEventListener('message', event => {
     const message = JSON.parse(event.data as string) as CdpMessage;
     if (message.id !== undefined && pending.has(message.id)) { pending.get(message.id)!(message); pending.delete(message.id); }
-    else if (message.method) events.push(message.method);
+    else if (message.method === 'Network.responseReceived' && message.params?.response) {
+      responses.push({ type: message.params.type ?? '', status: message.params.response.status });
+    } else if (message.method) events.push(message.method);
   });
   try {
     await withTimeout(new Promise<void>((resolve, reject) => {
       ws.addEventListener('open', () => resolve());
       ws.addEventListener('error', () => reject(new Error('DevTools socket error')));
     }), 10_000, 'timed out opening the DevTools socket');
+    await send(ws, pending, counter, 'Network.enable');
     await send(ws, pending, counter, 'Emulation.setDeviceMetricsOverride', { ...viewport, deviceScaleFactor: 1, mobile: false });
     await send(ws, pending, counter, 'Page.enable');
     // Headless page-load signals can be missed by a listener attached after navigation starts; a bounded
-    // wait with a fallback keeps a slow or already-loaded page from hanging the capture. The poll is
-    // cleared on both paths so a slow site doesn't leave a timer running for the rest of the process.
+    // wait with a fallback keeps a slow or already-loaded page from hanging the capture. Both timers are
+    // cleared on whichever path wins, so a fast load doesn't leave the 15s fallback running behind it.
     await new Promise<void>(resolve => {
-      const timer = setInterval(() => { if (events.includes('Page.loadEventFired')) { clearInterval(timer); resolve(); } }, 100);
-      setTimeout(() => { clearInterval(timer); resolve(); }, 15_000);
+      const timer = setInterval(() => { if (events.includes('Page.loadEventFired')) { clearInterval(timer); clearTimeout(fallback); resolve(); } }, 100);
+      const fallback = setTimeout(() => { clearInterval(timer); resolve(); }, 15_000);
     });
+    const status = mainDocumentStatus(responses);
+    if (status !== undefined && status >= 400) throw new Error(`main document returned HTTP ${status} for ${url}`);
     await new Promise(resolve => setTimeout(resolve, 500));
-    const shot = await withTimeout(send(ws, pending, counter, 'Page.captureScreenshot', { format: 'png' }), 20_000, 'timed out capturing the screenshot');
+    const shot = await send(ws, pending, counter, 'Page.captureScreenshot', { format: 'png' }, 20_000);
     if (!shot.result?.data) throw new Error(`no screenshot data: ${shot.error?.message ?? 'unknown error'}`);
     return Buffer.from(shot.result.data, 'base64');
   } finally {
