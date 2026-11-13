@@ -1,5 +1,5 @@
 import type { LoadedPortfolio } from '../data/portfolio.ts';
-import { fullName, socialUsername } from '../data/profile.ts';
+import { fullName, languageItem, socialUsername } from '../data/profile.ts';
 import { fillCvLine, mergedPullsUrl, upstreamLabel } from '../data/views.ts';
 import type { WorkEntry } from '../data/validate.ts';
 import type { Snapshot } from '../facts/schema.ts';
@@ -27,8 +27,7 @@ export function escapeMarkdown(text: string): string {
 
 /** One item per language with its own level, e.g. "Turkish (Native) · English (C1)". */
 export function languagesLine(languages: Profile['languages']): string {
-  const label = (level: string) => level === 'native' ? 'Native' : level;
-  return languages.map(({ name, level }) => `${escapeMarkdown(name)} (${label(level)})`).join(' · ');
+  return languages.map(language => escapeMarkdown(languageItem(language))).join(' · ');
 }
 
 // RenderCV's own network names, in header order; it has no npm network, so npm stays off the CV.

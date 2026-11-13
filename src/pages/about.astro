@@ -1,7 +1,7 @@
 ---
 import SiteNav from '../components/SiteNav.astro';
 import Layout from '../layouts/Layout.astro';
-import { fullName } from '../data/profile.ts';
+import { fullName, languageItem } from '../data/profile.ts';
 import { loadPortfolio } from '../data/portfolio.ts';
 import { formatMonth } from '../lib/format.ts';
 
@@ -42,7 +42,7 @@ const writing = works.get(profile.writing)!;
     <section aria-labelledby="languages">
       <h2 id="languages">Languages</h2>
       <ul>
-        {profile.languages.map(language => <li>{language.name}: {language.level === 'native' ? 'Native' : language.level}</li>)}
+        {profile.languages.map(language => <li>{languageItem(language)}</li>)}
       </ul>
     </section>
     <section aria-labelledby="interests">

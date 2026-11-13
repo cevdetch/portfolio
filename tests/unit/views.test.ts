@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { availabilityLine, socialUsername } from '../../src/data/profile.ts';
+import { availabilityLine, languageItem, socialUsername } from '../../src/data/profile.ts';
 import { contributionHighlights, contributionTotals, featuredWorks, fillCvLine, fillProcessStep, homeMetrics, inSourceOrder, mergedPullsUrl, newestFirst, recentlyShipped, skillGroups, splitOnTitles, upstreamGroups, upstreamLabel, workFactsView } from '../../src/data/views.ts';
 import { formatDay, formatMonth, joinList } from '../../src/lib/format.ts';
 import { fixturePortfolio, fixtureSnapshot } from '../helpers/portfolio-fixture.ts';
@@ -87,6 +87,11 @@ test('availability still reads naturally with one workplace, or with no employme
     'Open to part-time employment, contract and freelance work, remote in Switzerland. Replies within 2 working days.');
   assert.equal(availabilityLine({ ...availability, openTo: ['contract', 'freelance'] }, 'Switzerland'),
     'Open to contract and freelance work, remote or on site in Switzerland. Replies within 2 working days.');
+});
+
+test('a language reads as its name and level, with native spelled out', () => {
+  assert.equal(languageItem({ name: 'Turkish', level: 'native' }), 'Turkish (Native)');
+  assert.equal(languageItem({ name: 'English', level: 'C1' }), 'English (C1)');
 });
 
 test('a social URL yields the handle in its path', () => {

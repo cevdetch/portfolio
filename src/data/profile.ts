@@ -14,6 +14,12 @@ export function fullName(profile: Pick<Profile, 'name' | 'familyName'>): string 
   return `${profile.name} ${profile.familyName}`;
 }
 
+/** "Turkish (Native)" style: the one language-display format for the CV and /about/. */
+export function languageItem(language: Pick<Profile['languages'][number], 'name' | 'level'>): string {
+  const level = language.level === 'native' ? 'Native' : language.level;
+  return `${language.name} (${level})`;
+}
+
 export type SocialNetwork = Profile['socials'][number]['network'];
 
 export const socialLabels: Record<SocialNetwork, string> = { github: 'GitHub', linkedin: 'LinkedIn', npm: 'npm' };
