@@ -4,6 +4,7 @@ import SocialLinks from '../components/SocialLinks.astro';
 import Layout from '../layouts/Layout.astro';
 import { loadPortfolio } from '../data/portfolio.ts';
 import { availabilityLine } from '../data/profile.ts';
+import { fillProcessStep } from '../data/views.ts';
 
 const data = await loadPortfolio();
 const { profile } = data;
@@ -31,6 +32,14 @@ const mailto = `mailto:${profile.email}?subject=${encodeURIComponent(profile.con
           </li>
         ))}
       </ul>
+    </section>
+    <section aria-labelledby="how-i-work">
+      <h2 id="how-i-work">How I work</h2>
+      <ol>
+        {profile.process.map(step => (
+          <li>{step.title}: {fillProcessStep(step.detail, profile.availability.reply).text}</li>
+        ))}
+      </ol>
     </section>
     <section aria-labelledby="contact">
       <h2 id="contact">Contact</h2>

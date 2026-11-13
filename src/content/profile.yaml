@@ -33,6 +33,13 @@ availability:
   reply: within 2 working days
   openTo: [employment, contract, freelance]
   workplace: [remote, local]
+process:
+  - title: Reply
+    detail: Reply {reply} with questions or a first take.
+  - title: Scope
+    detail: Scope the work and agree an estimate in writing before starting.
+  - title: Build
+    detail: 'Build with checks the client can verify: Lighthouse scores, a deadhead report and a preview link for each change.'
 services:
   - id: static-sites
     name: Fast static sites

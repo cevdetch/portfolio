@@ -39,6 +39,9 @@ export const profileSchema = z.strictObject({
   writing: id,
   socials: z.array(z.strictObject({ network: z.enum(['github', 'linkedin', 'npm']), url: httpsUrl })).min(1),
   availability,
+  // How a project runs, in three steps for /hire/. Story, linted; detail may hold the {reply} token, filled
+  // from availability.reply so the reply time is typed once.
+  process: z.array(z.strictObject({ title: line(60), detail: line(200) })).length(3),
   services: z.array(z.strictObject({
     id,
     name: line(60),

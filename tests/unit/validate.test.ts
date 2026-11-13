@@ -189,6 +189,18 @@ test('a cvLine is CV-shared Story and its tokens must resolve', () => {
   ]);
 });
 
+test('process steps are linted and their token must resolve', () => {
+  const p = fixturePortfolio();
+  p.profile.process[0]!.title = 'My reply';
+  p.profile.process[1]!.detail = 'Scope the work in v0.3.1.';
+  p.profile.process[2]!.detail = '{price} fixed, agreed in writing.';
+  assert.deepEqual(validatePortfolio(p, fixtureSnapshot()), [
+    'profile process[0] title: CV-shared Story is verb-led and pronoun-free',
+    'profile process[1] detail: a version is a Fact; remove it from Story',
+    'profile process[2] detail: unknown token {price}',
+  ]);
+});
+
 test('services, Uses notes, Metric labels and interests are linted too', () => {
   const p = fixturePortfolio();
   p.profile.services[0]!.name = 'Sites (coming soon)';

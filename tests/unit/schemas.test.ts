@@ -62,6 +62,11 @@ test('profile pins the public identity and carries no location field', () => {
     email: 'hello@cevdet.ch', website: 'https://cevdet.ch/', contactSubject: 'Enquiry from cevdet.ch', writing: 'one',
     socials: [{ network: 'github', url: 'https://github.com/cevdetch' }],
     availability: { capacity: 'part-time', timeZone: 'Europe/Zurich', reply: 'within 2 working days', openTo: ['employment'], workplace: ['remote'] },
+    process: [
+      { title: 'Reply', detail: 'Reply {reply} with a first take.' },
+      { title: 'Scope', detail: 'Scope the work and agree an estimate in writing.' },
+      { title: 'Build', detail: 'Build with checks the client can verify.' },
+    ],
     services: [{ id: 'static-sites', name: 'Fast static sites', summary: 'Astro sites.' }],
     languages: [{ name: 'English', level: 'C1' }],
   };
@@ -83,6 +88,11 @@ test('every interest says whether the CV prints it', () => {
     email: 'hello@cevdet.ch',
     website: 'https://cevdet.ch/', contactSubject: 'Enquiry', writing: 'one', socials: [{ network: 'github', url: 'https://github.com/cevdetch' }],
     availability: { capacity: 'part-time', timeZone: 'Europe/Zurich', reply: 'within 2 working days', openTo: ['employment'], workplace: ['remote'] },
+    process: [
+      { title: 'Reply', detail: 'Reply {reply} with a first take.' },
+      { title: 'Scope', detail: 'Scope the work and agree an estimate in writing.' },
+      { title: 'Build', detail: 'Build with checks the client can verify.' },
+    ],
     services: [{ id: 'static-sites', name: 'Fast static sites', summary: 'Astro sites.' }], languages: [{ name: 'English', level: 'C1' }],
     interests: [{ label: 'Writing', details: 'Essays, published at one.cevdet.ch', cv: true, work: 'one' }],
   });

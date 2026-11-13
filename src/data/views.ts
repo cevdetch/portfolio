@@ -136,6 +136,22 @@ export function fillCvLine(text: string, facts: WorkFacts | undefined): { text: 
   return { text: filled, problems };
 }
 
+// The one token a process step's detail may hold, filled from availability.reply so the reply time is typed once.
+const processTokens = new Map<string, (reply: string) => string>([
+  ['reply', reply => reply],
+]);
+
+/** Replaces each `{token}` in a process step's detail with its source value; `problems` lists what could not be filled. */
+export function fillProcessStep(text: string, reply: string): { text: string; problems: string[] } {
+  const problems: string[] = [];
+  const filled = text.replace(/\{(\w+)\}/g, (token, name: string) => {
+    const fill = processTokens.get(name);
+    if (!fill) { problems.push(`unknown token ${token}`); return token; }
+    return fill(reply);
+  });
+  return { text: filled, problems };
+}
+
 export function usesSections<T extends { id: string; data: UsesSection }>(uses: readonly T[]): T[] {
   return [...uses].sort((a, b) => a.data.order - b.data.order);
 }
