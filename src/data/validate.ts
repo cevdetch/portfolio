@@ -137,6 +137,14 @@ export function validatePortfolio(p: Portfolio, facts: Snapshot): string[] {
     const linked = p.works.find(entry => entry.id === ref);
     if (linked) errors.push(...proofLinkErrors(at, p.profile.proof, linked));
   });
+  p.profile.homeMetrics.forEach((pin, index) => {
+    const at = `profile homeMetrics[${index}]`;
+    work(at, pin.work);
+    const linked = p.works.find(entry => entry.id === pin.work);
+    if (linked && !linked.data.metrics.some(metric => metric.label === pin.label)) {
+      errors.push(`${at}: Work "${pin.work}" has no Metric "${pin.label}"`);
+    }
+  });
   for (const service of p.profile.services) {
     errors.push(...lintAll(`profile service ${service.id}`, { name: service.name, summary: service.summary }, false));
   }

@@ -50,6 +50,16 @@ test("the home page links each proofWorks entry, so its title must appear in the
   assert.deepEqual(validatePortfolio(p, fixtureSnapshot()), []);
 });
 
+test('a home Metric pin must name an existing Work and one of its Metric labels', () => {
+  const p = fixturePortfolio();
+  p.profile.homeMetrics.push({ work: 'blog', label: 'Sourced rules' });
+  assert.deepEqual(validatePortfolio(p, fixtureSnapshot()), ['profile homeMetrics[1]: unknown Work "blog"']);
+  p.profile.homeMetrics[1] = { work: 'one', label: 'Sourced rules' };
+  assert.deepEqual(validatePortfolio(p, fixtureSnapshot()), ['profile homeMetrics[1]: Work "one" has no Metric "Sourced rules"']);
+  p.profile.homeMetrics[1] = { work: 'deadhead', label: 'Sourced rules' };
+  assert.deepEqual(validatePortfolio(p, fixtureSnapshot()), []);
+});
+
 test('cv projects and skills reference Works and Techs that exist', () => {
   const p = fixturePortfolio();
   p.cv.projects.push({ works: ['ghost'], optional: false });
@@ -175,10 +185,10 @@ test('services, Uses notes, Metric labels and interests are linted too', () => {
   p.profile.services[0]!.name = 'Sites (coming soon)';
   p.profile.services[0]!.summary = 'Astro 7.4.2 sites.';
   p.uses[0]!.data.entries[0]!.note = 'TODO: describe';
-  p.works[0]!.data.metrics = [{ label: 'Rules in v0.3.1', value: '203', measuredAt: '2026-11-01', source: { label: 'README' } }];
+  p.works[0]!.data.metrics.push({ label: 'Rules in v0.3.1', value: '203', measuredAt: '2026-11-01', source: { label: 'README' } });
   p.profile.interests = [{ label: 'Pursuits', details: 'My bouldering and hiking', cv: false }];
   assert.deepEqual(validatePortfolio(p, fixtureSnapshot()), [
-    'work/deadhead metrics[0] label: a version is a Fact; remove it from Story',
+    'work/deadhead metrics[1] label: a version is a Fact; remove it from Story',
     'uses/phone entries[0] note: placeholder text',
     'profile service static-sites name: placeholder text',
     'profile service static-sites summary: a version is a Fact; remove it from Story',

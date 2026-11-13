@@ -11,6 +11,11 @@ bio: >-
   Svelte, Immich and GrapheneOS. Works end to end, from tests and docs to Linux packaging.
 proof: Creator of deadhead and favseed. HTML-head fixes merged into Astro, Svelte, Immich and GrapheneOS.
 proofWorks: [deadhead, favseed]
+homeMetrics:
+  - { work: deadhead, label: Sourced rules }
+  - { work: deadhead, label: Homepages audited }
+  - { work: favseed, label: Raster bytes saved by the encode search vs quality 80 }
+  - { work: astro-reels-template, label: 'Lighthouse accessibility, best practices and SEO' }
 email: hello@cevdet.ch
 website: https://cevdet.ch/
 contactSubject: Enquiry from cevdet.ch

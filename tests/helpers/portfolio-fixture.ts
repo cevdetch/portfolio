@@ -18,6 +18,7 @@ export function fixturePortfolio(): Portfolio {
       specialisation: 'Web performance · Developer tooling · Open source', country: 'Switzerland',
       bio: 'Builds and publishes open-source developer tools.',
       proof: 'Creator of deadhead. HTML-head fixes merged into Astro.', proofWorks: ['deadhead'],
+      homeMetrics: [{ work: 'deadhead', label: 'Sourced rules' }],
       email: 'hello@cevdet.ch', website: 'https://cevdet.ch/', contactSubject: 'Enquiry from cevdet.ch', writing: 'one',
       socials: [{ network: 'github', url: 'https://github.com/cevdetch' }, { network: 'linkedin', url: 'https://www.linkedin.com/in/cevdetch/' }],
       availability: { capacity: 'part-time', timeZone: 'Europe/Zurich', reply: 'within 2 working days', openTo: ['employment', 'contract', 'freelance'], workplace: ['remote', 'local'] },
@@ -40,6 +41,7 @@ export function fixturePortfolio(): Portfolio {
         repo: 'cevdetch/deadhead', site: 'https://deadhead.cevdet.ch/', packages: [{ registry: 'npm', name: 'deadhead' }],
         stack: ['typescript'], tagline: 'An HTML head linter', summary: 'Lints the HTML head against sourced rules.',
         role: 'Creator and maintainer', highlights: ['Generates the linter and its documentation from the same Markdown.'],
+        metrics: [{ label: 'Sourced rules', value: '203', measuredAt: '2026-10-26', source: { label: 'deadhead release notes', url: 'https://github.com/cevdetch/deadhead/releases/tag/v0.3.1' } }],
       }) },
       { id: 'one', body: caseStudyBody, data: workSchema.parse({
         title: 'One', kind: 'site', status: 'active', site: 'https://one.cevdet.ch/', stack: ['astro'],

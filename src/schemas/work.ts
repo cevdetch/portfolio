@@ -10,6 +10,7 @@ export const metricSchema = z.strictObject({
   measuredAt: isoDate,
   source: z.strictObject({ label: line(120), url: httpsUrl.optional() }),
 });
+export type Metric = z.infer<typeof metricSchema>;
 
 export const packageRefSchema = z.strictObject({
   registry: z.enum(['npm', 'aur']),

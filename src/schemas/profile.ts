@@ -30,6 +30,8 @@ export const profileSchema = z.strictObject({
   proof: line(150),
   // The Works proof names by title, so the home page can link each one; validated against that title.
   proofWorks: z.array(id).min(1),
+  // The home page's numbers strip: each pin resolves to one of the named Work's Metrics, never a copied value.
+  homeMetrics: z.array(z.strictObject({ work: id, label: line(60) })).min(1),
   email: z.email(),
   website: z.literal('https://cevdet.ch/'),
   contactSubject: line(80),
