@@ -1,7 +1,7 @@
 ---
 title: Astro Metadata Lab
 kind: research
-status: complete
+status: active
 repo: cevdetch/astro-metadata-lab
 site: https://astro-metadata-lab.cevdet.ch/
 stack: [astro, html, javascript, cloudflare-pages]
@@ -10,13 +10,17 @@ summary: Tests how real browsers and messaging apps show page titles, link previ
 role: Creator
 highlights:
   - Built 121 static test cases covering metadata precedence, canonicals, icons, head parsing, theming, manifests, JSON-LD, language and HTTP status.
-  - Recorded browser and link-preview observations per case, keeping documented platform contracts separate from observed client behaviour.
+  - Recorded browser, link-preview and HTTP observations from real clients in a shared run registry, keeping documented platform contracts separate from observed client behaviour.
   - Turned the results into the metadata defaults of the Astro Minimal Template.
 metrics:
   - label: Metadata test cases
     value: '121'
     measuredAt: 2026-10-24
     source: { label: Astro Metadata Lab README, url: https://github.com/cevdetch/astro-metadata-lab/blob/main/README.md }
+  - label: Cases with recorded observations
+    value: 71 of 121
+    measuredAt: 2026-10-24
+    source: { label: Astro Metadata Lab README coverage, url: https://github.com/cevdetch/astro-metadata-lab/blob/main/README.md#coverage }
 ---
 
 ## Problem
@@ -39,16 +43,19 @@ Advice on what belongs in a page's `<head>` is easy to find and hard to verify. 
 
 ## Results
 
-- **Write Open Graph text explicitly.** When Open Graph text was omitted, Discord showed no title or description at all instead of falling back to the HTML values, and other clients' fallbacks differed. The recommendation became one shared title and description feeding both the HTML and the Open Graph text.
-- **Some tags stay for the protocol, not for an observed effect.** Removing `og:type` or `og:url` individually caused no visible change in the tested clients; both stay for protocol conformance. Image dimension tags caused no visible regression when omitted, so the agreed default leaves them out.
-- **Prefer an absolute PNG share image.** Root-relative and SVG images behaved inconsistently, and a missing image produced anything from no image to an "Image failed to load" stand-in. Generated images default to 1200×630 PNG.
-- **Escape JSON-LD.** The unsafe control failed to parse, injected an image element and set its runtime flag, while the escaped control parsed with the markup-like text kept as a string.
-- **Build checks alone missed a dev-only failure.** A strict trailing-slash policy made an extensionless asset endpoint reject file URLs in the dev server while the static build emitted the right files; a regression check now exercises Astro's dev route matching.
-- **Clients cut text at different lengths**, so the starter keeps full escaped strings and gives writing guidance instead of silent truncation.
-- These defaults shipped in the [Astro Minimal Template](https://astro-minimal-template.cevdet.ch/).
+Each result links to the case records behind it; the [results index](https://astro-metadata-lab.cevdet.ch/cases/results/) lists every case and the run that produced each observation.
+
+- **Write Open Graph text explicitly.** With only `og:title` removed, Discord showed neither a title nor a description, and with only `og:description` removed it dropped the description, while two other messaging apps filled the missing field from the HTML ([og-no-title](https://astro-metadata-lab.cevdet.ch/cases/results/precedence/og-no-title/), [og-no-description](https://astro-metadata-lab.cevdet.ch/cases/results/precedence/og-no-description/)). With no Open Graph tags at all, Discord did show the HTML title and description ([html-only](https://astro-metadata-lab.cevdet.ch/cases/results/precedence/html-only/)). The recommendation became one shared title and description feeding both the HTML and the Open Graph text.
+- **Some tags stay for the protocol, not for an observed effect.** Removing `og:type`, `og:url` or the image dimension tags caused no reported visible change in any of the five link-preview clients tested ([no-og-type](https://astro-metadata-lab.cevdet.ch/cases/results/metadata/no-og-type/), [no-og-url](https://astro-metadata-lab.cevdet.ch/cases/results/metadata/no-og-url/), [image-without-dimensions](https://astro-metadata-lab.cevdet.ch/cases/results/metadata/image-without-dimensions/)). `og:type` and `og:url` stay for protocol conformance; the agreed default leaves the dimension tags out.
+- **Prefer an absolute PNG share image.** A root-relative image showed in four of the five clients, and an SVG image only in Instagram ([image-relative](https://astro-metadata-lab.cevdet.ch/cases/results/metadata/image-relative/), [image-svg](https://astro-metadata-lab.cevdet.ch/cases/results/metadata/image-svg/)). A missing image produced no image in three clients and a stand-in in Discord ("Image failed to load") and Instagram ([image-missing](https://astro-metadata-lab.cevdet.ch/cases/results/metadata/image-missing/)). Generated images default to 1200×630 PNG.
+- **Escape JSON-LD.** In Firefox, the unsafe control failed to parse, injected an image element and set its runtime flag, while the escaped control parsed with the markup-like text kept as a string ([jsonld-unsafe](https://astro-metadata-lab.cevdet.ch/cases/results/json-ld/jsonld-unsafe/), [jsonld-escaped](https://astro-metadata-lab.cevdet.ch/cases/results/json-ld/jsonld-escaped/)).
+- **Build checks alone missed a dev-only failure.** A strict trailing-slash policy made an extensionless asset endpoint reject file URLs in the dev server while the static build emitted the right files; a regression check now exercises Astro's dev route matching ([design notes](https://github.com/cevdetch/astro-metadata-lab/blob/main/src/metadata-cases/design-notes.md)).
+- **Clients cut text at different lengths**, so the recommendation keeps full escaped strings and gives writing guidance instead of silent truncation ([long-title](https://astro-metadata-lab.cevdet.ch/cases/results/metadata/long-title/)).
+- **LinkedIn's post composer and direct messages showed no preview.** Post Inspector rendered titles and images but never a description ([all-fields](https://astro-metadata-lab.cevdet.ch/cases/results/precedence/all-fields/)).
+- The [Astro Minimal Template](https://astro-minimal-template.cevdet.ch/) ships these defaults: one title and description for both the HTML and the Open Graph text, `og:type` and `og:url` without dimension tags, a generated 1200×630 PNG, untruncated text and escaped JSON-LD.
 
 ## Next
 
-- Testing the clients unavailable in this round, X and Facebook Messenger, against the same precedence cases is a possible follow-up.
+- The first round of observations is recorded for the clients that were available. Testing the clients unavailable in this round, X and Facebook Messenger, against the same precedence cases is a possible follow-up.
 - Diagnosing why LinkedIn's post composer and direct messages showed no preview, which the Inspector results did not explain, remains open.
-- Running the extended hosted HTTP checks and the remaining browser combinations, including a 48px ICO result and a matching light-mode theming report, is further possible work.
+- Record the cases that have no observations yet, every manifest case among them, plus the extended hosted HTTP checks and the remaining browser combinations, such as a 48px ICO result and a light-mode theming report.
