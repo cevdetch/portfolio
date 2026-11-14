@@ -209,7 +209,7 @@
       "url": "https://github.com/sveltejs/svelte/pull/12526"
     }
   ],
-  "refreshedAt": "2026-11-14T20:24:44.240Z",
+  "refreshedAt": "2026-11-14T20:39:08.600Z",
   "version": 1,
   "works": {
     "arch-waypure": {
@@ -268,9 +268,9 @@
         "zvbi"
       ],
       "repo": {
-        "commitCount": 152,
+        "commitCount": 155,
         "firstCommit": "2025-12-24T22:35:44Z",
-        "lastCommit": "2026-11-14T20:23:28Z",
+        "lastCommit": "2026-11-14T20:33:17Z",
         "latestRelease": null,
         "license": "0BSD",
         "private": false
@@ -278,6 +278,13 @@
     },
     "astro-metadata-lab": {
       "icon": null,
+      "lighthouse": {
+        "accessibility": 100,
+        "bestPractices": 100,
+        "measuredAt": "2026-11-14T20:38:28.667Z",
+        "performance": 100,
+        "seo": 100
+      },
       "packages": [],
       "repo": {
         "commitCount": 18,
@@ -292,6 +299,13 @@
       "icon": {
         "file": "icons/astro-minimal-template.svg",
         "sha256": "02ed4615cdfdfb1bac9fe822dca825c96cc6f5ef9f0b857f5e63559596607088"
+      },
+      "lighthouse": {
+        "accessibility": 100,
+        "bestPractices": 100,
+        "measuredAt": "2026-11-14T20:38:19.839Z",
+        "performance": 100,
+        "seo": 100
       },
       "packages": [],
       "repo": {
@@ -308,6 +322,13 @@
         "file": "icons/astro-reels-template.svg",
         "sha256": "02ed4615cdfdfb1bac9fe822dca825c96cc6f5ef9f0b857f5e63559596607088"
       },
+      "lighthouse": {
+        "accessibility": 100,
+        "bestPractices": 100,
+        "measuredAt": "2026-11-14T20:38:29.187Z",
+        "performance": 100,
+        "seo": 100
+      },
       "packages": [],
       "repo": {
         "commitCount": 9,
@@ -322,6 +343,13 @@
       "icon": {
         "file": "icons/deadhead.svg",
         "sha256": "6560c266291eff409f81ba20537ca03359c2c9bed4837bb8a87e37265d7737c0"
+      },
+      "lighthouse": {
+        "accessibility": 100,
+        "bestPractices": 100,
+        "measuredAt": "2026-11-14T20:38:47.817Z",
+        "performance": 100,
+        "seo": 100
       },
       "packages": [
         {
@@ -362,6 +390,13 @@
         "file": "icons/favseed.svg",
         "sha256": "53249005fd9ac1bc2adbcc895b8af4c72696d9cb67f8c3186737ad3b2a6f62d4"
       },
+      "lighthouse": {
+        "accessibility": 100,
+        "bestPractices": 100,
+        "measuredAt": "2026-11-14T20:38:47.558Z",
+        "performance": 100,
+        "seo": 100
+      },
       "packages": [
         {
           "name": "favseed",
@@ -382,6 +417,13 @@
       "icon": {
         "file": "icons/one.svg",
         "sha256": "f571ccb90a41c375d659ace0733c84489a9d4fe98692a6c42366c2b5ba861bfa"
+      },
+      "lighthouse": {
+        "accessibility": 100,
+        "bestPractices": 100,
+        "measuredAt": "2026-11-14T20:38:57.553Z",
+        "performance": 100,
+        "seo": 100
       },
       "packages": []
     }
