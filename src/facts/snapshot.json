@@ -209,7 +209,7 @@
       "url": "https://github.com/sveltejs/svelte/pull/12526"
     }
   ],
-  "refreshedAt": "2026-11-14T11:20:35.146Z",
+  "refreshedAt": "2026-11-14T12:10:07.028Z",
   "version": 1,
   "works": {
     "arch-waypure": {
@@ -280,11 +280,11 @@
       "icon": null,
       "packages": [],
       "repo": {
-        "commitCount": 8,
+        "commitCount": 18,
         "firstCommit": "2026-10-24T00:03:34Z",
-        "lastCommit": "2026-11-13T17:02:32Z",
+        "lastCommit": "2026-11-14T11:59:48Z",
         "latestRelease": null,
-        "license": null,
+        "license": "MIT",
         "private": false
       }
     },
@@ -348,9 +348,9 @@
         }
       ],
       "repo": {
-        "commitCount": 333,
+        "commitCount": 334,
         "firstCommit": "2026-09-09T18:21:46Z",
-        "lastCommit": "2026-11-13T17:52:30Z",
+        "lastCommit": "2026-11-14T12:07:06Z",
         "latestRelease": {
           "publishedAt": "2026-10-14T19:34:24Z",
           "tag": "v0.3.1"
@@ -376,9 +376,9 @@
         }
       ],
       "repo": {
-        "commitCount": 122,
+        "commitCount": 123,
         "firstCommit": "2026-10-04T17:49:18Z",
-        "lastCommit": "2026-11-14T09:45:37Z",
+        "lastCommit": "2026-11-14T10:59:41Z",
         "latestRelease": null,
         "license": "MIT",
         "private": false
