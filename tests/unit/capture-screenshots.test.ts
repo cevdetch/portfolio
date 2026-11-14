@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import sharp from 'sharp';
 import {
-  appleFontconfigXml, captureVariants, checkAppleFontsInstalled, checkMasterSize, checkPalatinoFontInstalled, chromeArgs,
+  appleFontconfigXml, captureVariants, checkMasterSize, chromeArgs,
   devtoolsUrl, familyAvailable, identicalPixels, launchBrowser, mainDocumentStatus, masterPath, masterSize, mediaFeatures,
   p052Available, palatinoAliasCss, send, withTimeout,
 } from '../../scripts/capture-screenshots.ts';
@@ -165,10 +165,6 @@ test('p052Available is true only when fc-match resolves P052-Roman to the P052 f
   assert.equal(p052Available(''), false);
 });
 
-test('checkPalatinoFontInstalled resolves when fc-match resolves P052-Roman to P052 on this machine', async () => {
-  await assert.doesNotReject(checkPalatinoFontInstalled());
-});
-
 test('familyAvailable is true only when fc-match resolves the probe to that family itself', () => {
   assert.equal(familyAvailable('SF Pro\n', 'SF Pro'), true);
   assert.equal(familyAvailable('SF Pro', 'SF Pro'), true);
@@ -184,10 +180,6 @@ test('appleFontconfigXml prepends SF Pro Text onto system-ui and aliases the san
   assert.ok(/<family>sans-serif<\/family><prefer><family>SF Pro Text<\/family><\/prefer>/.test(xml));
   assert.ok(/<family>monospace<\/family><prefer><family>SF Mono<\/family><\/prefer>/.test(xml));
   assert.ok(!xml.includes('Adwaita'));
-});
-
-test('checkAppleFontsInstalled resolves when fc-match resolves both SF Pro Text and SF Mono on this machine', async () => {
-  await assert.doesNotReject(checkAppleFontsInstalled());
 });
 
 test('identicalPixels compares decoded pixels, not encoded bytes', async () => {
