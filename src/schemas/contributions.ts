@@ -14,8 +14,8 @@ export const contributionOverridesSchema = z.strictObject({
     techs: z.array(id).default([]),
     works: z.array(id).default([]),
     pulls: z.record(z.string().regex(/^\d+$/), z.strictObject({
-      // Keeps the pull off the home page (Contribution highlights and Recently shipped), such as
-      // a claim no one measured; /open-source/ still lists every merged pull.
+      // Keeps the pull off the home page (Contribution highlights and Recently shipped) and out of the merge span,
+      // such as a claim no one measured; /open-source/ still lists every merged pull.
       hidden: z.boolean().default(false),
       highlight: z.boolean().default(false),
       // Fixes the order of the home page's Contribution highlights; ignored unless highlight is true.

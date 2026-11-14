@@ -4,11 +4,21 @@ import { buildCv, escapeMarkdown, languagesLine, socialNetworks } from '../../sr
 import { fixturePortfolio, fixtureSnapshot } from '../helpers/portfolio-fixture.ts';
 
 const data = () => ({ ...fixturePortfolio(), facts: fixtureSnapshot() });
+const openSource = (cv: ReturnType<typeof buildCv>) => Object.entries(cv.cv.sections).find(([key]) => key.startsWith('Open Source'))?.[1];
 const pulls = (repo: string) => `https://github.com/${repo}/pulls?q=is%3Apr+is%3Amerged+author%3Acevdetch`;
 
 test('sections: summary and education first, then projects, open source and experience; no availability', () => {
   assert.deepEqual(Object.keys(buildCv(data()).cv.sections),
-    ['summary', 'education', 'projects', 'open_source', 'experience', 'skills', 'languages_&_writing']);
+    ['summary', 'education', 'projects', 'Open Source · Jun 2026 – Jul 2026', 'experience', 'skills', 'languages_&_writing']);
+});
+
+test('the open source heading carries the merge span, to present while the last merge is under 90 days old', () => {
+  const p = data();
+  p.facts.refreshedAt = '2026-09-01T00:00:00.000Z';
+  assert.ok('Open Source · Jun 2026 – present' in buildCv(p).cv.sections);
+  p.facts.contributions = [];
+  p.contributions = { upstreams: [], themes: [] };
+  assert.ok('open_source' in buildCv(p).cv.sections);
 });
 
 test('the header: name, title with specialisation, then country and time zone before the website, email, GitHub and LinkedIn', () => {
@@ -107,13 +117,13 @@ test('a group of finished Works ends at the latest last commit; a group without 
 });
 
 test('open source prints one line per theme: lead, linked labels, note; no counts', () => {
-  assert.deepEqual(buildCv(data()).cv.sections.open_source, [{
+  assert.deepEqual(openSource(buildCv(data())), [{
     bullet: `HTML-head fixes merged into [Astro](${pulls('withastro/astro')}) and [Svelte](${pulls('sveltejs/svelte')}), including a sitemap\\_index fix in Astro.`,
   }]);
   const p = data();
   delete p.contributions.themes[0]!.note;
   p.contributions.themes[0]!.upstreams.pop();
-  assert.deepEqual(buildCv(p).cv.sections.open_source, [{ bullet: `HTML-head fixes merged into [Astro](${pulls('withastro/astro')}).` }]);
+  assert.deepEqual(openSource(buildCv(p)), [{ bullet: `HTML-head fixes merged into [Astro](${pulls('withastro/astro')}).` }]);
 });
 
 test('skills come from cv.yaml with its labels, and a display label names several Techs', () => {

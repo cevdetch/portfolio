@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { availabilityLine, fillBio, languageItem, socialUsername } from '../../src/data/profile.ts';
-import { contributionHighlights, contributionTotals, featuredWorks, fillCvLine, firstCitations, homeMetrics, inSourceOrder, mergedPullsUrl, metricDisplay, newestFirst, recentlyShipped, skillGroups, splitOnTitles, upstreamGroups, upstreamLabel, workFactsView } from '../../src/data/views.ts';
+import { contributionHighlights, contributionSpan, contributionTotals, featuredWorks, fillCvLine, firstCitations, homeMetrics, inSourceOrder, mergedPullsUrl, metricDisplay, newestFirst, recentlyShipped, skillGroups, splitOnTitles, upstreamGroups, upstreamLabel, workFactsView } from '../../src/data/views.ts';
 import { formatDay, formatDayRange, formatMonth, joinList } from '../../src/lib/format.ts';
 import { fixturePortfolio, fixtureSnapshot } from '../helpers/portfolio-fixture.ts';
 
@@ -64,6 +64,20 @@ test('contribution totals count every listed pull, hidden ones included, and eac
   p.contributions.upstreams[1]!.pulls['7'] = { hidden: true, highlight: false };
   assert.deepEqual(contributionTotals(upstreamGroups(fixtureSnapshot().contributions, p.contributions)), { pulls: 3, upstreams: 2 });
   assert.deepEqual(contributionTotals([]), { pulls: 0, upstreams: 0 });
+});
+
+test('the merge span runs from the first to the last non-hidden merged pull, ongoing under 90 days after the refresh', () => {
+  const p = fixturePortfolio();
+  const snapshot = fixtureSnapshot();
+  assert.deepEqual(contributionSpan(snapshot.contributions, p.contributions, snapshot.refreshedAt),
+    { from: '2026-06-24T12:35:44Z', to: '2026-07-01T08:22:12Z', ongoing: false });
+  assert.equal(contributionSpan(snapshot.contributions, p.contributions, '2026-09-28T08:22:12Z')?.ongoing, true);
+  assert.equal(contributionSpan(snapshot.contributions, p.contributions, '2026-09-29T08:22:12Z')?.ongoing, false);
+  p.contributions.upstreams[0]!.pulls['101'] = { hidden: true, highlight: false };
+  assert.equal(contributionSpan(snapshot.contributions, p.contributions, snapshot.refreshedAt)?.from, '2026-06-30T10:00:00Z');
+  // /open-source/ dates the same pulls it lists and counts, hidden ones included.
+  assert.equal(contributionSpan(snapshot.contributions, p.contributions, snapshot.refreshedAt, true)?.from, '2026-06-24T12:35:44Z');
+  assert.equal(contributionSpan([], p.contributions, snapshot.refreshedAt), undefined);
 });
 
 test("Contribution highlights follow their own pinned order, never the Upstream group's order", () => {

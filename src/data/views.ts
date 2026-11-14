@@ -88,6 +88,30 @@ export function contributionTotals(groups: readonly UpstreamGroup[]): { pulls: n
   return { pulls: groups.reduce((sum, group) => sum + group.pulls.length, 0), upstreams: groups.length };
 }
 
+export interface ContributionSpan { from: string; to: string; ongoing: boolean }
+
+const ongoingDays = 90;
+
+/**
+ * The first and last merge among the non-hidden Contributions, for the CV's Open Source heading; /open-source/ passes
+ * `includeHidden` so its sentence covers exactly the pulls it lists and counts.
+ * Ongoing ("present") while the last merge is under 90 days older than `now`, the Snapshot's refresh time, so the
+ * offline build stays deterministic. Limitation: refreshedAt moves only when some Fact changes, so after a quiet
+ * stretch "present" can outlast the 90 days. A separate checkedAt bumped on every run would fix that, but the weekly
+ * refresh would then commit a Snapshot change every week with no Fact behind it; any new merge, commit or release
+ * moves refreshedAt anyway.
+ */
+export function contributionSpan(
+  contributions: readonly Contribution[], overrides: ContributionOverrides, now: string, includeHidden = false,
+): ContributionSpan | undefined {
+  const dates = upstreamGroups(contributions, overrides)
+    .flatMap(group => group.pulls.filter(pull => includeHidden || !pull.hidden).map(pull => pull.mergedAt)).sort();
+  const from = dates[0];
+  const to = dates.at(-1);
+  if (!from || !to) return undefined;
+  return { from, to, ongoing: Date.parse(now) - Date.parse(to) < ongoingDays * 86_400_000 };
+}
+
 /** The Handle's merged pull requests to one Upstream, on GitHub. */
 export function mergedPullsUrl(repo: string, handle: string): string {
   return `https://github.com/${repo}/pulls?q=${encodeURIComponent(`is:pr is:merged author:${handle}`).replaceAll('%20', '+')}`;

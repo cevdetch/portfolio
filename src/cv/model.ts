@@ -1,6 +1,6 @@
 import type { LoadedPortfolio } from '../data/portfolio.ts';
 import { fullName, languageItem, socialUsername } from '../data/profile.ts';
-import { fillCvLine, mergedPullsUrl, upstreamLabel } from '../data/views.ts';
+import { contributionSpan, fillCvLine, mergedPullsUrl, upstreamLabel } from '../data/views.ts';
 import type { WorkEntry } from '../data/validate.ts';
 import type { Snapshot } from '../facts/schema.ts';
 import { joinList } from '../lib/format.ts';
@@ -14,7 +14,7 @@ export interface RenderCvDocument {
   cv: {
     name: string; headline: string; location: string; website: string; email: string;
     social_networks: { network: 'LinkedIn' | 'GitHub'; username: string }[];
-    sections: Record<string, readonly (string | Entry)[]> & { projects: Entry[]; education: Entry[]; skills: Entry[]; open_source: Entry[] };
+    sections: Record<string, readonly (string | Entry)[]> & { projects: Entry[]; education: Entry[]; skills: Entry[] };
   };
   locale: { language: 'english'; month_abbreviations: readonly string[] };
   settings: { current_date: string; bold_keywords: string[]; pdf_title: string };
@@ -90,6 +90,17 @@ function openSource(overrides: ContributionOverrides, handle: string): Entry[] {
   });
 }
 
+const cvMonth = (iso: string) => `${monthAbbreviations[Number(iso.slice(5, 7)) - 1]} ${iso.slice(0, 4)}`;
+
+/**
+ * The page has no line to spare, so the merge span rides on the section heading, "Open Source · Jul 2024 – present",
+ * in the date style of the entries; a key with capitals reaches RenderCV's heading as written.
+ */
+function openSourceTitle(facts: Snapshot, overrides: ContributionOverrides): string {
+  const span = contributionSpan(facts.contributions, overrides, facts.refreshedAt);
+  return span ? `Open Source · ${cvMonth(span.from)} – ${span.ongoing ? 'present' : cvMonth(span.to)}` : 'open_source';
+}
+
 function skills(groups: CvChoices['skills'], techs: readonly Tech[]): Entry[] {
   const label = new Map(techs.map(tech => [tech.id, tech.label]));
   return groups.map(group => ({
@@ -133,7 +144,7 @@ export function buildCv(data: LoadedPortfolio): RenderCvDocument {
           highlights: e.note ? [escapeMarkdown(e.note)] : [],
         })),
         projects: data.cv.projects.filter(entry => !entry.optional).map(entry => project(entry, works, facts)),
-        open_source: openSource(data.contributions, profile.handle),
+        [openSourceTitle(facts, data.contributions)]: openSource(data.contributions, profile.handle),
         experience: data.experience.map(x => ({
           company: escapeMarkdown(x.organisation), position: escapeMarkdown(x.role),
           start_date: x.start, end_date: x.end ?? 'present',

@@ -2,8 +2,8 @@
 import SiteNav from '../components/SiteNav.astro';
 import Layout from '../layouts/Layout.astro';
 import { loadPortfolio } from '../data/portfolio.ts';
-import { contributionTotals, orderWorks, upstreamGroups, workFactsView } from '../data/views.ts';
-import { formatDay } from '../lib/format.ts';
+import { contributionSpan, contributionTotals, orderWorks, upstreamGroups, workFactsView } from '../data/views.ts';
+import { formatDay, formatMonth } from '../lib/format.ts';
 import { techCategories } from '../schemas/tech.ts';
 
 const data = await loadPortfolio();
@@ -13,6 +13,7 @@ const packageWorks = orderWorks(data.works).map(work => ({ work, facts: workFact
   .filter(({ facts }) => facts.packages.length > 0 || facts.pkgbuildCount !== undefined);
 const groups = upstreamGroups(data.facts.contributions, data.contributions);
 const totals = contributionTotals(groups);
+const span = contributionSpan(data.facts.contributions, data.contributions, data.facts.refreshedAt, true);
 ---
 
 <Layout title="Open source - Cevdet" description="The packages Cevdet publishes, from npm tools to Arch Linux PKGBUILDs, and the fixes accepted into other open-source projects such as Immich and Starlight.">
@@ -43,7 +44,7 @@ const totals = contributionTotals(groups);
     </section>
     <section aria-labelledby="contributions">
       <h2 id="contributions">Contributions</h2>
-      <p>{totals.pulls} merged pull requests to {totals.upstreams} upstream repositories.</p>
+      <p>{totals.pulls} merged pull requests to {totals.upstreams} upstream repositories{span && `, ${formatMonth(span.from)} to ${span.ongoing ? 'present' : formatMonth(span.to)}`}.</p>
       {groups.map(group => (
         <>
           <h3><a href={group.url}>{group.repo}</a></h3>
