@@ -25,8 +25,8 @@ export const profileSchema = z.strictObject({
   country: line(40),
   headline: line(120),
   bio: line(400),
-  // The proof line under the pitch on the home page: creations plus upstream fixes, no counts.
-  proof: line(160),
+  // The proof line under the pitch on the home page: creations plus upstream fixes, named exactly.
+  proof: line(170),
   // The Works proof names by title, so the home page can link each one; validated against that title.
   proofWorks: z.array(id).min(1),
   // The home page's numbers strip: each pin resolves to one of the named Work's Metrics, never a copied value.

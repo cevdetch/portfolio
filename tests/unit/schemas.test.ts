@@ -124,8 +124,8 @@ test('the home proof line stretches to a full sentence of real, sourced claims',
     services: [{ id: 'static-sites', name: 'Fast static sites', summary: 'Astro sites.' }],
     languages: [{ name: 'English', level: 'C1' }],
   };
-  assert.equal(profileSchema.parse({ ...profile, proof: 'x'.repeat(160) }).proof.length, 160);
-  assert.throws(() => profileSchema.parse({ ...profile, proof: 'x'.repeat(161) }));
+  assert.equal(profileSchema.parse({ ...profile, proof: 'x'.repeat(170) }).proof.length, 170);
+  assert.throws(() => profileSchema.parse({ ...profile, proof: 'x'.repeat(171) }));
 });
 
 test('every interest says whether the CV prints it', () => {

@@ -83,7 +83,7 @@ export function contributionHighlights(groups: readonly UpstreamGroup[]): Contri
   return highlights.sort((a, b) => (a.pull.order ?? Number.MAX_SAFE_INTEGER) - (b.pull.order ?? Number.MAX_SAFE_INTEGER));
 }
 
-/** The counts behind "N merged pull requests to M upstream projects", for the home page. */
+/** The counts behind "N merged pull requests to M upstream repositories", for /open-source/. */
 export function contributionTotals(groups: readonly UpstreamGroup[]): { pulls: number; upstreams: number } {
   return { pulls: groups.reduce((sum, group) => sum + group.pulls.length, 0), upstreams: groups.length };
 }

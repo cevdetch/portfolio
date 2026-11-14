@@ -7,9 +7,9 @@ country: Switzerland
 headline: Builds the tools that make websites fast and correct, and ships the fixes upstream.
 bio: >-
   Builds web tools and fast sites in TypeScript and Astro. Created deadhead, an HTML head linter
-  published on npm, and favseed, a favicon generator; HTML-head and metadata fixes merged into Astro,
-  Svelte, Immich and GrapheneOS. Works end to end, from tests and docs to Linux packaging.
-proof: Built deadhead, the HTML head linter that audited 4,570 of the web's top homepages, and favseed. Fixes merged into Astro, Svelte, Immich and GrapheneOS.
+  published on npm, and favseed, a favicon generator; fixes merged into Immich, Starlight and Astro's
+  starter templates. Works end to end, from tests and docs to Linux packaging.
+proof: Built deadhead, the HTML head linter that audited 4,570 of the web's top homepages, and favseed. Fixes merged into Immich, Starlight and Astro's starter templates.
 proofWorks: [deadhead, favseed]
 homeMetrics:
   - { work: deadhead, label: Sourced rules }

@@ -43,7 +43,7 @@ const totals = contributionTotals(groups);
     </section>
     <section aria-labelledby="contributions">
       <h2 id="contributions">Contributions</h2>
-      <p>{totals.pulls} merged pull requests to {totals.upstreams} upstream projects.</p>
+      <p>{totals.pulls} merged pull requests to {totals.upstreams} upstream repositories.</p>
       {groups.map(group => (
         <>
           <h3><a href={group.url}>{group.repo}</a></h3>

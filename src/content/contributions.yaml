@@ -1,13 +1,13 @@
 upstreams:
-  - { repo: withastro/astro, order: 1, label: Astro, techs: [astro], pulls: { '17196': { highlight: true, order: 1 } } }
-  - { repo: immich-app/immich, order: 2, label: Immich, techs: [immich], pulls: { '32594': { highlight: true, order: 3 } } }
-  - { repo: GrapheneOS/grapheneos.org, order: 3, label: GrapheneOS, techs: [grapheneos], pulls: { '1684': { highlight: true, order: 2 } } }
-  - { repo: sveltejs/svelte, order: 4, label: Svelte, techs: [svelte] }
-  - { repo: withastro/starlight, order: 5, label: Starlight, techs: [starlight] }
+  - { repo: withastro/astro, order: 1, label: Astro starter templates, techs: [astro] }
+  - { repo: immich-app/immich, order: 2, label: Immich, techs: [immich], pulls: { '29801': { highlight: true, order: 1 }, '32594': { highlight: true, order: 3 } } }
+  - { repo: GrapheneOS/grapheneos.org, order: 3, label: grapheneos.org, techs: [grapheneos], pulls: { '1684': { highlight: true, order: 4 } } }
+  - { repo: sveltejs/svelte, order: 4, label: svelte.dev, techs: [svelte] }
+  - { repo: withastro/starlight, order: 5, label: Starlight, techs: [starlight], pulls: { '2137': { highlight: true, order: 2 } } }
   - { repo: lennart-k/rustical, order: 6, label: RustiCal, techs: [rustical] }
   - { repo: freeglut/freeglut, order: 7, label: freeglut }
   - { repo: CachyOS/firefox-wayland-cachy-hg, order: 8, label: CachyOS }
-  - { repo: lumeland/lume.land, order: 9, label: Lume, techs: [lume] }
+  - { repo: lumeland/lume.land, order: 9, label: lume.land, techs: [lume] }
   - { repo: aerynOS/recipes, order: 10, label: aerynOS }
   - { repo: nuejs/nue, label: Nue }
   - { repo: withastro/astro.build, label: astro.build }
@@ -19,7 +19,7 @@ upstreams:
 themes:
   - id: head-metadata
     lead: HTML-head and metadata fixes merged into
-    upstreams: [withastro/astro, sveltejs/svelte, withastro/starlight, immich-app/immich, GrapheneOS/grapheneos.org]
+    upstreams: [immich-app/immich, withastro/starlight, withastro/astro, sveltejs/svelte, GrapheneOS/grapheneos.org]
   - id: wayland-builds
-    lead: Wayland-only build fixes merged into
+    lead: Wayland-only build and packaging changes merged into
     upstreams: [freeglut/freeglut, CachyOS/firefox-wayland-cachy-hg, aerynOS/recipes]
