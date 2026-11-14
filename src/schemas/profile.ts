@@ -10,6 +10,8 @@ const availability = z.strictObject({
   timeZone,
   openTo: z.array(z.enum(['employment', 'contract', 'freelance'])).min(1),
   workplace: z.array(z.enum(['remote', 'local'])).min(1),
+  // Privacy: a weekly capacity only, never the days or hours of a schedule.
+  hoursPerWeek: z.number().int().positive().optional(),
 });
 export type Availability = z.infer<typeof availability>;
 
@@ -24,6 +26,7 @@ export const profileSchema = z.strictObject({
   // Privacy: the country only, never the city.
   country: line(40),
   headline: line(120),
+  // `{graduationYear}` is filled from the expected Education entry (see fillBio), so no date is typed.
   bio: line(400),
   // The proof line under the pitch on the home page: creations plus upstream fixes, named exactly.
   proof: line(170),

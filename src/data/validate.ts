@@ -6,6 +6,7 @@ import type { Profile } from '../schemas/profile.ts';
 import type { Tech } from '../schemas/tech.ts';
 import type { UsesSection } from '../schemas/uses.ts';
 import type { Work } from '../schemas/work.ts';
+import { fillBio } from './profile.ts';
 import { caseStudyHeadings, caseStudySections, lintText } from './story-lint.ts';
 import { escapeRegExp, fillCvLine } from './views.ts';
 
@@ -133,6 +134,7 @@ export function validatePortfolio(p: Portfolio, facts: Snapshot): string[] {
   p.profile.services.forEach(service => service.evidence.forEach(ref => work(`profile service ${service.id}`, ref)));
   work('profile writing', p.profile.writing);
   errors.push(...lintAll('profile', { headline: p.profile.headline, bio: p.profile.bio, proof: p.profile.proof }, true));
+  errors.push(...fillBio(p.profile.bio, p.education).problems.map(problem => `profile bio: ${problem}`));
   p.profile.proofWorks.forEach((ref, index) => {
     const at = `profile proofWorks[${index}]`;
     work(at, ref);

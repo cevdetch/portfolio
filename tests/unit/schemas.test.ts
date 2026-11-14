@@ -107,6 +107,26 @@ test('profile pins the public identity and carries no location field', () => {
   assert.throws(() => profileSchema.parse({ ...profile, country: undefined }));
 });
 
+test('availability may state a weekly capacity as a whole number of hours, and nothing finer', () => {
+  const profile = profileSchema.parse({
+    name: 'Cevdet', familyName: 'Haran', handle: 'cevdetch', jobTitle: 'Software Developer', headline: 'Builds fast sites.',
+    specialisation: 'Web performance', country: 'Switzerland', bio: 'Builds tools.', proof: 'Creator of deadhead.', proofWorks: ['deadhead'],
+    homeMetrics: [{ work: 'deadhead', label: 'Sourced rules' }],
+    email: 'hello@cevdet.ch', website: 'https://cevdet.ch/', contactSubject: 'Enquiry', writing: 'one',
+    socials: [{ network: 'github', url: 'https://github.com/cevdetch' }],
+    availability: { capacity: 'part-time', timeZone: 'Europe/Zurich', openTo: ['employment'], workplace: ['remote'], hoursPerWeek: 20 },
+    process: [{ title: 'Reply', detail: 'Reply.' }, { title: 'Scope', detail: 'Scope.' }, { title: 'Build', detail: 'Build.' }],
+    services: [{ id: 'static-sites', name: 'Fast static sites', summary: 'Astro sites.' }],
+    languages: [{ name: 'English', level: 'C1' }],
+  });
+  assert.equal(profile.availability.hoursPerWeek, 20);
+  for (const hoursPerWeek of [0, -5, 12.5, '20']) {
+    assert.throws(() => profileSchema.parse({ ...profile, availability: { ...profile.availability, hoursPerWeek } }));
+  }
+  const { hoursPerWeek: _, ...withoutHours } = profile.availability;
+  assert.equal(profileSchema.parse({ ...profile, availability: withoutHours }).availability.hoursPerWeek, undefined);
+});
+
 test('the home proof line stretches to a full sentence of real, sourced claims', () => {
   const profile = {
     name: 'Cevdet', familyName: 'Haran', handle: 'cevdetch', jobTitle: 'Software Developer',

@@ -8,7 +8,8 @@ headline: Builds the tools that make websites fast and correct, and ships the fi
 bio: >-
   Builds web tools and fast sites in TypeScript and Astro. Created deadhead, an HTML head linter
   published on npm, and favseed, a favicon generator; fixes merged into Immich, Starlight and Astro's
-  starter templates. Works end to end, from tests and docs to Linux packaging.
+  starter templates. Works end to end, from tests and docs to Linux packaging. Takes part-time work
+  alongside Gymnasium studies (Matura {graduationYear}).
 proof: Built deadhead, the HTML head linter that audited 4,570 of the web's top homepages, and favseed. Fixes merged into Immich, Starlight and Astro's starter templates.
 proofWorks: [deadhead, favseed]
 homeMetrics:
@@ -32,6 +33,7 @@ availability:
   timeZone: Europe/Zurich
   openTo: [employment, contract, freelance]
   workplace: [remote, local]
+  hoursPerWeek: 20
 process:
   - title: Reply
     detail: Start with a short call or email to pin down the goal.

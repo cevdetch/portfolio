@@ -40,6 +40,14 @@ test("an interest that links a Work names that Work's site in its details", () =
   assert.deepEqual(validatePortfolio(p, fixtureSnapshot()), ['profile interests[0]: Work "deadhead" has no site to link']);
 });
 
+test('a bio token that cannot be filled from Education fails the build', () => {
+  const p = fixturePortfolio();
+  p.profile.bio = 'Studies for the Matura ({graduationYear}).';
+  assert.deepEqual(validatePortfolio(p, fixtureSnapshot()), []);
+  p.profile.bio = 'Studying since {startYear}.';
+  assert.deepEqual(validatePortfolio(p, fixtureSnapshot()), ['profile bio: unknown token {startYear}']);
+});
+
 test("the home page links each proofWorks entry, so its title must appear in the proof as a whole word", () => {
   const p = fixturePortfolio();
   p.profile.proofWorks = ['blog'];

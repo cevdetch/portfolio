@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { availabilityLine, languageItem, socialUsername } from '../../src/data/profile.ts';
+import { availabilityLine, fillBio, languageItem, socialUsername } from '../../src/data/profile.ts';
 import { contributionHighlights, contributionTotals, featuredWorks, fillCvLine, homeMetrics, inSourceOrder, mergedPullsUrl, metricDisplay, newestFirst, recentlyShipped, skillGroups, splitOnTitles, upstreamGroups, upstreamLabel, workFactsView } from '../../src/data/views.ts';
 import { formatDay, formatMonth, joinList } from '../../src/lib/format.ts';
 import { fixturePortfolio, fixtureSnapshot } from '../helpers/portfolio-fixture.ts';
@@ -87,6 +87,25 @@ test('availability still reads naturally with one workplace, or with no employme
     'Open to part-time employment, contract and freelance work, remote in Switzerland.');
   assert.equal(availabilityLine({ ...availability, openTo: ['contract', 'freelance'] }, 'Switzerland'),
     'Open to contract and freelance work, remote or on site in Switzerland.');
+});
+
+test('a weekly capacity leads the line and then covers every kind of work, never a schedule', () => {
+  const availability = { ...fixturePortfolio().profile.availability, hoursPerWeek: 20 };
+  assert.equal(availabilityLine(availability, 'Switzerland'),
+    'Part-time, up to 20 hours a week. Open to employment, contract and freelance work, remote or on site in Switzerland.');
+  assert.equal(availabilityLine({ ...availability, capacity: 'full-time', hoursPerWeek: 40, openTo: ['contract'] }, 'Switzerland'),
+    'Full-time, up to 40 hours a week. Open to contract work, remote or on site in Switzerland.');
+});
+
+test('the bio takes its graduation year from the expected Education entry, never a typed date', () => {
+  const { education } = fixturePortfolio();
+  assert.deepEqual(fillBio('Studies alongside work (Matura {graduationYear}).', education),
+    { text: 'Studies alongside work (Matura 2028).', problems: [] });
+  assert.deepEqual(fillBio('Builds tools.', education), { text: 'Builds tools.', problems: [] });
+  assert.deepEqual(fillBio('Since {startYear}.', education).problems, ['unknown token {startYear}']);
+  const finished = education.map(entry => ({ ...entry, expected: false }));
+  assert.deepEqual(fillBio('Matura {graduationYear}.', finished).problems,
+    ['{graduationYear} needs exactly one expected Education entry']);
 });
 
 test('a language reads as its name and level, with native spelled out', () => {

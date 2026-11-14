@@ -3,6 +3,7 @@ import { parse } from 'yaml';
 import techYaml from '../content/tech.yaml?raw';
 import snapshotJson from '../facts/snapshot.json';
 import { snapshotSchema, type Snapshot } from '../facts/schema.ts';
+import { fillBio } from './profile.ts';
 import { validatePortfolio, type Portfolio } from './validate.ts';
 import { inSourceOrder, newestFirst } from './views.ts';
 
@@ -41,5 +42,7 @@ async function load(): Promise<LoadedPortfolio> {
   const facts = snapshotSchema.parse(snapshotJson);
   const errors = validatePortfolio(portfolio, facts);
   if (errors.length) throw new Error(`Portfolio data is invalid:\n- ${errors.join('\n- ')}`);
-  return { ...portfolio, facts };
+  // Every page, the CV and the JSON-LD read the bio with its tokens filled; validation checked they all fill.
+  const profileData = { ...portfolio.profile, bio: fillBio(portfolio.profile.bio, portfolio.education).text };
+  return { ...portfolio, profile: profileData, facts };
 }
