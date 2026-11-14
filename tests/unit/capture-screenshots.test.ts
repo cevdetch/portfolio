@@ -1,12 +1,13 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import sharp from 'sharp';
 import {
-  captureVariants, checkMasterSize, checkPalatinoFontInstalled, chromeArgs, devtoolsUrl, identicalPixels, launchBrowser,
-  mainDocumentStatus, masterPath, masterSize, mediaFeatures, p052Available, palatinoAliasCss, send, withTimeout,
+  appleFontconfigXml, captureVariants, checkAppleFontsInstalled, checkMasterSize, checkPalatinoFontInstalled, chromeArgs,
+  devtoolsUrl, familyAvailable, identicalPixels, launchBrowser, mainDocumentStatus, masterPath, masterSize, mediaFeatures,
+  p052Available, palatinoAliasCss, send, withTimeout,
 } from '../../scripts/capture-screenshots.ts';
 
 const solid = (width: number, height: number, r: number) =>
@@ -96,6 +97,17 @@ test('launchBrowser rejects promptly when the given binary is not a browser, wit
   }
 });
 
+test('launchBrowser writes the apple fontconfig file into the throwaway profile dir before spawning', async () => {
+  const userDataDir = await mkdtemp(join(tmpdir(), 'capture-screenshots-test-'));
+  try {
+    await assert.rejects(launchBrowser('/bin/false', userDataDir));
+    const written = await readFile(join(userDataDir, 'fontconfig.xml'), 'utf8');
+    assert.equal(written, appleFontconfigXml());
+  } finally {
+    await rm(userDataDir, { recursive: true, force: true });
+  }
+});
+
 test('captureVariants covers desktop and phone, each light then dark, with their viewports and mobile flags', () => {
   assert.deepEqual(captureVariants(), [
     { device: 'desktop', scheme: 'light', width: 1280, height: 800, mobile: false },
@@ -155,6 +167,27 @@ test('p052Available is true only when fc-match resolves P052-Roman to the P052 f
 
 test('checkPalatinoFontInstalled resolves when fc-match resolves P052-Roman to P052 on this machine', async () => {
   await assert.doesNotReject(checkPalatinoFontInstalled());
+});
+
+test('familyAvailable is true only when fc-match resolves the probe to that family itself', () => {
+  assert.equal(familyAvailable('SF Pro\n', 'SF Pro'), true);
+  assert.equal(familyAvailable('SF Pro', 'SF Pro'), true);
+  assert.equal(familyAvailable('Adwaita Sans\n', 'SF Pro'), false);
+  assert.equal(familyAvailable('', 'SF Pro'), false);
+});
+
+test('appleFontconfigXml prepends SF Pro Text onto system-ui and aliases the sans-serif/monospace generics to SF Pro Text/SF Mono', () => {
+  const xml = appleFontconfigXml();
+  assert.ok(xml.includes('<include ignore_missing="yes">/etc/fonts/fonts.conf</include>'));
+  assert.ok(/<test name="family"><string>system-ui<\/string><\/test>/.test(xml));
+  assert.ok(/<edit name="family" mode="prepend" binding="strong"><string>SF Pro Text<\/string><\/edit>/.test(xml));
+  assert.ok(/<family>sans-serif<\/family><prefer><family>SF Pro Text<\/family><\/prefer>/.test(xml));
+  assert.ok(/<family>monospace<\/family><prefer><family>SF Mono<\/family><\/prefer>/.test(xml));
+  assert.ok(!xml.includes('Adwaita'));
+});
+
+test('checkAppleFontsInstalled resolves when fc-match resolves both SF Pro Text and SF Mono on this machine', async () => {
+  await assert.doesNotReject(checkAppleFontsInstalled());
 });
 
 test('identicalPixels compares decoded pixels, not encoded bytes', async () => {

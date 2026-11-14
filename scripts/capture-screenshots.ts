@@ -148,7 +148,14 @@ function killBrowser(proc: ReturnType<typeof spawn>): void {
 /** Spawns the browser and waits for its DevTools line. Kills its own child before rejecting, so a caller
  *  that never receives `proc` back (because this failed) has nothing left to clean up. */
 export async function launchBrowser(chromePath: string, userDataDir: string) {
-  const proc = spawn(chromePath, chromeArgs(userDataDir), { stdio: ['ignore', 'ignore', 'pipe'], detached: true });
+  // Written into the same throwaway profile dir `withBrowser` already removes, so nothing survives the
+  // capture. macOS visitors see these system-font stacks in SF Pro and SF Mono; FONTCONFIG_FILE on this
+  // one process maps them that way for the capture alone, leaving the desktop's own defaults untouched.
+  const fontconfigPath = join(userDataDir, 'fontconfig.xml');
+  await writeFile(fontconfigPath, appleFontconfigXml());
+  const proc = spawn(chromePath, chromeArgs(userDataDir), {
+    stdio: ['ignore', 'ignore', 'pipe'], detached: true, env: { ...process.env, FONTCONFIG_FILE: fontconfigPath },
+  });
   try {
     const browserWsUrl = await withTimeout(new Promise<string>((resolve, reject) => {
       let buffer = '';
@@ -198,10 +205,16 @@ const palatinoAliasScript = `(() => {
   return true;
 })()`;
 
+/** True only when `fc-match` resolves its probe to `family` itself, not a fallback; a pure check on the
+ *  match output, so it's testable without fontconfig installed. */
+export function familyAvailable(fcMatchOutput: string, family: string): boolean {
+  return fcMatchOutput.trim() === family;
+}
+
 /** True only when `fc-match` resolves `P052-Roman` to the `P052` family itself, not a fallback; a pure
  *  check on the match output, so it's testable without fontconfig installed. */
 export function p052Available(fcMatchOutput: string): boolean {
-  return fcMatchOutput.trim() === 'P052';
+  return familyAvailable(fcMatchOutput, 'P052');
 }
 
 /** Fails fast, before any browser is launched, when the URW P052 clone isn't installed: without it this
@@ -213,6 +226,43 @@ export async function checkPalatinoFontInstalled(): Promise<void> {
   const stdout = await promisify(execFile)('fc-match', ['-f', '%{family}', 'P052-Roman'])
     .then(result => result.stdout, () => { throw new Error(message); });
   if (!p052Available(stdout)) throw new Error(message);
+}
+
+/** The system-font stacks these Work sites use render in SF Pro and SF Mono for a macOS visitor. The
+ *  static SF Pro Text faces stand in for SF Pro: Chromium on Linux picks the variable font's Expanded
+ *  instances for in-between weights and ignores its weight axis otherwise, and it can't switch to the
+ *  Display cut at large sizes as macOS does, so headings set a little looser than on a Mac. */
+const appleFontFamilies = ['SF Pro Text', 'SF Mono'] as const;
+
+/** Fails fast, before any browser is launched, when SF Pro Text or SF Mono isn't installed: without
+ *  them the capture would fall back to the desktop's own default (Adwaita Sans) instead of what a macOS
+ *  visitor actually sees for a `system-ui`/`ui-monospace` stack. */
+export async function checkAppleFontsInstalled(): Promise<void> {
+  for (const family of appleFontFamilies) {
+    const message = `${family} is not available to fontconfig. Download it from `
+      + `https://developer.apple.com/fonts/ and install it under ~/.local/share/fonts/.`;
+    const stdout = await promisify(execFile)('fc-match', ['-f', '%{family}', family])
+      .then(result => result.stdout, () => { throw new Error(message); });
+    if (!familyAvailable(stdout, family)) throw new Error(message);
+  }
+}
+
+// Scoped to the capture browser alone, via FONTCONFIG_FILE on its own process, so the desktop's own
+// fontconfig defaults (and every other application's) stay untouched. `system-ui` is matched first and
+// strongly, ahead of the include, because that is the first family every stack here lists; plain
+// "sans-serif" is left to Chromium's own default (Adwaita Sans) since no stack names it first.
+export function appleFontconfigXml(): string {
+  return `<?xml version="1.0"?><!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
+<fontconfig>
+  <include ignore_missing="yes">/etc/fonts/fonts.conf</include>
+  <match target="pattern">
+    <test name="family"><string>system-ui</string></test>
+    <edit name="family" mode="prepend" binding="strong"><string>SF Pro Text</string></edit>
+  </match>
+  <alias binding="strong"><family>sans-serif</family><prefer><family>SF Pro Text</family></prefer></alias>
+  <alias binding="strong"><family>monospace</family><prefer><family>SF Mono</family></prefer></alias>
+</fontconfig>
+`;
 }
 
 // Resolves once the web fonts are ready and every image that can appear on the first screen has loaded
@@ -387,6 +437,7 @@ async function captureSite(chromePath: string, dir: URL, slug: string, url: stri
 
 if (import.meta.main) {
   await checkPalatinoFontInstalled();
+  await checkAppleFontsInstalled();
   const chromePath = process.env['CHROME_PATH'] ?? 'google-chrome';
   const sources = await readWorkSources(new URL('src/content/work/', root));
   const targets = sources.filter((source): source is typeof source & { site: string } => source.site !== undefined);
