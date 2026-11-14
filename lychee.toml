@@ -10,6 +10,8 @@ exclude = [
   '^https://www\.mysql\.com/',
   # Paperless documentation answers automated checkers with 403
   '^https://docs\.paperless-ngx\.com/',
+  # GNU site times out from CI runners even with retries and a 30s timeout
+  '^https://www\.gnu\.org/',
 ]
 max_retries = 3
 timeout = 30
