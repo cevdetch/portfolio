@@ -9,7 +9,7 @@ import { loadPortfolio } from '../../data/portfolio.ts';
 import { findScreenshots, screenshotAlt, screenshotDevices, type ScreenshotDevice } from '../../data/screenshots.ts';
 import { workFactsView } from '../../data/views.ts';
 import { formatDay, formatMonth } from '../../lib/format.ts';
-import { graph, personReference, workNode } from '../../lib/jsonld.ts';
+import { graph, workNode } from '../../lib/jsonld.ts';
 import { techCategories } from '../../schemas/tech.ts';
 
 export async function getStaticPaths() {
@@ -30,7 +30,7 @@ const { Content } = await render(entry);
 ---
 
 <Layout title={`${work.data.title} - Cevdet`} description={work.data.summary}
-  jsonLd={graph([workNode(work, data.facts.works[work.id], data.techs), personReference()])}>
+  jsonLd={graph(workNode(work, data.facts.works[work.id], data.techs))}>
   <SiteNav />
   <main>
     <article>

@@ -1,7 +1,30 @@
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import { test } from 'node:test';
-import { graph, personNode, personReference, profilePageNode, serializeJsonLd, websiteNode, workNode } from '../../src/lib/jsonld.ts';
+import { parse } from 'yaml';
+import { portraitUrl } from '../../src/data/portrait.ts';
+import { fullName } from '../../src/data/profile.ts';
+import {
+  graph, personNode, profilePageNode, serializeJsonLd, websiteNode, workNode,
+} from '../../src/lib/jsonld.ts';
+import { identity } from '../../src/lib/structured-data.ts';
+import { profileSchema } from '../../src/schemas/profile.ts';
 import { fixturePortfolio, fixtureSnapshot } from '../helpers/portfolio-fixture.ts';
+
+/** One field of a node, whatever its schema.org type. */
+const field = (node: object, key: string): unknown => (node as Record<string, unknown>)[key];
+const owner = { '@type': 'Person', '@id': 'https://cevdet.ch/#person', name: 'Cevdet Haran', url: 'https://cevdet.ch/' };
+
+test('profile.yaml names the person exactly as the shared identity does', async () => {
+  const profile = profileSchema.parse(parse(await readFile(new URL('../../src/content/profile.yaml', import.meta.url), 'utf8')));
+  assert.equal(fullName(profile), identity.name);
+  assert.equal(profile.name, identity.givenName);
+  assert.equal(profile.familyName, identity.familyName);
+  assert.deepEqual([profile.name, profile.handle], identity.alternateName);
+  assert.equal(profile.website, identity.url);
+  assert.deepEqual(profile.socials.map(social => social.url), identity.sameAs);
+  assert.equal(portraitUrl(profile.website), identity.image);
+});
 
 test('the @ids One already references stay stable', () => {
   const { profile, techs } = fixturePortfolio();
@@ -13,54 +36,28 @@ test('the @ids One already references stay stable', () => {
   });
 });
 
+test('the home WebSite keeps its site name and credits the person by name', () => {
+  const { profile } = fixturePortfolio();
+  assert.deepEqual(websiteNode(profile), {
+    '@type': 'WebSite', '@id': 'https://cevdet.ch/#website', url: 'https://cevdet.ch/', name: 'Cevdet',
+    alternateName: 'cevdet.ch', inLanguage: 'en', publisher: owner,
+  });
+});
+
+test('the Person is the shared identity plus the facts the home page shows', () => {
+  const { profile, techs } = fixturePortfolio();
+  assert.deepEqual(personNode(profile, techs), {
+    '@type': 'Person', '@id': 'https://cevdet.ch/#person', name: 'Cevdet Haran', givenName: 'Cevdet', familyName: 'Haran',
+    alternateName: ['Cevdet', 'cevdetch'], url: 'https://cevdet.ch/',
+    sameAs: ['https://github.com/cevdetch', 'https://www.linkedin.com/in/cevdetch/', 'https://www.npmjs.com/~cevdetch'],
+    jobTitle: 'Software Developer', description: 'Builds and publishes open-source developer tools.', email: 'mailto:hello@cevdet.ch',
+    knowsAbout: ['TypeScript', 'Astro', 'Sway'],
+  });
+});
+
 test('knowsAbout comes from the registry and excludes apps', () => {
   const { profile, techs } = fixturePortfolio();
   assert.deepEqual(personNode(profile, techs)['knowsAbout'], ['TypeScript', 'Astro', 'Sway']);
-});
-
-test('the Person publishes the full name, split into given and family names', () => {
-  const { profile, techs } = fixturePortfolio();
-  const node = personNode(profile, techs);
-  assert.equal(node['name'], 'Cevdet Haran');
-  assert.equal(node['givenName'], 'Cevdet');
-  assert.equal(node['familyName'], 'Haran');
-  assert.deepEqual(node['alternateName'], ['cevdetch']);
-});
-
-test('the Person reference on other pages carries only the @id: the full Person lives once, on home', () => {
-  assert.deepEqual(personReference(), { '@type': 'Person', '@id': 'https://cevdet.ch/#person' });
-});
-
-test('a package Work is SoftwareSourceCode with Facts; a site Work is a WebSite', () => {
-  const { works, techs } = fixturePortfolio();
-  const facts = fixtureSnapshot();
-  assert.deepEqual(workNode(works[0]!, facts.works['deadhead'], techs), {
-    '@type': 'SoftwareSourceCode', '@id': 'https://cevdet.ch/work/deadhead/#work',
-    name: 'deadhead', description: 'Lints the HTML head against sourced rules.',
-    url: 'https://deadhead.cevdet.ch/', mainEntityOfPage: 'https://cevdet.ch/work/deadhead/',
-    author: { '@id': 'https://cevdet.ch/#person' },
-    sameAs: ['https://deadhead.cevdet.ch/'],
-    codeRepository: 'https://github.com/cevdetch/deadhead',
-    license: 'https://spdx.org/licenses/MIT.html', programmingLanguage: ['TypeScript'],
-  });
-  assert.equal(workNode(works[1]!, facts.works['one'], techs)['@type'], 'WebSite');
-});
-
-test('serialisation cannot close the script element', () => {
-  assert.equal(serializeJsonLd(graph([{ name: '</script>' }])), '{"@context":"https://schema.org","@graph":[{"name":"\\u003c/script>"}]}');
-});
-
-test('a private repository is never named as the codeRepository', () => {
-  const { works, techs } = fixturePortfolio();
-  const homelab = works.find(work => work.id === 'homelab')!;
-  assert.equal(workNode(homelab, fixtureSnapshot().works['homelab'], techs)['codeRepository'], undefined);
-  assert.equal(workNode(works[0]!, undefined, techs)['codeRepository'], undefined);
-});
-
-test('a Work without a site does not have sameAs', () => {
-  const { works, techs } = fixturePortfolio();
-  const siteless = { ...works[0]!, data: { ...works[0]!.data, site: undefined } };
-  assert.equal(workNode(siteless, undefined, techs)['sameAs'], undefined);
 });
 
 test('with a portrait, the Person image is an ImageObject at the stable URL, captioned with the full name', () => {
@@ -69,6 +66,50 @@ test('with a portrait, the Person image is an ImageObject at the stable URL, cap
   assert.deepEqual(personNode(profile, techs, { width: 1200, height: 1200 })['image'], {
     '@type': 'ImageObject', '@id': 'https://cevdet.ch/#portrait',
     url: 'https://cevdet.ch/cevdet-haran.jpg', contentUrl: 'https://cevdet.ch/cevdet-haran.jpg',
-    width: 1200, height: 1200, caption: 'Cevdet Haran',
+    width: '1200', height: '1200', caption: 'Cevdet Haran',
   });
+});
+
+test('a package Work is SoftwareSourceCode with Facts, described by its Work page', () => {
+  const { works, techs } = fixturePortfolio();
+  assert.deepEqual(workNode(works[0]!, fixtureSnapshot().works['deadhead'], techs), {
+    '@type': 'SoftwareSourceCode', '@id': 'https://cevdet.ch/work/deadhead/#code',
+    url: 'https://cevdet.ch/work/deadhead/', mainEntityOfPage: 'https://cevdet.ch/work/deadhead/',
+    name: 'deadhead', description: 'Lints the HTML head against sourced rules.',
+    codeRepository: 'https://github.com/cevdetch/deadhead', programmingLanguage: ['TypeScript'],
+    license: 'https://spdx.org/licenses/MIT.html', sameAs: ['https://deadhead.cevdet.ch/'], author: owner,
+  });
+});
+
+test('a site Work is that site\'s own WebSite, under the @id the site gives itself', () => {
+  const { works, techs } = fixturePortfolio();
+  assert.deepEqual(workNode(works[1]!, fixtureSnapshot().works['one'], techs), {
+    '@type': 'WebSite', '@id': 'https://one.cevdet.ch/#website', url: 'https://one.cevdet.ch/', name: 'One',
+    description: 'The site that publishes the Writing.', publisher: owner, mainEntityOfPage: 'https://cevdet.ch/work/one/',
+  });
+});
+
+test('a site Work without a site falls back to SoftwareSourceCode', () => {
+  const { works, techs } = fixturePortfolio();
+  const siteless = { ...works[1]!, data: { ...works[1]!.data, site: undefined } };
+  assert.equal(workNode(siteless, undefined, techs)['@type'], 'SoftwareSourceCode');
+});
+
+test('a private repository is never named as the codeRepository', () => {
+  const { works, techs } = fixturePortfolio();
+  const homelab = works.find(work => work.id === 'homelab')!;
+  assert.equal(field(workNode(homelab, fixtureSnapshot().works['homelab'], techs), 'codeRepository'), undefined);
+  assert.equal(field(workNode(works[0]!, undefined, techs), 'codeRepository'), undefined);
+  assert.equal(field(workNode(works[0]!, undefined, techs), 'license'), undefined);
+});
+
+test('a Work without a site does not have sameAs', () => {
+  const { works, techs } = fixturePortfolio();
+  const siteless = { ...works[0]!, data: { ...works[0]!.data, site: undefined } };
+  assert.equal(field(workNode(siteless, undefined, techs), 'sameAs'), undefined);
+});
+
+test('serialisation cannot close the script element', () => {
+  assert.equal(serializeJsonLd(graph({ '@type': 'Thing', name: '</script>' })),
+    '{"@context":"https://schema.org","@graph":[{"@type":"Thing","name":"\\u003c/script>"}]}');
 });

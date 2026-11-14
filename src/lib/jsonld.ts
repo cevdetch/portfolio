@@ -1,72 +1,57 @@
-import { portraitUrl } from '../data/portrait.ts';
 import { fullName } from '../data/profile.ts';
 import type { WorkEntry } from '../data/validate.ts';
 import { publicRepo, type WorkFacts } from '../facts/schema.ts';
 import type { Profile } from '../schemas/profile.ts';
 import { techCategories, type Tech } from '../schemas/tech.ts';
+import * as shared from './structured-data.ts';
 
-// Fixed identifiers: One (one.cevdet.ch) references #person.
-export const PERSON_ID = 'https://cevdet.ch/#person';
-export const WEBSITE_ID = 'https://cevdet.ch/#website';
-export const PROFILE_ID = 'https://cevdet.ch/#profile';
-export const PORTRAIT_ID = 'https://cevdet.ch/#portrait';
+// The nodes cevdet.ch emits, built on the shared module every cevdet.ch site copies. The person's name, alternate
+// names, url and profiles come from its identity; a unit test keeps profile.yaml, which the visible pages and the
+// CV print, in agreement with it.
 
-type JsonLdNode = Record<string, unknown>;
+export { graph, serializeJsonLd } from './structured-data.ts';
 
-/** `portrait` is the size of the committed public/ copy; without one the Person has no image. */
-export function personNode(profile: Profile, techs: readonly Tech[], portrait?: { width: number; height: number }): JsonLdNode {
-  const url = portraitUrl(profile.website);
-  return {
-    '@type': 'Person', '@id': PERSON_ID,
-    name: fullName(profile), givenName: profile.name, familyName: profile.familyName, alternateName: [profile.handle],
-    url: profile.website, jobTitle: profile.jobTitle, description: profile.bio, email: `mailto:${profile.email}`,
+const site = shared.identity.url;
+// Fixed identifiers: One (one.cevdet.ch) and every other cevdet.ch site reference #person.
+export const PERSON_ID = shared.identity.id;
+export const WEBSITE_ID = shared.nodeId(site, 'website');
+export const PROFILE_ID = shared.nodeId(site, 'profile');
+
+const workPage = (work: WorkEntry) => new URL(`work/${work.id}/`, site).href;
+
+/** The full Person, on the home page that shows these facts. `portrait` is the size of the public/ copy, if any. */
+export function personNode(profile: Profile, techs: readonly Tech[], portrait?: { width: number; height: number }) {
+  return shared.personNode({
+    jobTitle: profile.jobTitle, description: profile.bio, email: profile.email,
     knowsAbout: techs.filter(tech => techCategories[tech.category].skills).map(tech => tech.label),
-    sameAs: profile.socials.map(social => social.url),
-    ...(portrait ? {
-      image: { '@type': 'ImageObject', '@id': PORTRAIT_ID, url, contentUrl: url, ...portrait, caption: fullName(profile) },
-    } : {}),
-  };
+    image: portrait,
+  });
 }
 
-export function personReference(): JsonLdNode {
-  return { '@type': 'Person', '@id': PERSON_ID };
+export function websiteNode(profile: Profile) {
+  return shared.websiteNode({ url: site, name: profile.name, alternateName: 'cevdet.ch', inLanguage: 'en' });
 }
 
-export function websiteNode(profile: Profile): JsonLdNode {
-  return { '@type': 'WebSite', '@id': WEBSITE_ID, url: profile.website, name: profile.name, alternateName: 'cevdet.ch', publisher: { '@id': PERSON_ID } };
+export function profilePageNode(profile: Profile) {
+  // The name mirrors the home page's <title>, not body text (see the exclusion in src/gates/jsonld.ts).
+  return shared.profilePageNode({ url: site, name: `${fullName(profile)} - ${profile.jobTitle}` });
 }
 
-export function profilePageNode(profile: Profile): JsonLdNode {
-  return {
-    // The name mirrors the home page's <title>, not body text (see the exclusion in src/gates/jsonld.ts).
-    '@type': 'ProfilePage', '@id': PROFILE_ID, url: profile.website, name: `${fullName(profile)} - ${profile.jobTitle}`,
-    isPartOf: { '@id': WEBSITE_ID }, mainEntity: { '@id': PERSON_ID },
-  };
-}
-
-export function workNode(work: WorkEntry, facts: WorkFacts | undefined, techs: readonly Tech[]): JsonLdNode {
-  const page = `https://cevdet.ch/work/${work.id}/`;
-  const base = {
-    '@id': `${page}#work`, name: work.data.title, description: work.data.summary,
-    url: work.data.site ?? page, mainEntityOfPage: page, author: { '@id': PERSON_ID },
-    ...(work.data.site ? { sameAs: [work.data.site] } : {}),
-  };
-  if (work.data.kind === 'site') return { '@type': 'WebSite', ...base };
+export function workNode(work: WorkEntry, facts: WorkFacts | undefined, techs: readonly Tech[]) {
+  const page = workPage(work);
+  // A site is described by its own WebSite node, under the @id its home page gives it, so the two merge.
+  if (work.data.kind === 'site' && work.data.site) {
+    return { ...shared.websiteNode({ url: work.data.site, name: work.data.title, description: work.data.summary }), mainEntityOfPage: page };
+  }
+  const repo = publicRepo(facts);
   const languages = work.data.stack.map(id => techs.find(tech => tech.id === id)).filter(tech => tech?.category === 'language').map(tech => tech!.label);
-  return {
-    '@type': 'SoftwareSourceCode', ...base,
+  return shared.softwareSourceCodeNode({
+    url: page, name: work.data.title, description: work.data.summary,
     // Only a repository the Snapshot found public; schema.org has no natural field for "source private", so a
     // private Work simply has no codeRepository.
-    ...(work.data.repo && publicRepo(facts) ? { codeRepository: `https://github.com/${work.data.repo}` } : {}),
-    ...(publicRepo(facts)?.license ? { license: `https://spdx.org/licenses/${publicRepo(facts)!.license}.html` } : {}),
-    ...(languages.length ? { programmingLanguage: languages } : {}),
-  };
-}
-
-export function graph(nodes: readonly JsonLdNode[]): JsonLdNode {
-  return { '@context': 'https://schema.org', '@graph': nodes };
-}
-
-export function serializeJsonLd(value: unknown): string {
-  return JSON.stringify(value).replace(/</g, '\\u003c');
+    codeRepository: work.data.repo && repo ? `https://github.com/${work.data.repo}` : undefined,
+    programmingLanguage: languages.length ? languages : undefined,
+    license: repo?.license ?? undefined,
+    sameAs: work.data.site ? [work.data.site] : undefined,
+  });
 }

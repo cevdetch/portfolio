@@ -25,7 +25,7 @@ const proofParts = splitOnTitles(profile.proof, proofWorks.map(work => work.data
 ---
 
 <Layout title={`${fullName(profile)} - ${profile.jobTitle}`} description={profile.headline}
-  jsonLd={graph([profilePageNode(profile), personNode(profile, data.techs, portrait), websiteNode(profile)])}>
+  jsonLd={graph(profilePageNode(profile), personNode(profile, data.techs, portrait), websiteNode(profile))}>
   <SiteNav />
   <main>
     <h1>{fullName(profile)}</h1>

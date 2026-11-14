@@ -1,10 +1,11 @@
 ---
+import type { Graph } from 'schema-dts';
 import brand from '../brand.json';
 import { siteConfig } from '../config.ts';
 import { serializeJsonLd } from '../lib/jsonld.ts';
 import { parseSiteNoindex, resolveSeo, type LayoutProps } from '../lib/seo.ts';
 
-type Props = LayoutProps & { jsonLd?: object };
+type Props = LayoutProps & { jsonLd?: Graph };
 
 const { jsonLd } = Astro.props;
 const seo = await resolveSeo(Astro.props, {
