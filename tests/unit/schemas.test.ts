@@ -17,6 +17,13 @@ const work = {
   highlights: ['Generates the linter and its documentation from the same Markdown.'],
 };
 
+test('a Work may carry one short caveat, which a Translation may override', () => {
+  assert.equal(workSchema.parse(work).caveat, undefined);
+  assert.equal(workSchema.parse({ ...work, caveat: 'Unstyled on purpose, as a base to build on.' }).caveat, 'Unstyled on purpose, as a base to build on.');
+  assert.throws(() => workSchema.parse({ ...work, caveat: 'x'.repeat(101) }));
+  assert.equal(workTranslationSchema.parse({ caveat: 'Sans style, exprès.' }).caveat, 'Sans style, exprès.');
+});
+
 test('isoDate accepts YAML dates and strings and yields YYYY-MM-DD', () => {
   assert.equal(isoDate.parse('2026-10-04'), '2026-10-04');
   assert.equal(isoDate.parse(new Date('2026-10-04T00:00:00Z')), '2026-10-04');

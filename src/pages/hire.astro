@@ -4,11 +4,13 @@ import SocialLinks from '../components/SocialLinks.astro';
 import Layout from '../layouts/Layout.astro';
 import { loadPortfolio } from '../data/portfolio.ts';
 import { availabilityLine } from '../data/profile.ts';
+import { firstCitations } from '../data/views.ts';
 
 const data = await loadPortfolio();
 const { profile } = data;
 const works = new Map(data.works.map(work => [work.id, work]));
 const availability = availabilityLine(profile.availability, profile.country);
+const firstCited = firstCitations(profile.services);
 const mailto = `mailto:${profile.email}?subject=${encodeURIComponent(profile.contactSubject)}`;
 ---
 
@@ -20,7 +22,7 @@ const mailto = `mailto:${profile.email}?subject=${encodeURIComponent(profile.con
     <section aria-labelledby="services">
       <h2 id="services">Services</h2>
       <ul>
-        {profile.services.map(service => (
+        {profile.services.map((service, index) => (
           <li>
             <p>{service.name}: {service.summary}</p>
             {service.evidence.length > 0 && (
@@ -28,6 +30,7 @@ const mailto = `mailto:${profile.email}?subject=${encodeURIComponent(profile.con
                 <>{index > 0 && ', '}<a href={`/work/${id}/`}>{works.get(id)!.data.title}</a></>
               ))}</p>
             )}
+            {firstCited[index]!.map(id => works.get(id)!.data).filter(work => work.caveat).map(work => <p>{work.title}: {work.caveat}</p>)}
           </li>
         ))}
       </ul>

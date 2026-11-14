@@ -63,6 +63,9 @@ const story = {
   summary: line(160),
   role: line(80),
   highlights: z.array(line(240)).max(3),
+  // One sentence a reader needs before judging the Work, such as a starter being unstyled on purpose. Shown on
+  // the Work page and wherever /hire/ cites the Work as evidence.
+  caveat: line(100).optional(),
   // The one line a grouped CV entry prints for this Work, after its title. `{pkgbuilds}` is
   // replaced by the Snapshot's PKGBUILD count (see fillCvLine), so no count is typed by hand.
   cvLine: line(200).optional(),

@@ -39,6 +39,7 @@ const { Content } = await render(entry);
         <h1>{work.data.title}</h1>
         <p>{work.data.tagline}</p>
         <p>{work.data.summary}</p>
+        {work.data.caveat && <p>{work.data.caveat}</p>}
       </header>
       {devices.map(device => {
         const images = screenshots[device];

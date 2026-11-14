@@ -221,6 +221,12 @@ test('CV-shared Story is linted', () => {
   assert.match(errors, /work\/deadhead highlights\[0\]: Story is verb-led and pronoun-free/);
 });
 
+test('a caveat is Story shown beside the Work wherever it is cited, so it is pronoun-free', () => {
+  const p = fixturePortfolio();
+  p.works[0]!.data.caveat = 'I left it unstyled on purpose.';
+  assert.deepEqual(validatePortfolio(p, fixtureSnapshot()), ['work/deadhead caveat: Story is verb-led and pronoun-free']);
+});
+
 test('a cvLine is CV-shared Story and its tokens must resolve', () => {
   const p = fixturePortfolio();
   p.works[0]!.data.cvLine = 'My linter, {pkgbuilds} rules, {stars} stars.';

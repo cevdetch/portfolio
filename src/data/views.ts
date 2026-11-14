@@ -140,6 +140,12 @@ export function usesSections<T extends { id: string; data: UsesSection }>(uses: 
   return [...uses].sort((a, b) => a.data.order - b.data.order);
 }
 
+/** Per Service, the evidence Works no earlier Service cited: /hire/ shows a Work's caveat at its first citation only. */
+export function firstCitations(services: readonly { evidence: readonly string[] }[]): string[][] {
+  const cited = new Set<string>();
+  return services.map(service => service.evidence.filter(id => !cited.has(id) && cited.add(id)));
+}
+
 export interface HomeMetric { work: WorkEntry; metric: Metric }
 
 /** The home page's numbers strip, resolved from profile.homeMetrics; validatePortfolio guarantees every pin resolves. */

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { availabilityLine, fillBio, languageItem, socialUsername } from '../../src/data/profile.ts';
-import { contributionHighlights, contributionTotals, featuredWorks, fillCvLine, homeMetrics, inSourceOrder, mergedPullsUrl, metricDisplay, newestFirst, recentlyShipped, skillGroups, splitOnTitles, upstreamGroups, upstreamLabel, workFactsView } from '../../src/data/views.ts';
+import { contributionHighlights, contributionTotals, featuredWorks, fillCvLine, firstCitations, homeMetrics, inSourceOrder, mergedPullsUrl, metricDisplay, newestFirst, recentlyShipped, skillGroups, splitOnTitles, upstreamGroups, upstreamLabel, workFactsView } from '../../src/data/views.ts';
 import { formatDay, formatMonth, joinList } from '../../src/lib/format.ts';
 import { fixturePortfolio, fixtureSnapshot } from '../helpers/portfolio-fixture.ts';
 
@@ -106,6 +106,14 @@ test('the bio takes its graduation year from the expected Education entry, never
   const finished = education.map(entry => ({ ...entry, expected: false }));
   assert.deepEqual(fillBio('Matura {graduationYear}.', finished).problems,
     ['{graduationYear} needs exactly one expected Education entry']);
+});
+
+test('each Work counts as first cited only under the first Service that names it, so its caveat shows once', () => {
+  assert.deepEqual(firstCitations([
+    { evidence: ['deadhead', 'astro-minimal-template'] },
+    { evidence: ['astro-reels-template'] },
+    { evidence: ['astro-minimal-template', 'deadhead', 'astro-reels-template', 'one'] },
+  ]), [['deadhead', 'astro-minimal-template'], ['astro-reels-template'], ['one']]);
 });
 
 test('a language reads as its name and level, with native spelled out', () => {

@@ -99,7 +99,7 @@ export function validatePortfolio(p: Portfolio, facts: Snapshot): string[] {
       errors.push(`${at}: Case study sections must be ${caseStudySections.join(', ')}; found ${headings.join(', ') || 'none'}`);
     }
     errors.push(...lintAll(at, { title: data.title, tagline: data.tagline, role: data.role }, false));
-    errors.push(...lintAll(at, { summary: data.summary, highlights: data.highlights, cvLine: data.cvLine }, true));
+    errors.push(...lintAll(at, { summary: data.summary, highlights: data.highlights, cvLine: data.cvLine, caveat: data.caveat }, true));
     if (data.cvLine) errors.push(...fillCvLine(data.cvLine, facts.works[id]).problems.map(problem => `${at} cvLine: ${problem}`));
     errors.push(...lintAll(at, { body }, false).filter(problem => problem.endsWith('placeholder text')));
     data.metrics.forEach((metric, index) => {
