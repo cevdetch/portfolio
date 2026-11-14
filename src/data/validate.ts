@@ -179,7 +179,10 @@ export function validatePortfolio(p: Portfolio, facts: Snapshot): string[] {
     for (const number of Object.keys(upstream.pulls)) {
       if (!numbers.has(Number(number))) errors.push(`${at}#${number}: not in the Snapshot`);
     }
-    for (const [number, pull] of Object.entries(upstream.pulls)) errors.push(...lintAll(`${at}#${number}`, { note: pull.note }, false));
+    for (const [number, pull] of Object.entries(upstream.pulls)) {
+      errors.push(...lintAll(`${at}#${number}`, { note: pull.note }, false));
+      if (pull.hidden && pull.highlight) errors.push(`${at}#${number}: a hidden pull cannot be a highlight`);
+    }
   }
   errors.push(...cvErrors(p.cv, new Map(p.works.map(entry => [entry.id, entry])), techIds));
 

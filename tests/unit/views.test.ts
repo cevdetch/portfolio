@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { availabilityLine, fillBio, languageItem, socialUsername } from '../../src/data/profile.ts';
 import { contributionHighlights, contributionTotals, featuredWorks, fillCvLine, firstCitations, homeMetrics, inSourceOrder, mergedPullsUrl, metricDisplay, newestFirst, recentlyShipped, skillGroups, splitOnTitles, upstreamGroups, upstreamLabel, workFactsView } from '../../src/data/views.ts';
-import { formatDay, formatMonth, joinList } from '../../src/lib/format.ts';
+import { formatDay, formatDayRange, formatMonth, joinList } from '../../src/lib/format.ts';
 import { fixturePortfolio, fixtureSnapshot } from '../helpers/portfolio-fixture.ts';
 
 test('skills group by category in registry order, without apps, with evidence', () => {
@@ -46,18 +46,22 @@ test('a title inside another word does not split', () => {
   assert.deepEqual(splitOnTitles('Undeadheaded deadheads.', ['deadhead']), ['Undeadheaded deadheads.']);
 });
 
-test('Upstreams: Story order first, then PR count, then name; hidden pulls vanish', () => {
+test('Upstreams: Story order first, then PR count, then name; hidden pulls stay listed, flagged', () => {
   const p = fixturePortfolio();
   const groups = upstreamGroups(fixtureSnapshot().contributions, p.contributions);
   assert.deepEqual(groups.map(g => [g.repo, g.pulls.length]), [['withastro/astro', 2], ['sveltejs/svelte', 1]]);
   assert.equal(groups[0]!.pulls.find(pull => pull.number === 101)?.highlight, true);
-  p.contributions.upstreams[0]!.pulls['101'] = { hidden: true, highlight: false };
   p.contributions.upstreams[0]!.pulls['102'] = { hidden: true, highlight: false };
-  assert.deepEqual(upstreamGroups(fixtureSnapshot().contributions, p.contributions).map(g => g.repo), ['sveltejs/svelte']);
+  const flagged = upstreamGroups(fixtureSnapshot().contributions, p.contributions);
+  // /open-source/ lists every merged pull; hidden only keeps one off the home page.
+  assert.deepEqual(flagged.map(g => [g.repo, g.pulls.length]), [['withastro/astro', 2], ['sveltejs/svelte', 1]]);
+  assert.deepEqual(flagged[0]!.pulls.map(pull => [pull.number, pull.hidden]), [[102, true], [101, false]]);
 });
 
-test('contribution totals count visible pulls and their upstreams once, for every page', () => {
+test('contribution totals count every listed pull, hidden ones included, and each Upstream once', () => {
   const p = fixturePortfolio();
+  assert.deepEqual(contributionTotals(upstreamGroups(fixtureSnapshot().contributions, p.contributions)), { pulls: 3, upstreams: 2 });
+  p.contributions.upstreams[1]!.pulls['7'] = { hidden: true, highlight: false };
   assert.deepEqual(contributionTotals(upstreamGroups(fixtureSnapshot().contributions, p.contributions)), { pulls: 3, upstreams: 2 });
   assert.deepEqual(contributionTotals([]), { pulls: 0, upstreams: 0 });
 });
@@ -173,7 +177,7 @@ test("homeMetrics resolves each pin to its Work's Metric, by label", () => {
 test('Recently shipped merges published releases and merged Contributions, newest first, limited', () => {
   const p = fixturePortfolio();
   const snapshot = fixtureSnapshot();
-  const shipped = recentlyShipped(snapshot, p.works, p.contributions, 3);
+  const shipped = recentlyShipped(snapshot, p.works, p.contributions, 3, 'cevdetch');
   assert.deepEqual(shipped.map(item => item.kind), ['release', 'contribution', 'contribution']);
   assert.deepEqual(shipped[0], {
     kind: 'release', at: '2026-10-20T10:00:00.000Z', work: p.works[0], package: 'deadhead', version: '0.3.1',
@@ -189,20 +193,74 @@ test('Recently shipped drops hidden Contributions and unpublished packages', () 
   const p = fixturePortfolio();
   const snapshot = fixtureSnapshot();
   p.contributions.upstreams[0]!.pulls['102'] = { hidden: true, highlight: false };
-  const shipped = recentlyShipped(snapshot, p.works, p.contributions, 10);
+  const shipped = recentlyShipped(snapshot, p.works, p.contributions, 10, 'cevdetch');
   assert.ok(!shipped.some(item => item.kind === 'contribution' && item.number === 102));
   assert.equal(shipped.filter(item => item.kind === 'release').length, 1);
   // Only svelte#7 remains a Contribution: astro#101 is highlighted (excluded below) and astro#102 is hidden.
   assert.equal(shipped.length, 2);
 });
 
+test('Recently shipped shows two same-day releases of one Work as one line, with the higher version', () => {
+  const p = fixturePortfolio();
+  const snapshot = fixtureSnapshot();
+  const npm = (name: string, version: string, releasedAt: string) => ({
+    registry: 'npm' as const, name, published: true as const, version, releasedAt, url: `https://www.npmjs.com/package/${name}`,
+  });
+  snapshot.works['deadhead']!.packages = [
+    npm('deadhead', '0.3.1', '2026-10-20T19:37:08.506Z'),
+    npm('eslint-plugin-deadhead', '0.10.0', '2026-10-20T19:35:35.071Z'),
+    npm('deadhead-old', '0.9.0', '2026-10-19T23:59:00.000Z'),
+  ];
+  const releases = recentlyShipped(snapshot, p.works, p.contributions, 10, 'cevdetch').flatMap(item => item.kind === 'release' ? [[item.package, item.version, item.at]] : []);
+  assert.deepEqual(releases, [
+    ['eslint-plugin-deadhead', '0.10.0', '2026-10-20T19:35:35.071Z'],
+    ['deadhead-old', '0.9.0', '2026-10-19T23:59:00.000Z'],
+  ]);
+  // Equal versions keep the newer release.
+  snapshot.works['deadhead']!.packages[1] = npm('eslint-plugin-deadhead', '0.3.1', '2026-10-20T19:35:35.071Z');
+  const tied = recentlyShipped(snapshot, p.works, p.contributions, 10, 'cevdetch').flatMap(item => item.kind === 'release' ? [item.package] : []);
+  assert.deepEqual(tied, ['deadhead', 'deadhead-old']);
+});
+
+test('Recently shipped collapses pulls to one Upstream merged within 7 days of each other, dated by the newest', () => {
+  const p = fixturePortfolio();
+  const snapshot = fixtureSnapshot();
+  const pull = (number: number, mergedAt: string) => ({
+    upstream: 'withastro/astro', number, title: `Fix ${number}`, url: `https://github.com/withastro/astro/pull/${number}`, mergedAt,
+  });
+  // astro#102 (1 July) chains to #103 (25 June) and #104 (19 June); #105 (11 June) is 8 days older and stands alone.
+  snapshot.contributions.push(pull(103, '2026-06-25T09:00:00Z'), pull(104, '2026-06-19T09:00:00Z'), pull(105, '2026-06-11T08:00:00Z'));
+  const shipped = recentlyShipped(snapshot, p.works, p.contributions, 10, 'cevdetch').filter(item => item.kind !== 'release');
+  assert.deepEqual(shipped, [
+    {
+      kind: 'pulls', at: '2026-07-01T08:22:12Z', from: '2026-06-19T09:00:00Z', repo: 'withastro/astro', label: 'Astro', count: 3,
+      url: 'https://github.com/withastro/astro/pulls?q=is%3Apr+is%3Amerged+author%3Acevdetch',
+    },
+    { kind: 'contribution', at: '2026-06-30T10:00:00Z', repo: 'sveltejs/svelte', label: 'Svelte', number: 7, title: 'Fix a typo', url: 'https://github.com/sveltejs/svelte/pull/7' },
+    { kind: 'contribution', at: '2026-06-11T08:00:00Z', repo: 'withastro/astro', label: 'Astro', number: 105, title: 'Fix 105', url: 'https://github.com/withastro/astro/pull/105' },
+  ]);
+});
+
+test('Contribution highlights skip hidden pulls', () => {
+  const p = fixturePortfolio();
+  p.contributions.upstreams[0]!.pulls['101'] = { hidden: true, highlight: true };
+  assert.deepEqual(contributionHighlights(upstreamGroups(fixtureSnapshot().contributions, p.contributions)), []);
+});
+
 test('Recently shipped excludes highlighted pulls, so the same PR never shows twice on home', () => {
   const p = fixturePortfolio();
   const snapshot = fixtureSnapshot();
   // The fixture marks astro#101 as a highlight; it must never also appear in Recently shipped.
-  const shipped = recentlyShipped(snapshot, p.works, p.contributions, 10);
+  const shipped = recentlyShipped(snapshot, p.works, p.contributions, 10, 'cevdetch');
   assert.ok(!shipped.some(item => item.kind === 'contribution' && item.number === 101));
   assert.deepEqual(shipped.flatMap(item => item.kind === 'contribution' ? [item.number] : []), [102, 7]);
+});
+
+test('a day range names the shared month and year once', () => {
+  assert.equal(formatDayRange('2026-06-23T22:31:47Z', '2026-07-01T08:22:12Z'), '23 June – 1 July 2026');
+  assert.equal(formatDayRange('2026-06-23T22:31:47Z', '2026-06-30T08:22:12Z'), '23–30 June 2026');
+  assert.equal(formatDayRange('2025-12-30T00:00:00Z', '2026-01-02T00:00:00Z'), '30 December 2025 – 2 January 2026');
+  assert.equal(formatDayRange('2026-06-30T01:00:00Z', '2026-06-30T20:00:00Z'), '30 June 2026');
 });
 
 test('formatting', () => {

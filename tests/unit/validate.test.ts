@@ -187,6 +187,14 @@ test('a hidden pull does not need a base label', () => {
   assert.deepEqual(validatePortfolio(p, facts), []);
 });
 
+test('a hidden pull cannot also be a Contribution highlight', () => {
+  const p = fixturePortfolio();
+  p.contributions.upstreams[0]!.pulls['101'] = { hidden: true, highlight: true };
+  assert.deepEqual(validatePortfolio(p, fixtureSnapshot()), [
+    'contributions/withastro/astro#101: a hidden pull cannot be a highlight',
+  ]);
+});
+
 test('a repo cannot appear twice within one theme', () => {
   const p = fixturePortfolio();
   p.contributions.themes[0]!.upstreams.push('withastro/astro');

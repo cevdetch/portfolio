@@ -5,7 +5,7 @@ import Layout from '../layouts/Layout.astro';
 import { fullName } from '../data/profile.ts';
 import { loadPortfolio } from '../data/portfolio.ts';
 import { contributionHighlights, featuredWorks, homeMetrics, metricDisplay, recentlyShipped, splitOnTitles, upstreamGroups, upstreamLabel } from '../data/views.ts';
-import { formatDay, joinList } from '../lib/format.ts';
+import { formatDay, formatDayRange, joinList } from '../lib/format.ts';
 import { graph, personNode, profilePageNode, websiteNode } from '../lib/jsonld.ts';
 
 const data = await loadPortfolio();
@@ -13,7 +13,7 @@ const { profile } = data;
 const groups = upstreamGroups(data.facts.contributions, data.contributions);
 const highlights = contributionHighlights(groups);
 const metrics = homeMetrics(profile.homeMetrics, data.works);
-const shipped = recentlyShipped(data.facts, data.works, data.contributions, 5);
+const shipped = recentlyShipped(data.facts, data.works, data.contributions, 5, profile.handle);
 
 // The proof line names each proofWorks entry by title (validated); each becomes a link to its Work page.
 const proofWorks = profile.proofWorks.map(id => data.works.find(work => work.id === id)!);
@@ -75,7 +75,9 @@ const proofParts = splitOnTitles(profile.proof, proofWorks.map(work => work.data
               <li>
                 {item.kind === 'release'
                   ? <><a href={`/work/${item.work.id}/`}>{item.work.data.title}</a> released <a href={item.url}>{item.package} {item.version}</a>, {formatDay(item.at)}</>
-                  : <><a href={item.url}>#{item.number}</a> merged into {item.label}: {item.title}, {formatDay(item.at)}</>}
+                  : item.kind === 'pulls'
+                    ? <><a href={item.url}>{item.count} pull requests</a> merged into {item.label}, {formatDayRange(item.from, item.at)}</>
+                    : <><a href={item.url}>#{item.number}</a> merged into {item.label}: {item.title}, {formatDay(item.at)}</>}
               </li>
             ))}
           </ul>

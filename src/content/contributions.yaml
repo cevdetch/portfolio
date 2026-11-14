@@ -4,7 +4,7 @@ upstreams:
   - { repo: GrapheneOS/grapheneos.org, order: 3, label: grapheneos.org, techs: [grapheneos], pulls: { '1684': { highlight: true, order: 4 } } }
   - { repo: sveltejs/svelte, order: 4, label: svelte.dev, techs: [svelte] }
   - { repo: withastro/starlight, order: 5, label: Starlight, techs: [starlight], pulls: { '2137': { highlight: true, order: 2 } } }
-  - { repo: lennart-k/rustical, order: 6, label: RustiCal, techs: [rustical] }
+  - { repo: lennart-k/rustical, order: 6, label: RustiCal, techs: [rustical], pulls: { '242': { hidden: true } } }
   - { repo: freeglut/freeglut, order: 7, label: freeglut }
   - { repo: CachyOS/firefox-wayland-cachy-hg, order: 8, label: CachyOS }
   - { repo: lumeland/lume.land, order: 9, label: lume.land, techs: [lume] }
