@@ -7,5 +7,5 @@ const { socials } = Astro.props;
 ---
 
 <ul>
-  {socials.map(social => <li><a href={social.url}>{socialLabels[social.network]}</a></li>)}
+  {socials.map(social => <li><a href={social.url} rel="me">{socialLabels[social.network]}</a></li>)}
 </ul>
