@@ -19,7 +19,7 @@ highlights:
 metrics:
   - label: Sourced rules
     value: '203'
-    measuredAt: 2026-10-26
+    measuredAt: 2026-10-14
     source: { label: deadhead release notes, url: https://github.com/cevdetch/deadhead/releases/tag/v0.3.1 }
     headline: { value: '203', label: sourced lint rules in deadhead }
   - label: Homepages audited
@@ -58,7 +58,7 @@ Most linters say *that* something is wrong. Markup in the `<head>` needs *why*: 
 ## Results
 
 - The `deadhead` and `eslint-plugin-deadhead` packages are on npm. The rules are published one page each at [deadhead.cevdet.ch](https://deadhead.cevdet.ch/), and the [browser playground](https://deadhead.cevdet.ch/try) checks pasted HTML without installing anything.
-- A corpus run over the Tranco top 10,000 linted 4,570 homepages as served. 44% had at least one harmful-classified finding and 99% had at least one finding of any kind. Applying every fix saved only a median of tens of bytes per page after compression, so the case for cleaning up is correctness, not weight.
+- A corpus run over the Tranco top 10,000 linted 4,570 homepages as served. 44% had at least one harmful-classified finding and 99% had at least one finding of any kind. Applying every fix saved only a median of tens of bytes per page after compression, so the case for cleaning up is correctness, not weight. The write-up, [What 10,000 home pages put in their head](https://deadhead.cevdet.ch/blog/what-10000-home-pages-put-in-their-head), sets out the method and the data behind every number.
 - The corpus fed back into the rules. A review of 20 findings per rule turned up autofixes that changed what a page does, false positives, and documentation claims that their own sources contradicted. The fixes shipped in the following patch release.
 
 ## Next

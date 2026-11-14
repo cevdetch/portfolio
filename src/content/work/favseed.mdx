@@ -16,11 +16,11 @@ highlights:
   - Built a favicon generator with one engine behind a CLI, a Vite plugin, an Astro integration and an in-browser app that produces identical files with nothing uploaded.
   - Chooses the encode order by measurement, quantising before lossless recompression, and keeps the smallest PNG that passes an accuracy bar.
 metrics:
-  - label: Raster bytes saved by the encode search vs quality 80
+  - label: Raster bytes saved vs favseed's quality-80 fast encode
     value: '20.4% over 568 rasters'
     measuredAt: 2026-11-08
-    source: { label: 'favseed README, How it decides', url: https://github.com/cevdetch/favseed/blob/main/README.md }
-    headline: { value: '20%', label: 'fewer favicon bytes than a fixed-quality encode' }
+    source: { label: 'favseed decisions log, decision 29', url: https://github.com/cevdetch/favseed/blob/main/docs/DECISIONS.md#29-each-raster-is-the-smallest-encode-that-passes-the-bar-and-the-edge-gate }
+    headline: { value: '20%', label: "fewer favicon bytes than favseed's quality-80 fast encode" }
 ---
 
 ## Problem
@@ -50,7 +50,7 @@ The decisions in force, and the ones they replaced, are recorded with their meas
 ## Results
 
 - The CLI, the Node API, the Vite plugin and the Astro integration share one pipeline, and [favseed.cevdet.ch](https://favseed.cevdet.ch/) runs it in the browser.
-- Over 568 rasters, the encode search wrote 20.4% fewer bytes than a fixed quality of 80, within a fraction of a percent of trying every candidate.
+- Over 568 rasters, the encode search wrote 20.4% fewer bytes than favseed's quality-80 fast encode, the earlier default, within a fraction of a percent of trying every candidate.
 
 ## Next
 
