@@ -197,7 +197,7 @@
       "url": "https://github.com/sveltejs/svelte/pull/12526"
     }
   ],
-  "refreshedAt": "2026-11-12T16:55:44.555Z",
+  "refreshedAt": "2026-11-14T09:13:38.049Z",
   "version": 1,
   "works": {
     "arch-waypure": {
@@ -267,9 +267,9 @@
       "icon": null,
       "packages": [],
       "repo": {
-        "commitCount": 3,
+        "commitCount": 8,
         "firstCommit": "2026-10-24T00:03:34Z",
-        "lastCommit": "2026-10-24T12:12:20Z",
+        "lastCommit": "2026-11-13T17:02:32Z",
         "latestRelease": null,
         "license": null
       }
@@ -281,9 +281,9 @@
       },
       "packages": [],
       "repo": {
-        "commitCount": 12,
+        "commitCount": 17,
         "firstCommit": "2026-10-24T21:25:18Z",
-        "lastCommit": "2026-10-28T22:02:50Z",
+        "lastCommit": "2026-11-13T11:56:01Z",
         "latestRelease": null,
         "license": "MIT"
       }
@@ -295,9 +295,9 @@
       },
       "packages": [],
       "repo": {
-        "commitCount": 4,
+        "commitCount": 9,
         "firstCommit": "2026-11-08T14:22:06Z",
-        "lastCommit": "2026-11-08T21:38:57Z",
+        "lastCommit": "2026-11-13T11:58:27Z",
         "latestRelease": null,
         "license": "MIT"
       }
@@ -326,9 +326,9 @@
         }
       ],
       "repo": {
-        "commitCount": 315,
+        "commitCount": 333,
         "firstCommit": "2026-09-09T18:21:46Z",
-        "lastCommit": "2026-11-05T18:50:45Z",
+        "lastCommit": "2026-11-13T17:52:30Z",
         "latestRelease": {
           "publishedAt": "2026-10-14T19:34:24Z",
           "tag": "v0.3.1"
@@ -349,9 +349,9 @@
         }
       ],
       "repo": {
-        "commitCount": 109,
+        "commitCount": 121,
         "firstCommit": "2026-10-04T17:49:18Z",
-        "lastCommit": "2026-11-08T22:49:12Z",
+        "lastCommit": "2026-11-14T09:11:13Z",
         "latestRelease": null,
         "license": "MIT"
       }
