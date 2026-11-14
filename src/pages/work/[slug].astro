@@ -9,7 +9,7 @@ import { loadPortfolio } from '../../data/portfolio.ts';
 import { findScreenshots, screenshotAlt, screenshotDevices, type ScreenshotDevice } from '../../data/screenshots.ts';
 import { workFactsView } from '../../data/views.ts';
 import { formatDay, formatMonth } from '../../lib/format.ts';
-import { graph, workNode } from '../../lib/jsonld.ts';
+import { breadcrumbNode, graph, workCrumbs, workNode } from '../../lib/jsonld.ts';
 import { techCategories } from '../../schemas/tech.ts';
 
 export async function getStaticPaths() {
@@ -26,12 +26,18 @@ const icon = iconUrl(facts.icon);
 const masters = import.meta.glob<{ default: ImageMetadata }>('/src/assets/screenshots/*/*.webp', { eager: true });
 const screenshots = findScreenshots(masters, entry.id);
 const devices = Object.keys(screenshotDevices) as ScreenshotDevice[];
+const crumbs = workCrumbs(work);
 const { Content } = await render(entry);
 ---
 
 <Layout title={`${work.data.title} - Cevdet`} description={work.data.summary}
-  jsonLd={graph(workNode(work, data.facts.works[work.id], data.techs))}>
+  jsonLd={graph(workNode(work, data.facts.works[work.id], data.techs), breadcrumbNode(work))}>
   <SiteNav />
+  <nav aria-label="Breadcrumb">
+    <ol>
+      {crumbs.map((crumb, index) => <li><a href={crumb.path} aria-current={index === crumbs.length - 1 ? 'page' : undefined}>{crumb.name}</a></li>)}
+    </ol>
+  </nav>
   <main>
     <article>
       <header>

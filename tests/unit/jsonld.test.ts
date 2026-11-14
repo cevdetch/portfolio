@@ -5,7 +5,7 @@ import { parse } from 'yaml';
 import { portraitUrl } from '../../src/data/portrait.ts';
 import { fullName } from '../../src/data/profile.ts';
 import {
-  graph, personNode, profilePageNode, serializeJsonLd, websiteNode, workNode,
+  breadcrumbNode, graph, personNode, profilePageNode, serializeJsonLd, websiteNode, workCrumbs, workNode,
 } from '../../src/lib/jsonld.ts';
 import { identity } from '../../src/lib/structured-data.ts';
 import { profileSchema } from '../../src/schemas/profile.ts';
@@ -107,6 +107,21 @@ test('a Work without a site does not have sameAs', () => {
   const { works, techs } = fixturePortfolio();
   const siteless = { ...works[0]!, data: { ...works[0]!.data, site: undefined } };
   assert.equal(field(workNode(siteless, undefined, techs), 'sameAs'), undefined);
+});
+
+test('the breadcrumb trail runs Home, Work, the Work, and the BreadcrumbList follows it', () => {
+  const { works } = fixturePortfolio();
+  assert.deepEqual(workCrumbs(works[0]!), [
+    { name: 'Home', path: '/' }, { name: 'Work', path: '/work/' }, { name: 'deadhead', path: '/work/deadhead/' },
+  ]);
+  assert.deepEqual(breadcrumbNode(works[0]!), {
+    '@type': 'BreadcrumbList', '@id': 'https://cevdet.ch/work/deadhead/#breadcrumb',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://cevdet.ch/' },
+      { '@type': 'ListItem', position: 2, name: 'Work', item: 'https://cevdet.ch/work/' },
+      { '@type': 'ListItem', position: 3, name: 'deadhead' },
+    ],
+  });
 });
 
 test('serialisation cannot close the script element', () => {

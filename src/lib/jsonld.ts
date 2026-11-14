@@ -55,3 +55,16 @@ export function workNode(work: WorkEntry, facts: WorkFacts | undefined, techs: r
     sameAs: work.data.site ? [work.data.site] : undefined,
   });
 }
+
+/** The visible trail on a Work page, Home › Work › the Work; the BreadcrumbList follows the same crumbs. */
+export function workCrumbs(work: WorkEntry): { name: string; path: string }[] {
+  return [{ name: 'Home', path: '/' }, { name: 'Work', path: '/work/' }, { name: work.data.title, path: `/work/${work.id}/` }];
+}
+
+export function breadcrumbNode(work: WorkEntry) {
+  const crumbs = workCrumbs(work);
+  // The last crumb is the page itself, which the shared builder lists without an item.
+  return shared.breadcrumbNode(workPage(work), crumbs.map((crumb, index) => ({
+    name: crumb.name, url: index === crumbs.length - 1 ? undefined : new URL(crumb.path, site).href,
+  })));
+}
