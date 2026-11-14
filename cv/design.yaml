@@ -61,6 +61,11 @@ design:
     space_below_name: 0.4cm
     space_below_headline: 0.4cm
     space_below_connections: 0.5cm
+    # The portrait sits left of the name, headline and contact lines. Measured:
+    # up to 2.6cm it stays within the height of that text and costs no line;
+    # at 2.8cm the header grows and the CV runs onto a second page. The theme
+    # default is 3.5cm.
+    photo_width: 2.6cm
     connections:
       # Keep the country code: +41 79 123 45 67. `national` strips it to
       # 079 123 45 67, useless to anyone dialling from abroad and no better

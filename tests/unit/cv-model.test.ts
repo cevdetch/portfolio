@@ -32,6 +32,13 @@ test('the header: name, title with specialisation, then country and time zone be
   assert.equal(cv.email, 'hello@cevdet.ch');
 });
 
+test('with a portrait, the header names the photo RenderCV prints beside it, by its file name next to the model', () => {
+  assert.equal('photo' in buildCv(data()).cv, false);
+  const { cv } = buildCv(data(), 'cevdet-haran.jpg');
+  assert.equal(cv.photo, 'cevdet-haran.jpg');
+  assert.deepEqual(Object.keys(cv).slice(0, 2), ['name', 'photo']);
+});
+
 test('the location names no city and drops "Remote-friendly" when remote work is not offered', () => {
   const p = data();
   p.profile.availability.workplace = ['local'];

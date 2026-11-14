@@ -8,14 +8,15 @@ import sharp from 'sharp';
 export const portraitFile = 'cevdet-haran.jpg';
 /** The stable URL the Person's image names, `https://cevdet.ch/cevdet-haran.jpg`. */
 export const publicPortraitPath = `public/${portraitFile}`;
+/** The tighter crop RenderCV prints in the CV header. */
+export const cvPortraitPath = `cv/${portraitFile}`;
 
 /** Every committed copy: which original it comes from and its edge in pixels. */
 export const portraitOutputs = [
   { path: publicPortraitPath, source: 'web', size: 1200 },
   // The master /about/ derives its <picture> from through astro:assets.
   { path: `src/assets/portrait/${portraitFile}`, source: 'web', size: 1200 },
-  // The tighter crop RenderCV prints in the CV header.
-  { path: `cv/${portraitFile}`, source: 'cv', size: 600 },
+  { path: cvPortraitPath, source: 'cv', size: 600 },
 ] as const;
 
 export function portraitUrl(website: string): string {

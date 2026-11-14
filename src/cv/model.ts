@@ -12,7 +12,7 @@ import type { Tech } from '../schemas/tech.ts';
 type Entry = Record<string, string | readonly string[]>;
 export interface RenderCvDocument {
   cv: {
-    name: string; headline: string; location: string; website: string; email: string;
+    name: string; photo?: string; headline: string; location: string; website: string; email: string;
     social_networks: { network: 'LinkedIn' | 'GitHub'; username: string }[];
     sections: Record<string, readonly (string | Entry)[]> & { projects: Entry[]; education: Entry[]; skills: Entry[] };
   };
@@ -119,7 +119,8 @@ function interests(profile: Profile, works: ReadonlyMap<string, WorkEntry>): Ent
   });
 }
 
-export function buildCv(data: LoadedPortfolio): RenderCvDocument {
+/** `photo` is the portrait's file name next to the model (see placePhoto); without one the header has no photo. */
+export function buildCv(data: LoadedPortfolio, photo?: string): RenderCvDocument {
   const { profile, facts } = data;
   const works = new Map(data.works.map(work => [work.id, work]));
   const cvInterests = interests(profile, works);
@@ -127,6 +128,7 @@ export function buildCv(data: LoadedPortfolio): RenderCvDocument {
   return {
     cv: {
       name: fullName(profile),
+      ...(photo ? { photo } : {}),
       headline: `${escapeMarkdown(profile.jobTitle)} · ${escapeMarkdown(profile.specialisation)}`,
       location: location(profile),
       // RenderCV prints the contact items in key order: the portfolio is the first link, ahead of email and socials.

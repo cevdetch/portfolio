@@ -1,7 +1,7 @@
 import { spawn } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { basename, join, resolve } from 'node:path';
 import { stringify } from 'yaml';
 import type { RenderCvDocument } from './model.ts';
 
@@ -31,6 +31,22 @@ function spawnRenderCv(args: readonly string[], cwd: string, command: string, en
       ? new Error('rendercv not found; run pip install -r requirements.txt') : error));
     child.once('close', code => code === 0 ? resolve() : reject(new Error(`rendercv exited with ${code}:\n${log}`)));
   });
+}
+
+/**
+ * RenderCV resolves `cv.photo` against the model's folder, so the portrait is copied next to it; pnpm cv:private
+ * renders the same model and finds it there too. Returns the file name to put in the model, or undefined when
+ * there is no portrait, and the CV prints without one.
+ */
+export async function placePhoto(source: string, workDir: string): Promise<string | undefined> {
+  await mkdir(workDir, { recursive: true });
+  try {
+    await copyFile(source, join(workDir, basename(source)));
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return undefined;
+    throw error;
+  }
+  return basename(source);
 }
 
 export async function renderCvPdf(doc: RenderCvDocument, options: { workDir: string; design: string; output: string }) {
