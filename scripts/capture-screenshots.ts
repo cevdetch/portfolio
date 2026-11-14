@@ -3,10 +3,11 @@
 // `src/assets/screenshots/<slug>/<device>-<scheme>.webp`. Runs on demand, like fetch-facts; never during
 // the build: the Astro build stays offline, and a page renders only the variants
 // `src/data/screenshots.ts` finds among the files this script wrote.
-import { spawn } from 'node:child_process';
+import { execFile, spawn } from 'node:child_process';
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { promisify } from 'node:util';
 import sharp from 'sharp';
 import {
   screenshotDevices, screenshotScale, screenshotSchemes, type ScreenshotDevice, type ScreenshotScheme,
@@ -166,6 +167,54 @@ export async function launchBrowser(chromePath: string, userDataDir: string) {
   }
 }
 
+/** URW's P052 is a metric clone of Palatino, built from the same four classic faces. */
+const palatinoFaces = [
+  { weight: 400, style: 'normal', local: 'P052-Roman' },
+  { weight: 700, style: 'normal', local: 'P052-Bold' },
+  { weight: 400, style: 'italic', local: 'P052-Italic' },
+  { weight: 700, style: 'italic', local: 'P052-BoldItalic' },
+] as const;
+
+// Only the two named Palatino families are aliased, never "Iowan Old Style": fontconfig's own Palatino →
+// P052 substitution already covers the generic case, and leaving Iowan alone keeps the capture true to
+// what a Windows visitor (who falls through to Palatino Linotype, not Iowan) actually sees.
+const palatinoFamilies = ['Palatino Linotype', 'Palatino'] as const;
+
+// Chromium on Linux applies fontconfig's Palatino → P052 substitution for the generic "serif" family, but
+// not for a page's own named "Palatino Linotype" or "Palatino", so a page's serif stack falls past both
+// straight to Chromium's built-in default, a Times-like face unlike what any real visitor sees. Aliasing
+// the named families to the local P052 faces makes Chromium pick the same clone fontconfig already
+// resolves for "serif".
+export function palatinoAliasCss(): string {
+  return palatinoFamilies.flatMap(family => palatinoFaces.map(face =>
+    `@font-face { font-family: "${family}"; src: local("${face.local}"); font-weight: ${face.weight}; font-style: ${face.style}; }`,
+  )).join('\n');
+}
+
+const palatinoAliasScript = `(() => {
+  const style = document.createElement('style');
+  style.textContent = ${JSON.stringify(palatinoAliasCss())};
+  document.head.append(style);
+  return true;
+})()`;
+
+/** True only when `fc-match` resolves `P052-Roman` to the `P052` family itself, not a fallback; a pure
+ *  check on the match output, so it's testable without fontconfig installed. */
+export function p052Available(fcMatchOutput: string): boolean {
+  return fcMatchOutput.trim() === 'P052';
+}
+
+/** Fails fast, before any browser is launched, when the URW P052 clone isn't installed: without it this
+ *  script would silently capture Chromium's own fallback serif instead of the Palatino look every real
+ *  visitor gets. */
+export async function checkPalatinoFontInstalled(): Promise<void> {
+  const message = 'P052 (the URW Palatino clone) is not available to fontconfig. '
+    + 'Install the URW base-35 fonts, e.g. gsfonts / fonts-urw-base35.';
+  const stdout = await promisify(execFile)('fc-match', ['-f', '%{family}', 'P052-Roman'])
+    .then(result => result.stdout, () => { throw new Error(message); });
+  if (!p052Available(stdout)) throw new Error(message);
+}
+
 // Resolves once the web fonts are ready and every image that can appear on the first screen has loaded
 // and decoded, or reports what is still pending after `ms`. Lazy images outside the viewport are left
 // out: they are not in the capture, and the browser may never load them.
@@ -254,6 +303,10 @@ export async function captureVariant(endpoint: string, url: string, variant: Cap
     });
     const status = mainDocumentStatus(responses, navigation.result?.loaderId);
     if (status !== undefined && status >= 400) throw new Error(`main document returned HTTP ${status} for ${url}`);
+    // Injected after load but before the settle step below, so the font swap it causes is one of the
+    // things `document.fonts.ready` in `settleScript` waits on, not something applied after the capture
+    // already considered itself settled.
+    await evaluate(ws, pending, counter, palatinoAliasScript, 5_000);
     const settled = await evaluate(ws, pending, counter, settleScript(10_000), 15_000) as { outcome: string; fonts: string; pending: number };
     if (settled.outcome !== 'ready') {
       throw new Error(`page did not settle within 10s (fonts ${settled.fonts}, ${settled.pending} image(s) still loading)`);
@@ -333,6 +386,7 @@ async function captureSite(chromePath: string, dir: URL, slug: string, url: stri
 }
 
 if (import.meta.main) {
+  await checkPalatinoFontInstalled();
   const chromePath = process.env['CHROME_PATH'] ?? 'google-chrome';
   const sources = await readWorkSources(new URL('src/content/work/', root));
   const targets = sources.filter((source): source is typeof source & { site: string } => source.site !== undefined);

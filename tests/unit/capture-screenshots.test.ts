@@ -5,8 +5,8 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import sharp from 'sharp';
 import {
-  captureVariants, checkMasterSize, chromeArgs, devtoolsUrl, identicalPixels, launchBrowser, mainDocumentStatus, masterPath,
-  masterSize, mediaFeatures, send, withTimeout,
+  captureVariants, checkMasterSize, checkPalatinoFontInstalled, chromeArgs, devtoolsUrl, identicalPixels, launchBrowser,
+  mainDocumentStatus, masterPath, masterSize, mediaFeatures, p052Available, palatinoAliasCss, send, withTimeout,
 } from '../../scripts/capture-screenshots.ts';
 
 const solid = (width: number, height: number, r: number) =>
@@ -130,6 +130,31 @@ test('checkMasterSize accepts a capture at exactly twice the viewport and reject
   const [, , phone] = captureVariants();
   await checkMasterSize(await solid(780, 1688, 10), phone!);
   await assert.rejects(checkMasterSize(await solid(390, 844, 10), phone!), /390x844.*expected 780x1688/);
+});
+
+test('palatinoAliasCss aliases both named Palatino families to the four P052 faces, never Iowan Old Style', () => {
+  const css = palatinoAliasCss();
+  assert.ok(css.includes('font-family: "Palatino Linotype"'));
+  assert.ok(css.includes('font-family: "Palatino"'));
+  assert.ok(!css.includes('Iowan'));
+  for (const local of ['P052-Roman', 'P052-Bold', 'P052-Italic', 'P052-BoldItalic']) {
+    assert.ok(css.includes(`local("${local}")`), `missing ${local}`);
+  }
+  assert.ok(/font-family: "Palatino Linotype";\s*src: local\("P052-Bold"\);\s*font-weight: 700;\s*font-style: normal;/.test(css));
+  assert.ok(/font-family: "Palatino";\s*src: local\("P052-Italic"\);\s*font-weight: 400;\s*font-style: italic;/.test(css));
+  // One @font-face per family per face: two families times four faces.
+  assert.equal(css.match(/@font-face/g)?.length, 8);
+});
+
+test('p052Available is true only when fc-match resolves P052-Roman to the P052 family itself', () => {
+  assert.equal(p052Available('P052\n'), true);
+  assert.equal(p052Available('P052'), true);
+  assert.equal(p052Available('Times New Roman\n'), false);
+  assert.equal(p052Available(''), false);
+});
+
+test('checkPalatinoFontInstalled resolves when fc-match resolves P052-Roman to P052 on this machine', async () => {
+  await assert.doesNotReject(checkPalatinoFontInstalled());
 });
 
 test('identicalPixels compares decoded pixels, not encoded bytes', async () => {
