@@ -25,6 +25,7 @@ jobs:
       - run: pnpm fetch-facts --changes-file "$RUNNER_TEMP/changes.txt"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PSI_API_KEY: ${{ secrets.PSI_API_KEY }}
       - id: diff
         run: echo "changed=$([ -s "$RUNNER_TEMP/changes.txt" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
       # The same gates as CI, on the refreshed tree; only the privacy gate sees the deny list.

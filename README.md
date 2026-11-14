@@ -23,7 +23,7 @@ pnpm dev
 | --- | --- |
 | `pnpm dev` | Run the site locally |
 | `pnpm verify` | Run every check: types, tests, a fresh build and the output gates |
-| `pnpm fetch-facts` | Refresh `src/facts/` from GitHub and npm |
+| `pnpm fetch-facts` | Refresh `src/facts/` from GitHub, npm, the AUR and PageSpeed Insights |
 | `pnpm cv:private` | Render the full CV, including the fields kept out of the public build |
 | `pnpm lighthouse` | Build and audit performance, accessibility, best practices and SEO |
 | `pnpm build` | Build the static site into `dist/` |
@@ -34,6 +34,11 @@ pnpm dev
 ```sh
 GITHUB_TOKEN=$(gh auth token) pnpm fetch-facts
 ```
+
+It measures each Work's site with the PageSpeed Insights API, using the key in
+`PSI_API_KEY`, read from the environment or from a gitignored `.env` file.
+Without a key, or when the API is unavailable, each site keeps its last scores
+and the refresh prints a warning.
 
 `pnpm lighthouse` needs a Chrome or Chromium binary. It honours `CHROME_PATH`
 when the default is not on the system:

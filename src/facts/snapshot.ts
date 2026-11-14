@@ -1,4 +1,4 @@
-import { publicRepo, type Snapshot } from './schema.ts';
+import { publicRepo, type LighthouseFacts, type Snapshot } from './schema.ts';
 
 type Payload = Pick<Snapshot, 'works' | 'contributions'>;
 
@@ -25,6 +25,17 @@ export function mergeSnapshot(previous: Snapshot | undefined, next: Payload, now
   const changed = !previous || stableJson(normalise(previous)) !== stableJson(payload);
   const refreshedAt = changed || !previous ? now.toISOString() : previous.refreshedAt;
   return { changed, snapshot: { version: 1, refreshedAt, ...payload } };
+}
+
+const lighthouseLabels: [keyof Omit<LighthouseFacts, 'measuredAt'>, string][] = [
+  ['performance', 'performance'], ['accessibility', 'accessibility'], ['bestPractices', 'best practices'], ['seo', 'SEO'],
+];
+
+function lighthouseLines(id: string, before: LighthouseFacts | undefined, after: LighthouseFacts | undefined): string[] {
+  if (!before && !after) return [];
+  if (!after) return [`${id}: Lighthouse scores removed`];
+  if (!before) return [`${id}: Lighthouse measured, ${lighthouseLabels.map(([key, label]) => `${label} ${after[key]}`).join(', ')}`];
+  return lighthouseLabels.filter(([key]) => before[key] !== after[key]).map(([key, label]) => `${id}: Lighthouse ${label} ${before[key]} → ${after[key]}`);
 }
 
 export function describeChanges(previous: Snapshot | undefined, next: Snapshot): string[] {
@@ -62,6 +73,7 @@ export function describeChanges(previous: Snapshot | undefined, next: Snapshot):
       lines.push(`${id}: ${before.rules?.total ?? 0} → ${after.rules?.total ?? 0} rules, ${before.rules?.head ?? 0} → ${after.rules?.head ?? 0} for the head`);
     }
     if (before.icon?.sha256 !== after.icon?.sha256) lines.push(`${id}: icon ${after.icon ? 'changed' : 'removed'}`);
+    lines.push(...lighthouseLines(id, before.lighthouse, after.lighthouse));
     // A change with no line of its own (lastCommit, a release date) still gets one.
     if (lines.length === emitted && stableJson(before) !== stableJson(after)) lines.push(`${id}: Facts updated`);
   }

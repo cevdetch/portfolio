@@ -83,3 +83,16 @@ test('describeChanges still names a Work or the contributions when only an unlis
   assert.deepEqual(describeChanges(previous, next), ['deadhead: 412 → 413 commits', 'contributions updated']);
   assert.deepEqual(describeChanges(previous, structuredClone(previous)), []);
 });
+
+test('describeChanges names each Lighthouse score that moved, and new or dropped scores', () => {
+  const previous = fixtureSnapshot();
+  const next = structuredClone(previous);
+  next.works['deadhead']!.lighthouse = { ...previous.works['deadhead']!.lighthouse!, performance: 100, seo: 92, measuredAt: '2026-11-16T06:00:00.000Z' };
+  assert.deepEqual(describeChanges(previous, next), ['deadhead: Lighthouse performance 98 → 100', 'deadhead: Lighthouse SEO 100 → 92']);
+  delete next.works['deadhead']!.lighthouse;
+  next.works['astro-minimal-template']!.lighthouse = { performance: 100, accessibility: 100, bestPractices: 96, seo: 100, measuredAt: '2026-11-16T06:00:00.000Z' };
+  assert.deepEqual(describeChanges(previous, next), [
+    'astro-minimal-template: Lighthouse measured, performance 100, accessibility 100, best practices 96, SEO 100',
+    'deadhead: Lighthouse scores removed',
+  ]);
+});

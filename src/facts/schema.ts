@@ -20,6 +20,18 @@ export const packageFactsSchema = z.discriminatedUnion('published', [
   z.strictObject({ registry, name: z.string(), published: z.literal(true), version: z.string(), releasedAt: isoDateTime, url: httpsUrl }),
 ]);
 
+const score = z.number().int().min(0).max(100);
+
+// The median of three mobile PageSpeed Insights runs on the Work's site, per category. measuredAt is the median
+// run's fetch time, kept from the last refresh while the four scores stay the same (see collectFacts).
+export const lighthouseFactsSchema = z.strictObject({
+  performance: score,
+  accessibility: score,
+  bestPractices: score,
+  seo: score,
+  measuredAt: isoDateTime,
+});
+
 export const workFactsSchema = z.strictObject({
   repo: repoFactsSchema.optional(),
   packages: z.array(packageFactsSchema),
@@ -28,6 +40,7 @@ export const workFactsSchema = z.strictObject({
   rules: z.strictObject({ total: z.number().int().positive(), head: z.number().int().nonnegative() }).optional(),
   // null: the site serves no /icon.svg, so the Work gets a monogram.
   icon: z.strictObject({ file: z.string().regex(/^icons\/[a-z0-9-]+\.svg$/), sha256: z.string().regex(/^[0-9a-f]{64}$/) }).nullable().optional(),
+  lighthouse: lighthouseFactsSchema.optional(),
 });
 
 export const contributionSchema = z.strictObject({
@@ -51,6 +64,7 @@ export type Snapshot = z.infer<typeof snapshotSchema>;
 export type WorkFacts = z.infer<typeof workFactsSchema>;
 export type RepoFacts = z.infer<typeof repoFactsSchema>;
 export type PublicRepoFacts = z.infer<typeof publicRepoFactsSchema>;
+export type LighthouseFacts = z.infer<typeof lighthouseFactsSchema>;
 export type PackageFacts = z.infer<typeof packageFactsSchema>;
 export type Contribution = z.infer<typeof contributionSchema>;
 

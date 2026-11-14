@@ -6,7 +6,7 @@ import { test } from 'node:test';
 import { pathToFileURL } from 'node:url';
 import { createClient, type Client } from '../../src/facts/client.ts';
 import { collectFacts, highlightedPulls } from '../../src/facts/refresh.ts';
-import { publicRepo } from '../../src/facts/schema.ts';
+import { publicRepo, type LighthouseFacts, type Snapshot } from '../../src/facts/schema.ts';
 import { contributionOverridesSchema } from '../../src/schemas/contributions.ts';
 import { readWorkSources } from '../../scripts/fetch-facts.ts';
 
@@ -218,4 +218,69 @@ test('createClient rejects GitHub redirect to another origin', async () => {
   const client = createClient('secret', fetcher);
   await assert.rejects(client.json(`${api}/x`), /leaves api.github.com/);
   assert.deepEqual(seen, [`${api}/x`]);
+});
+
+test('every Work with a site gets the median Lighthouse scores, a few sites at a time', async () => {
+  const sites: string[] = [];
+  let running = 0;
+  let most = 0;
+  const lighthouse = async (site: string) => {
+    sites.push(site);
+    running++;
+    most = Math.max(most, running);
+    await new Promise(resolve => setTimeout(resolve, 5));
+    running--;
+    return { facts: { performance: 99, accessibility: 100, bestPractices: 100, seo: 100, measuredAt: '2026-11-14T20:00:00.000Z' } };
+  };
+  const ids = ['a', 'b', 'c', 'd'];
+  const client = fakeClient({
+    ...Object.fromEntries(ids.map(id => [`https://${id}.cevdet.ch/icon.svg`, null])),
+    [search]: { data: { total_count: 0, items: [] } },
+  });
+  const collected = await collectFacts([
+    ...ids.map(id => ({ id, site: `https://${id}.cevdet.ch/`, packages: [], pkgbuilds: false })),
+    { id: 'pkg', packages: [{ registry: 'npm' as const, name: 'pkg' }], pkgbuilds: false },
+  ], { ...client, json: async <T>(url: string) => url === 'https://registry.npmjs.org/pkg' ? null : client.json<T>(url) }, { lighthouse });
+  assert.deepEqual(sites.sort(), ids.map(id => `https://${id}.cevdet.ch/`));
+  assert.ok(most > 1 && most <= 2, `ran ${most} at once`);
+  assert.deepEqual(collected.works['a']?.lighthouse, { performance: 99, accessibility: 100, bestPractices: 100, seo: 100, measuredAt: '2026-11-14T20:00:00.000Z' });
+  assert.equal(collected.works['pkg']?.lighthouse, undefined);
+});
+
+const scores = { performance: 98, accessibility: 100, bestPractices: 100, seo: 100 };
+const lighthousePrevious = (lighthouse?: LighthouseFacts): Snapshot => ({
+  version: 1 as const, refreshedAt: '2026-11-09T06:00:00.000Z', contributions: [],
+  works: { x: { packages: [], icon: null, ...(lighthouse ? { lighthouse } : {}) } },
+});
+const lighthouseRoutes = () => fakeClient({ 'https://x.cevdet.ch/icon.svg': null, [search]: { data: { total_count: 0, items: [] } } });
+const xSource = [{ id: 'x', site: 'https://x.cevdet.ch/', packages: [], pkgbuilds: false }];
+
+test('unchanged scores keep the date they were first measured, so a quiet week changes nothing', async () => {
+  const previous = lighthousePrevious({ ...scores, measuredAt: '2026-11-07T05:00:00.000Z' });
+  const same = async () => ({ facts: { ...scores, measuredAt: '2026-11-14T05:00:00.000Z' } });
+  assert.equal((await collectFacts(xSource, lighthouseRoutes(), { previous, lighthouse: same })).works['x']?.lighthouse?.measuredAt, '2026-11-07T05:00:00.000Z');
+  const better = async () => ({ facts: { ...scores, performance: 100, measuredAt: '2026-11-14T05:00:00.000Z' } });
+  assert.deepEqual((await collectFacts(xSource, lighthouseRoutes(), { previous, lighthouse: better })).works['x']?.lighthouse, { ...scores, performance: 100, measuredAt: '2026-11-14T05:00:00.000Z' });
+});
+
+test('a skipped measurement keeps the last Lighthouse Facts and warns, naming the site', async () => {
+  const warnings: string[] = [];
+  const skipped = async () => ({ skipped: 'HTTP 429' });
+  const previous = lighthousePrevious({ ...scores, measuredAt: '2026-11-07T05:00:00.000Z' });
+  const collected = await collectFacts(xSource, lighthouseRoutes(), { previous, lighthouse: skipped, warn: message => warnings.push(message) });
+  assert.deepEqual(collected.works['x']?.lighthouse, { ...scores, measuredAt: '2026-11-07T05:00:00.000Z' });
+  assert.deepEqual(warnings, ['x: Lighthouse not measured (HTTP 429); keeping the last scores']);
+  const first = await collectFacts(xSource, lighthouseRoutes(), { previous: lighthousePrevious(), lighthouse: skipped, warn: message => warnings.push(message) });
+  assert.equal(first.works['x']?.lighthouse, undefined);
+  assert.equal(warnings[1], 'x: Lighthouse not measured (HTTP 429); no earlier scores to keep');
+});
+
+test('without a measurer the last Lighthouse Facts carry over', async () => {
+  const previous = lighthousePrevious({ ...scores, measuredAt: '2026-11-07T05:00:00.000Z' });
+  assert.equal((await collectFacts(xSource, lighthouseRoutes(), { previous })).works['x']?.lighthouse?.measuredAt, '2026-11-07T05:00:00.000Z');
+});
+
+test('a measurement that fails closed stops the refresh', async () => {
+  const broken = async () => { throw new Error('https://x.cevdet.ch/: PageSpeed Insights ended on https://cevdet.ch/'); };
+  await assert.rejects(collectFacts(xSource, lighthouseRoutes(), { lighthouse: broken }), /ended on/);
 });

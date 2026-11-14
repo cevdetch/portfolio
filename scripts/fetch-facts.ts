@@ -4,6 +4,7 @@ import { createClient } from '../src/facts/client.ts';
 import { collectFacts, highlightedPulls, type WorkSource } from '../src/facts/refresh.ts';
 import { snapshotSchema, type Snapshot } from '../src/facts/schema.ts';
 import { describeChanges, mergeSnapshot, stableJson } from '../src/facts/snapshot.ts';
+import { createPageSpeed } from '../src/facts/sources/pagespeed.ts';
 import { contributionOverridesSchema } from '../src/schemas/contributions.ts';
 import { workSchema } from '../src/schemas/work.ts';
 
@@ -46,6 +47,9 @@ if (import.meta.main) {
     const overrides = contributionOverridesSchema.parse(parse(await readFile(new URL('src/content/contributions.yaml', root), 'utf8')));
     const collected = await collectFacts(await readWorkSources(new URL('src/content/work/', root)), createClient(token), {
       highlights: highlightedPulls(overrides), previous,
+      // From the environment or the gitignored .env; without it every site keeps its last scores, with a warning.
+      lighthouse: createPageSpeed(process.env['PSI_API_KEY']),
+      warn: message => console.warn(`warning: ${message}`),
     });
     const { snapshot, changed } = mergeSnapshot(previous, collected, new Date());
     const lines = changed ? describeChanges(previous, snapshot) : [];

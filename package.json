@@ -18,7 +18,7 @@
     "lint:html": "node scripts/lint-html.ts",
     "verify:portfolio": "node scripts/verify-portfolio.ts",
     "verify": "pnpm check && pnpm test && pnpm test:build && pnpm build && pnpm verify:output && pnpm lint:html && pnpm verify:portfolio",
-    "fetch-facts": "node scripts/fetch-facts.ts",
+    "fetch-facts": "node --env-file-if-exists=.env scripts/fetch-facts.ts",
     "capture-screenshots": "node scripts/capture-screenshots.ts",
     "prepare-portrait": "node scripts/prepare-portrait.ts",
     "cv:private": "node scripts/cv-private.ts",

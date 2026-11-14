@@ -104,8 +104,9 @@ export function fixtureSnapshot(): Snapshot {
         repo: { private: false, license: 'MIT', firstCommit: '2026-09-01T10:00:00Z', lastCommit: '2026-11-01T10:00:00Z', commitCount: 412, latestRelease: { tag: 'v0.3.1', publishedAt: '2026-10-20T10:00:00Z' } },
         packages: [{ registry: 'npm', name: 'deadhead', published: true, version: '0.3.1', releasedAt: '2026-10-20T10:00:00.000Z', url: 'https://www.npmjs.com/package/deadhead' }],
         icon: { file: 'icons/deadhead.svg', sha256: 'a'.repeat(64) },
+        lighthouse: { performance: 98, accessibility: 100, bestPractices: 100, seo: 100, measuredAt: '2026-11-07T05:20:00.000Z' },
       },
-      one: { packages: [], icon: null },
+      one: { packages: [], icon: null, lighthouse: { performance: 100, accessibility: 100, bestPractices: 96, seo: 100, measuredAt: '2026-11-07T05:21:00.000Z' } },
       'astro-minimal-template': {
         repo: { private: false, license: 'MIT', firstCommit: '2026-10-24T21:25:18Z', lastCommit: '2026-10-28T22:02:50Z', commitCount: 40, latestRelease: null },
         packages: [],
