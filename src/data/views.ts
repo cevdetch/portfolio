@@ -3,7 +3,7 @@ import type { ContributionOverrides } from '../schemas/contributions.ts';
 import type { Profile } from '../schemas/profile.ts';
 import { techCategories, type Tech, type TechCategory } from '../schemas/tech.ts';
 import type { UsesSection } from '../schemas/uses.ts';
-import type { Metric } from '../schemas/work.ts';
+import type { Metric, Work } from '../schemas/work.ts';
 import type { WorkEntry } from './validate.ts';
 
 export function escapeRegExp(text: string): string {
@@ -139,20 +139,20 @@ export interface WorkFactsView {
   sourcePrivate?: true;
 }
 
-export function workFactsView(id: string, snapshot: Snapshot, repoName?: string): WorkFactsView {
+export function workFactsView(id: string, snapshot: Snapshot, work?: Pick<Work, 'repo' | 'source'>): WorkFactsView {
   const facts = snapshot.works[id];
-  if (!facts) return { packages: [] };
   const repo = publicRepo(facts);
   return {
-    packages: facts.packages,
+    packages: facts?.packages ?? [],
     ...(repo?.license ? { license: repo.license } : {}),
     ...(repo ? { active: { from: repo.firstCommit, to: repo.lastCommit }, commitCount: repo.commitCount } : {}),
     ...(repo?.latestRelease ? { release: repo.latestRelease } : {}),
-    ...(facts.pkgbuilds ? { pkgbuildCount: facts.pkgbuilds.length } : {}),
-    ...(facts.rules ? { rules: facts.rules } : {}),
-    ...(facts.icon ? { icon: facts.icon.file } : {}),
-    ...(repoName && repo ? { repoUrl: `https://github.com/${repoName}` } : {}),
-    ...(facts.repo?.private ? { sourcePrivate: true as const } : {}),
+    ...(facts?.pkgbuilds ? { pkgbuildCount: facts.pkgbuilds.length } : {}),
+    ...(facts?.rules ? { rules: facts.rules } : {}),
+    ...(facts?.icon ? { icon: facts.icon.file } : {}),
+    ...(work?.repo && repo ? { repoUrl: `https://github.com/${work.repo}` } : {}),
+    // Either the Story names the source private outright, or the Snapshot found a once-public repo now 404ing.
+    ...(work?.source === 'private' || facts?.repo?.private ? { sourcePrivate: true as const } : {}),
   };
 }
 

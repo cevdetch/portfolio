@@ -70,6 +70,13 @@ test('work rejects unknown keys, so a typo never vanishes silently', () => {
   assert.throws(() => workSchema.parse({ ...work, higlights: [] }));
 });
 
+test('a Work may declare its source private, but never name a repo alongside it', () => {
+  const { repo: _repo, ...withoutRepo } = work;
+  assert.equal(workSchema.parse({ ...withoutRepo, source: 'private' }).source, 'private');
+  assert.throws(() => workSchema.parse({ ...work, source: 'private' }));
+  assert.throws(() => workSchema.parse({ ...work, source: 'public' }));
+});
+
 test('work repo must be a cevdetch repository and site must be https', () => {
   assert.throws(() => workSchema.parse({ ...work, repo: 'someone/deadhead' }));
   assert.throws(() => workSchema.parse({ ...work, site: 'http://deadhead.cevdet.ch/' }));

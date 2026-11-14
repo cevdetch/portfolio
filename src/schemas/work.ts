@@ -46,9 +46,14 @@ const neutral = {
   status: z.enum(workStatuses),
   featured: z.boolean().default(false),
   order: z.number().int().positive().optional(),
-  // The Work's GitHub repository. fetch-facts records whether it is private; a private one gets no link and no
-  // GitHub Facts, only "Source private" on the Work page.
+  // The Work's public GitHub repository. fetch-facts fetches it and keeps recording it as private if a later
+  // run finds it 404ing after once being public (see repoFactsSchema). A repository that is private from the
+  // start is never named: use `source: 'private'` below instead and leave this unset.
   repo: z.string().regex(/^cevdetch\/[A-Za-z0-9._-]+$/).optional(),
+  // Declares the Work's source private without naming the repository. The Work page shows "Source private"
+  // from this field alone, fetch-facts never queries for it, and the Snapshot holds no repository Facts.
+  // Mutually exclusive with `repo`, which is for a repository that is itself named because it is public.
+  source: z.enum(['private']).optional(),
   site: httpsUrl.optional(),
   packages: z.array(packageRefSchema).default([]),
   // Fetch the list of top-level PKGBUILD folders from this Work's repo.
@@ -75,6 +80,9 @@ const story = {
   cvLine: line(200).optional(),
 };
 
-export const workSchema = z.strictObject({ ...neutral, ...story });
+export const workSchema = z.strictObject({ ...neutral, ...story }).refine(work => !(work.source === 'private' && work.repo), {
+  message: 'source: private cannot be combined with repo; a private source has no repository to name',
+  path: ['source'],
+});
 export type Work = z.infer<typeof workSchema>;
 export const workTranslationSchema = z.strictObject(Object.fromEntries(Object.entries(story).map(([k, v]) => [k, v.optional()])));

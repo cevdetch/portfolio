@@ -9,7 +9,7 @@ import { techCategories } from '../schemas/tech.ts';
 const data = await loadPortfolio();
 const techs = new Map(data.techs.map(tech => [tech.id, tech]));
 const works = new Map(data.works.map(work => [work.id, work]));
-const packageWorks = orderWorks(data.works).map(work => ({ work, facts: workFactsView(work.id, data.facts, work.data.repo) }))
+const packageWorks = orderWorks(data.works).map(work => ({ work, facts: workFactsView(work.id, data.facts, work.data) }))
   .filter(({ facts }) => facts.packages.length > 0 || facts.pkgbuildCount !== undefined);
 const groups = upstreamGroups(data.facts.contributions, data.contributions);
 const totals = contributionTotals(groups);

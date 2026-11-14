@@ -148,11 +148,16 @@ test('a social URL yields the handle in its path', () => {
 
 test('workFactsView gives a repository link only for a repo the Snapshot found public', () => {
   const snapshot = fixtureSnapshot();
-  assert.equal(workFactsView('deadhead', snapshot, 'cevdetch/deadhead').repoUrl, 'https://github.com/cevdetch/deadhead');
-  assert.equal(workFactsView('homelab', snapshot, 'cevdetch/homelab').repoUrl, undefined);
+  assert.equal(workFactsView('deadhead', snapshot, { repo: 'cevdetch/deadhead' }).repoUrl, 'https://github.com/cevdetch/deadhead');
+  assert.equal(workFactsView('homelab', snapshot, { repo: 'cevdetch/homelab' }).repoUrl, undefined);
   assert.equal(workFactsView('deadhead', snapshot).repoUrl, undefined);
   delete snapshot.works['deadhead']!.repo;
-  assert.equal(workFactsView('deadhead', snapshot, 'cevdetch/deadhead').repoUrl, undefined);
+  assert.equal(workFactsView('deadhead', snapshot, { repo: 'cevdetch/deadhead' }).repoUrl, undefined);
+});
+
+test('workFactsView marks a Story-declared private source with no Facts and no repository named', () => {
+  const snapshot = fixtureSnapshot();
+  assert.deepEqual(workFactsView('branding', snapshot, { source: 'private' }), { packages: [], sourcePrivate: true });
 });
 
 test('Featured Works come in Featured order', () => {

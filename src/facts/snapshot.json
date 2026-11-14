@@ -209,7 +209,7 @@
       "url": "https://github.com/sveltejs/svelte/pull/12526"
     }
   ],
-  "refreshedAt": "2026-11-14T12:10:07.028Z",
+  "refreshedAt": "2026-11-14T20:24:44.240Z",
   "version": 1,
   "works": {
     "arch-waypure": {
@@ -268,9 +268,9 @@
         "zvbi"
       ],
       "repo": {
-        "commitCount": 144,
+        "commitCount": 152,
         "firstCommit": "2025-12-24T22:35:44Z",
-        "lastCommit": "2026-11-06T18:07:27Z",
+        "lastCommit": "2026-11-14T20:23:28Z",
         "latestRelease": null,
         "license": "0BSD",
         "private": false
@@ -316,12 +316,6 @@
         "latestRelease": null,
         "license": "MIT",
         "private": false
-      }
-    },
-    "branding": {
-      "packages": [],
-      "repo": {
-        "private": true
       }
     },
     "deadhead": {
@@ -376,18 +370,12 @@
         }
       ],
       "repo": {
-        "commitCount": 123,
+        "commitCount": 124,
         "firstCommit": "2026-10-04T17:49:18Z",
-        "lastCommit": "2026-11-14T10:59:41Z",
+        "lastCommit": "2026-11-14T13:25:54Z",
         "latestRelease": null,
         "license": "MIT",
         "private": false
-      }
-    },
-    "homelab": {
-      "packages": [],
-      "repo": {
-        "private": true
       }
     },
     "one": {
@@ -395,10 +383,7 @@
         "file": "icons/one.svg",
         "sha256": "f571ccb90a41c375d659ace0733c84489a9d4fe98692a6c42366c2b5ba861bfa"
       },
-      "packages": [],
-      "repo": {
-        "private": true
-      }
+      "packages": []
     }
   }
 }
