@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { hrefs, jsonLdBlocks, metaContents, visibleText } from '../../src/gates/html.ts';
 import { checkJsonLd } from '../../src/gates/jsonld.ts';
+import { pdfPageCount } from '../../src/gates/pdf.ts';
 import {
   denylistStatus, findDenylistTerms, findPrivacyViolations, isScannedTextFile, parseDenylist, splitCommitLog,
 } from '../../src/gates/privacy.ts';
@@ -88,4 +89,14 @@ test('the commit log splits into commits and their messages', () => {
     { commit: 'def5678', message: 'fix: two\n' },
   ]);
   assert.deepEqual(splitCommitLog(''), []);
+});
+
+test('pdfPageCount counts the page objects, not the page tree, and refuses what it cannot read', () => {
+  const pdf = (body: string) => new TextEncoder().encode(`%PDF-1.7\n1 0 obj\n<</Type/Pages/Count 2/Kids[2 0 R 3 0 R]>>\nendobj\n${body}%%EOF\n`);
+  const page = (n: number) => `${n} 0 obj\n<</Type /Page/Parent 1 0 R/MediaBox[0 0 595 842]>>\nendobj\n`;
+  assert.equal(pdfPageCount(pdf(page(2))), 1);
+  assert.equal(pdfPageCount(pdf(page(2) + page(3))), 2);
+  assert.throws(() => pdfPageCount(pdf('4 0 obj\n<</Type/ObjStm/N 2>>\nendobj\n')), /compressed streams/);
+  assert.throws(() => pdfPageCount(pdf('')), /no page objects/);
+  assert.throws(() => pdfPageCount(new TextEncoder().encode('<html>')), /not a PDF/);
 });

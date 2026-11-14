@@ -3,6 +3,7 @@ import { readdir, readFile } from 'node:fs/promises';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { promisify } from 'node:util';
 import { checkJsonLd } from '../src/gates/jsonld.ts';
+import { pdfPageCount } from '../src/gates/pdf.ts';
 import { hrefs, jsonLdBlocks, metaContents, visibleText } from '../src/gates/html.ts';
 import { denylistStatus, findDenylistTerms, findPrivacyViolations, isScannedTextFile, parseDenylist, splitCommitLog } from '../src/gates/privacy.ts';
 import { readBuildReceipt } from '../src/integrations/receipt.ts';
@@ -58,6 +59,9 @@ if (import.meta.main) {
     const email = profile.match(/^email:\s*(\S+)/m)?.[1];
     const errors: string[] = [];
     if (brand.themeColor !== brand.primary.hex) errors.push('brand.json themeColor differs from the palette primary');
+    // The public CV is one page by design; RenderCV happily spills onto a second.
+    const cvPages = pdfPageCount(await readFile(new URL('cv.pdf', receipt.outDir)));
+    if (cvPages !== 1) errors.push(`cv.pdf: ${cvPages} pages; the CV must fit on one`);
     for (const page of receipt.pages) {
       const html = await readFile(new URL(page.file), 'utf8');
       const where = new URL(page.url).pathname;
