@@ -75,7 +75,7 @@ const proofParts = splitOnTitles(profile.proof, proofWorks.map(work => work.data
               <li>
                 {item.kind === 'release'
                   ? <><a href={`/work/${item.work.id}/`}>{item.work.data.title}</a> released <a href={item.url}>{item.package} {item.version}</a>, {formatDay(item.at)}</>
-                  : <>{item.label} merged <a href={item.url}>#{item.number}</a>: {item.title}, {formatDay(item.at)}</>}
+                  : <><a href={item.url}>#{item.number}</a> merged into {item.label}: {item.title}, {formatDay(item.at)}</>}
               </li>
             ))}
           </ul>
