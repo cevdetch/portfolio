@@ -11,10 +11,11 @@ test('sections: summary and education first, then projects, open source and expe
     ['summary', 'education', 'projects', 'open_source', 'experience', 'skills', 'languages_&_writing']);
 });
 
-test('the header: name, title with specialisation, then country and time zone before email, GitHub and LinkedIn', () => {
+test('the header: name, title with specialisation, then country and time zone before the website, email, GitHub and LinkedIn', () => {
   const { cv } = buildCv(data());
-  // No website: fewer contact items; cevdet.ch already appears in the project headings and the One link.
-  assert.deepEqual(Object.keys(cv), ['name', 'headline', 'location', 'email', 'social_networks', 'sections']);
+  // RenderCV prints the contact items in key order, so the website is the first link.
+  assert.deepEqual(Object.keys(cv), ['name', 'headline', 'location', 'website', 'email', 'social_networks', 'sections']);
+  assert.equal(cv.website, 'https://cevdet.ch/');
   assert.equal(cv.name, 'Cevdet Haran');
   assert.equal(cv.headline, 'Software Developer · Web performance · Developer tooling · Open source');
   assert.equal(cv.location, 'Switzerland · Remote-friendly (Europe/Zurich)');
@@ -147,6 +148,13 @@ test('CV social networks come from the profile socials: GitHub, then LinkedIn, n
 
 test('Story text cannot inject Markdown', () => {
   assert.equal(escapeMarkdown('a_b *c* [d](e)'), 'a\\_b \\*c\\* \\[d\\](e)');
+});
+
+test('months print as standard three-letter abbreviations, "Sep" rather than RenderCV\'s "Sept"', () => {
+  assert.deepEqual(buildCv(data()).locale, {
+    language: 'english',
+    month_abbreviations: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+  });
 });
 
 test('the CV date is the Snapshot date, so equal data renders equal CVs', () => {

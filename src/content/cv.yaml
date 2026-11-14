@@ -9,7 +9,8 @@ projects:
     works: [arch-waypure, homelab]
     optional: true
 skills:
-  - label: Languages
+  # "Programming", not "Languages": the closing section lists the spoken languages.
+  - label: Programming
     items:
       - techs: [typescript]
       - techs: [javascript]

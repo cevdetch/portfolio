@@ -12,11 +12,11 @@ import type { Tech } from '../schemas/tech.ts';
 type Entry = Record<string, string | readonly string[]>;
 export interface RenderCvDocument {
   cv: {
-    name: string; headline: string; location: string; email: string;
+    name: string; headline: string; location: string; website: string; email: string;
     social_networks: { network: 'LinkedIn' | 'GitHub'; username: string }[];
     sections: Record<string, readonly (string | Entry)[]> & { projects: Entry[]; education: Entry[]; skills: Entry[]; open_source: Entry[] };
   };
-  locale: { language: 'english' };
+  locale: { language: 'english'; month_abbreviations: readonly string[] };
   settings: { current_date: string; bold_keywords: string[]; pdf_title: string };
 }
 
@@ -46,6 +46,9 @@ function location({ country, availability }: Profile): string {
   const zone = availability.workplace.includes('remote') ? `Remote-friendly (${timeZone})` : timeZone;
   return `${escapeMarkdown(country)} · ${zone}`;
 }
+
+// RenderCV's English default follows a library style ("June", "July", "Sept"); a CV reads the standard three letters.
+const monthAbbreviations = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as const;
 
 const month = (iso: string) => iso.slice(0, 7);
 const ongoing = (work: WorkEntry) => work.data.status === 'active' || work.data.status === 'maintained';
@@ -114,8 +117,9 @@ export function buildCv(data: LoadedPortfolio): RenderCvDocument {
       name: fullName(profile),
       headline: `${escapeMarkdown(profile.jobTitle)} · ${escapeMarkdown(profile.specialisation)}`,
       location: location(profile),
+      // RenderCV prints the contact items in key order: the portfolio is the first link, ahead of email and socials.
+      website: profile.website,
       email: profile.email,
-      // No website link: fewer contact items; cevdet.ch already appears in the project headings and the One link.
       social_networks: socialNetworks(profile.socials),
       sections: {
         summary: [escapeMarkdown(profile.bio)],
@@ -123,7 +127,7 @@ export function buildCv(data: LoadedPortfolio): RenderCvDocument {
         education: data.education.map(e => ({
           institution: escapeMarkdown(e.institution), degree: escapeMarkdown(e.credential),
           ...(e.field ? { area: escapeMarkdown(e.field) } : {}),
-          // An expected end date prints alone as "Expected June 2028": `expected` fills the
+          // An expected end date prints alone as "Expected Jun 2028": `expected` fills the
           // EXPECTED placeholder in cv/design.yaml, and RenderCV formats the date.
           ...(e.expected ? { date: e.end, expected: 'Expected' } : { start_date: e.start, end_date: e.end }),
           highlights: e.note ? [escapeMarkdown(e.note)] : [],
@@ -142,7 +146,7 @@ export function buildCv(data: LoadedPortfolio): RenderCvDocument {
         ...(cvInterests.length ? { 'languages_&_writing': [languages, ...cvInterests] } : { languages: [languages] }),
       },
     },
-    locale: { language: 'english' },
+    locale: { language: 'english', month_abbreviations: monthAbbreviations },
     settings: { current_date: facts.refreshedAt.slice(0, 10), bold_keywords: [], pdf_title: `${fullName(profile)} - CV` },
   };
 }

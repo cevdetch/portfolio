@@ -69,7 +69,7 @@ design:
 
   templates:
     # The theme's education entry, plus EXPECTED: for an end date still ahead the model
-    # sets `expected` and that date alone, printing "Expected June 2028" on one line;
+    # sets `expected` and that date alone, printing "Expected Jun 2028" on one line;
     # RenderCV drops the placeholder from every other entry. A template override
     # replaces the theme's, so all three columns are restated.
     education_entry:
@@ -78,6 +78,6 @@ design:
       date_and_location_column: "EXPECTED DATE"
 # NOTE: deliberately no `templates.single_date: YEAR` here. It suppresses the
 # unwanted "Jan 2025" from a bare-year date, but it ALSO applies to the
-# endpoints of date ranges, flattening "Sept 2024 - June 2028" to "2024 - 2028".
+# endpoints of date ranges, flattening "Sep 2024 - Jun 2028" to "2024 - 2028".
 # Month precision matters for date ranges. Use year-only start_date/end_date
 # on undated entries instead.
