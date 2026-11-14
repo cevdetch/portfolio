@@ -133,7 +133,7 @@ export function validatePortfolio(p: Portfolio, facts: Snapshot): string[] {
 
   p.profile.services.forEach(service => service.evidence.forEach(ref => work(`profile service ${service.id}`, ref)));
   work('profile writing', p.profile.writing);
-  errors.push(...lintAll('profile', { headline: p.profile.headline, bio: p.profile.bio, proof: p.profile.proof }, true));
+  errors.push(...lintAll('profile', { headline: p.profile.headline, bio: p.profile.bio, proof: p.profile.proof, about: p.profile.about }, true));
   errors.push(...fillBio(p.profile.bio, p.education).problems.map(problem => `profile bio: ${problem}`));
   p.profile.proofWorks.forEach((ref, index) => {
     const at = `profile proofWorks[${index}]`;

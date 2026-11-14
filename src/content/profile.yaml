@@ -10,6 +10,22 @@ bio: >-
   published on npm, and favseed, a favicon generator; fixes merged into Immich, Starlight and Astro's
   starter templates. Works end to end, from tests and docs to Linux packaging. Takes part-time work
   alongside Gymnasium studies (Matura {graduationYear}).
+about:
+  - >-
+    The open-source work began with small fixes to the HTML head, such as removing redundant Twitter tags
+    from Starlight and Immich. deadhead came next, a linter that says why a tag is harmful, deprecated or
+    unnecessary and cites sources for every rule. Later fixes reordered the head of grapheneos.org and
+    trimmed Immich's favicon set.
+  - >-
+    favseed applies the same approach to favicons. It turns one SVG into a small set of icons, and each step
+    of its pipeline was chosen by a recorded measurement.
+  - >-
+    On the Linux side, arch-waypure rebuilds Arch Linux packages for a desktop that runs on Wayland alone,
+    and build and packaging changes for Wayland-only systems have been merged into freeglut, CachyOS and
+    aerynOS.
+  - >-
+    All of this runs alongside Gymnasium studies in physics and applied mathematics, and alongside the essays
+    and poems published on One.
 proof: Built deadhead, the HTML head linter that audited 4,570 of the web's top homepages, and favseed. Fixes merged into Immich, Starlight and Astro's starter templates.
 proofWorks: [deadhead, favseed]
 homeMetrics:

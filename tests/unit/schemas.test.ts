@@ -155,6 +155,25 @@ test('the home proof line stretches to a full sentence of real, sourced claims',
   assert.throws(() => profileSchema.parse({ ...profile, proof: 'x'.repeat(171) }));
 });
 
+test('the about story is optional and runs two to four short paragraphs', () => {
+  const profile = {
+    name: 'Cevdet', familyName: 'Haran', handle: 'cevdetch', jobTitle: 'Software Developer', headline: 'Builds fast sites.',
+    specialisation: 'Web performance', country: 'Switzerland', bio: 'Builds tools.', proof: 'Creator of deadhead.', proofWorks: ['deadhead'],
+    homeMetrics: [{ work: 'deadhead', label: 'Sourced rules' }],
+    email: 'hello@cevdet.ch', website: 'https://cevdet.ch/', contactSubject: 'Enquiry', writing: 'one',
+    socials: [{ network: 'github', url: 'https://github.com/cevdetch' }],
+    availability: { capacity: 'part-time', timeZone: 'Europe/Zurich', openTo: ['employment'], workplace: ['remote'] },
+    process: [{ title: 'Reply', detail: 'Reply.' }, { title: 'Scope', detail: 'Scope.' }, { title: 'Build', detail: 'Build.' }],
+    services: [{ id: 'static-sites', name: 'Fast static sites', summary: 'Astro sites.' }],
+    languages: [{ name: 'English', level: 'C1' }],
+  };
+  assert.equal(profileSchema.parse(profile).about, undefined);
+  assert.deepEqual(profileSchema.parse({ ...profile, about: ['First.', 'Second.'] }).about, ['First.', 'Second.']);
+  assert.throws(() => profileSchema.parse({ ...profile, about: ['Only one.'] }));
+  assert.throws(() => profileSchema.parse({ ...profile, about: ['1.', '2.', '3.', '4.', '5.'] }));
+  assert.throws(() => profileSchema.parse({ ...profile, about: ['x'.repeat(401), 'Second.'] }));
+});
+
 test('every interest says whether the CV prints it', () => {
   const profile = profileSchema.parse({
     name: 'Cevdet', familyName: 'Haran', handle: 'cevdetch', jobTitle: 'Software Developer', headline: 'Builds fast sites.',

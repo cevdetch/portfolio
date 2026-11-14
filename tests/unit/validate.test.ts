@@ -237,6 +237,15 @@ test('a cvLine is CV-shared Story and its tokens must resolve', () => {
   ]);
 });
 
+test('the about story is Story, so it is linted and pronoun-free', () => {
+  const p = fixturePortfolio();
+  p.profile.about = ['Started with the HTML head.', 'My second paragraph, todo.'];
+  assert.deepEqual(validatePortfolio(p, fixtureSnapshot()), [
+    'profile about[1]: placeholder text',
+    'profile about[1]: Story is verb-led and pronoun-free',
+  ]);
+});
+
 test('process steps are linted', () => {
   const p = fixturePortfolio();
   p.profile.process[0]!.title = 'My reply';

@@ -3,19 +3,23 @@ import SiteNav from '../components/SiteNav.astro';
 import Layout from '../layouts/Layout.astro';
 import { fullName, languageItem } from '../data/profile.ts';
 import { loadPortfolio } from '../data/portfolio.ts';
+import { splitOnTitles } from '../data/views.ts';
 import { formatMonth } from '../lib/format.ts';
 
 const data = await loadPortfolio();
 const { profile } = data;
 const works = new Map(data.works.map(work => [work.id, work]));
 const writing = works.get(profile.writing)!;
+// The about story names Works by title; each becomes a link to its Work page.
+const workLinks = new Map(data.works.map(work => [work.data.title, `/work/${work.id}/`] as const));
+const paragraphs = (profile.about ?? [profile.bio]).map(text => splitOnTitles(text, [...workLinks.keys()]));
 ---
 
 <Layout title="About - Cevdet" description={profile.headline}>
   <SiteNav />
   <main>
     <h1>About {fullName(profile)}</h1>
-    <p>{profile.bio}</p>
+    {paragraphs.map(parts => <p>{parts.map(part => workLinks.has(part) ? <a href={workLinks.get(part)}>{part}</a> : part)}</p>)}
     <section aria-labelledby="experience">
       <h2 id="experience">Experience</h2>
       <ul>

@@ -28,6 +28,8 @@ export const profileSchema = z.strictObject({
   headline: line(120),
   // `{graduationYear}` is filled from the expected Education entry (see fillBio), so no date is typed.
   bio: line(400),
+  // /about/'s own story, in place of the bio the home page and the CV already show. Story, linted.
+  about: z.array(line(400)).min(2).max(4).optional(),
   // The proof line under the pitch on the home page: creations plus upstream fixes, named exactly.
   proof: line(170),
   // The Works proof names by title, so the home page can link each one; validated against that title.
