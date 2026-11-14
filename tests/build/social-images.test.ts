@@ -31,9 +31,10 @@ async function consumer(t: { after(fn: () => Promise<void>): void }, options: { 
   // gates/ is needed for scripts/verify-portfolio.ts to type-check in the physical-removal test.
   // data/views.ts comes along because validate.ts fills cvLine tokens with it. data/profile.ts
   // comes along because jsonld.ts derives the full name from its fullName helper. data/screenshots.ts
-  // comes along because scripts/capture-screenshots.ts reads its device table.
+  // comes along because scripts/capture-screenshots.ts reads its device table. data/portrait.ts comes along
+  // because jsonld.ts names the portrait's URL and scripts/prepare-portrait.ts reads its outputs.
   for (const path of ['lib', 'integrations', 'layouts', 'assets', 'config.ts', 'brand.json', 'schemas', 'facts',
-    'data/validate.ts', 'data/story-lint.ts', 'data/views.ts', 'data/profile.ts', 'data/screenshots.ts', 'gates']) {
+    'data/validate.ts', 'data/story-lint.ts', 'data/views.ts', 'data/profile.ts', 'data/screenshots.ts', 'data/portrait.ts', 'gates']) {
     await cp(new URL(`../../src/${path}`, import.meta.url), new URL(`src/${path}`, fixture.root), { recursive: true });
   }
   await mkdir(new URL('src/pages-source/', fixture.root));

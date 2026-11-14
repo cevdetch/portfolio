@@ -1,3 +1,4 @@
+import { portraitUrl } from '../data/portrait.ts';
 import { fullName } from '../data/profile.ts';
 import type { WorkEntry } from '../data/validate.ts';
 import { publicRepo, type WorkFacts } from '../facts/schema.ts';
@@ -8,16 +9,22 @@ import { techCategories, type Tech } from '../schemas/tech.ts';
 export const PERSON_ID = 'https://cevdet.ch/#person';
 export const WEBSITE_ID = 'https://cevdet.ch/#website';
 export const PROFILE_ID = 'https://cevdet.ch/#profile';
+export const PORTRAIT_ID = 'https://cevdet.ch/#portrait';
 
 type JsonLdNode = Record<string, unknown>;
 
-export function personNode(profile: Profile, techs: readonly Tech[]): JsonLdNode {
+/** `portrait` is the size of the committed public/ copy; without one the Person has no image. */
+export function personNode(profile: Profile, techs: readonly Tech[], portrait?: { width: number; height: number }): JsonLdNode {
+  const url = portraitUrl(profile.website);
   return {
     '@type': 'Person', '@id': PERSON_ID,
     name: fullName(profile), givenName: profile.name, familyName: profile.familyName, alternateName: [profile.handle],
     url: profile.website, jobTitle: profile.jobTitle, description: profile.bio, email: `mailto:${profile.email}`,
     knowsAbout: techs.filter(tech => techCategories[tech.category].skills).map(tech => tech.label),
     sameAs: profile.socials.map(social => social.url),
+    ...(portrait ? {
+      image: { '@type': 'ImageObject', '@id': PORTRAIT_ID, url, contentUrl: url, ...portrait, caption: fullName(profile) },
+    } : {}),
   };
 }
 

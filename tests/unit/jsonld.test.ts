@@ -62,3 +62,13 @@ test('a Work without a site does not have sameAs', () => {
   const siteless = { ...works[0]!, data: { ...works[0]!.data, site: undefined } };
   assert.equal(workNode(siteless, undefined, techs)['sameAs'], undefined);
 });
+
+test('with a portrait, the Person image is an ImageObject at the stable URL, captioned with the full name', () => {
+  const { profile, techs } = fixturePortfolio();
+  assert.equal(personNode(profile, techs)['image'], undefined);
+  assert.deepEqual(personNode(profile, techs, { width: 1200, height: 1200 })['image'], {
+    '@type': 'ImageObject', '@id': 'https://cevdet.ch/#portrait',
+    url: 'https://cevdet.ch/cevdet-haran.jpg', contentUrl: 'https://cevdet.ch/cevdet-haran.jpg',
+    width: 1200, height: 1200, caption: 'Cevdet Haran',
+  });
+});

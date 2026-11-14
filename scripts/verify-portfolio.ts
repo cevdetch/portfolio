@@ -4,9 +4,11 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { promisify } from 'node:util';
 import { checkJsonLd } from '../src/gates/jsonld.ts';
 import { pdfPageCount } from '../src/gates/pdf.ts';
+import { checkPortrait } from '../src/gates/portrait.ts';
 import { hrefs, jsonLdBlocks, metaContents, visibleText } from '../src/gates/html.ts';
 import { denylistStatus, findDenylistTerms, findPrivacyViolations, isScannedTextFile, parseDenylist, splitCommitLog } from '../src/gates/privacy.ts';
 import { readBuildReceipt } from '../src/integrations/receipt.ts';
+import { portraitOutputs } from '../src/data/portrait.ts';
 
 async function files(dir: string): Promise<string[]> {
   const entries = await readdir(dir, { withFileTypes: true, recursive: true });
@@ -71,6 +73,9 @@ if (import.meta.main) {
       errors.push(...checkJsonLd(jsonLdBlocks(html), visibleText(html), hrefs(html)).map(error => `${where}: ${error}`));
       if (where === '/hire/' && !hrefs(html).some(href => href.startsWith(`mailto:${email}?subject=`))) errors.push('/hire/: no mailto link with a prefilled subject');
     }
+    // Every committed portrait: no EXIF, XMP or IPTC, so no location or camera data is published with it.
+    const portraits = (await git('ls-files', '-z', '--', ...portraitOutputs.map(output => output.path))).split('\0').filter(Boolean);
+    for (const path of portraits) errors.push(...(await checkPortrait(await readFile(path))).map(error => `${path}: ${error}`));
     const terms = await denylist();
     const status = denylistStatus(terms.length, Boolean(process.env['CI']));
     if (status.error) errors.push(status.error);
