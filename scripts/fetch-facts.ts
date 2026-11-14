@@ -44,7 +44,7 @@ if (import.meta.main) {
     const previous = await readSnapshot(snapshotFile);
     const overrides = contributionOverridesSchema.parse(parse(await readFile(new URL('src/content/contributions.yaml', root), 'utf8')));
     const collected = await collectFacts(await readWorkSources(new URL('src/content/work/', root)), createClient(token), {
-      highlights: highlightedPulls(overrides),
+      highlights: highlightedPulls(overrides), previous,
     });
     const { snapshot, changed } = mergeSnapshot(previous, collected, new Date());
     const lines = changed ? describeChanges(previous, snapshot) : [];

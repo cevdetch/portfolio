@@ -25,7 +25,7 @@ test('toRepoFacts maps licence, dates, count and release', () => {
     newest: commit('2026-11-01T10:00:00Z'), oldest: commit('2026-09-01T10:00:00Z'), commitCount: 412,
     release: { tag_name: 'v0.3.1', published_at: '2026-10-20T10:00:00Z', draft: false },
   });
-  assert.deepEqual(facts, { license: 'MIT', firstCommit: '2026-09-01T10:00:00Z', lastCommit: '2026-11-01T10:00:00Z', commitCount: 412, latestRelease: { tag: 'v0.3.1', publishedAt: '2026-10-20T10:00:00Z' } });
+  assert.deepEqual(facts, { private: false, license: 'MIT', firstCommit: '2026-09-01T10:00:00Z', lastCommit: '2026-11-01T10:00:00Z', commitCount: 412, latestRelease: { tag: 'v0.3.1', publishedAt: '2026-10-20T10:00:00Z' } });
   const bare = toRepoFacts({ repo: { private: false, default_branch: 'main', license: { spdx_id: 'NOASSERTION' } }, newest: commit('2026-11-01T10:00:00Z'), oldest: commit('2026-11-01T10:00:00Z'), commitCount: 1, release: null });
   assert.equal(bare.license, null);
   assert.equal(bare.latestRelease, null);

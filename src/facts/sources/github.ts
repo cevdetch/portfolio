@@ -1,4 +1,4 @@
-import type { Contribution, RepoFacts } from '../schema.ts';
+import type { Contribution, PublicRepoFacts } from '../schema.ts';
 
 export const GITHUB_API = 'https://api.github.com';
 export const HANDLE = 'cevdetch';
@@ -40,9 +40,10 @@ export function lastPage(link: string | null): number | null {
   return page ? Number(page) : null;
 }
 
-export function toRepoFacts(input: { repo: GhRepo; newest: GhCommit; oldest: GhCommit; commitCount: number; release: GhRelease | null }): RepoFacts {
+export function toRepoFacts(input: { repo: GhRepo; newest: GhCommit; oldest: GhCommit; commitCount: number; release: GhRelease | null }): PublicRepoFacts {
   const spdx = input.repo.license?.spdx_id;
   return {
+    private: false,
     license: spdx && spdx !== 'NOASSERTION' ? spdx : null,
     firstCommit: input.oldest.commit.author.date,
     lastCommit: input.newest.commit.author.date,

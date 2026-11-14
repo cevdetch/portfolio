@@ -140,6 +140,14 @@ test('a Work with sources needs Facts, and Facts need a Work', () => {
   ]);
 });
 
+test('a Work with a repo needs repository Facts, so an unrefreshed repo is never linked', () => {
+  const facts = fixtureSnapshot();
+  delete facts.works['deadhead']!.repo;
+  assert.deepEqual(validatePortfolio(fixturePortfolio(), facts), [
+    'work/deadhead: no repository Facts in the Snapshot; run pnpm fetch-facts',
+  ]);
+});
+
 test('overrides must point at Contributions in the Snapshot', () => {
   const p = fixturePortfolio();
   p.contributions.upstreams[0]!.pulls['999'] = { hidden: true, highlight: false };

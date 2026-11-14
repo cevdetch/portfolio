@@ -50,6 +50,13 @@ test('serialisation cannot close the script element', () => {
   assert.equal(serializeJsonLd(graph([{ name: '</script>' }])), '{"@context":"https://schema.org","@graph":[{"name":"\\u003c/script>"}]}');
 });
 
+test('a private repository is never named as the codeRepository', () => {
+  const { works, techs } = fixturePortfolio();
+  const homelab = works.find(work => work.id === 'homelab')!;
+  assert.equal(workNode(homelab, fixtureSnapshot().works['homelab'], techs)['codeRepository'], undefined);
+  assert.equal(workNode(works[0]!, undefined, techs)['codeRepository'], undefined);
+});
+
 test('a Work without a site does not have sameAs', () => {
   const { works, techs } = fixturePortfolio();
   const siteless = { ...works[0]!, data: { ...works[0]!.data, site: undefined } };

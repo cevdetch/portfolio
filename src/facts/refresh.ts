@@ -1,7 +1,7 @@
 import type { ContributionOverrides } from '../schemas/contributions.ts';
 import type { PackageRef } from '../schemas/work.ts';
 import type { Client } from './client.ts';
-import type { Contribution, WorkFacts } from './schema.ts';
+import type { Contribution, RepoFacts, Snapshot, WorkFacts } from './schema.ts';
 import {
   contributionsQuery, countDiscussion, GITHUB_API, HANDLE, lastPage, toContribution, toPkgbuilds, toRepoFacts,
   type GhComment, type GhCommit, type GhRelease, type GhRepo, type GhSearch, type GhTree,
@@ -10,7 +10,7 @@ import { checkSvg, sha256 } from './sources/icons.ts';
 import { toAurFacts, toNpmFacts, type AurInfo, type NpmDoc } from './sources/registries.ts';
 
 export interface WorkSource { id: string; repo?: string; site?: string; packages: readonly PackageRef[]; pkgbuilds: boolean }
-export interface CollectOptions { highlights?: readonly string[] }
+export interface CollectOptions { highlights?: readonly string[]; previous?: Snapshot | undefined }
 export interface Collected { works: Record<string, WorkFacts>; contributions: Contribution[]; icons: { workId: string; svg: string }[] }
 
 async function required<T>(client: Client, url: string): Promise<{ data: T; headers: Headers }> {
@@ -19,9 +19,17 @@ async function required<T>(client: Client, url: string): Promise<{ data: T; head
   return result;
 }
 
-async function repoFacts(client: Client, source: WorkSource & { repo: string }) {
-  const { data: repo } = await required<GhRepo>(client, `${GITHUB_API}/repos/${source.repo}`);
-  if (repo.private) throw new Error(`${source.id}: ${source.repo} is private; remove repo from its Story`);
+async function repoFacts(client: Client, source: WorkSource & { repo: string }, previous: Snapshot | undefined): Promise<{ facts: RepoFacts; pkgbuilds?: string[] }> {
+  const url = `${GITHUB_API}/repos/${source.repo}`;
+  const found = await client.json<GhRepo>(url);
+  if (!found) {
+    // The scheduled refresh's token sees public repositories only, so a private one answers 404 there. Keep the
+    // privacy a refresh with the owner's token recorded; any other 404 is a wrong repo in the Story.
+    if (previous?.works[source.id]?.repo?.private) return { facts: { private: true } };
+    throw new Error(`${url}: not found`);
+  }
+  const repo = found.data;
+  if (repo.private) return { facts: { private: true } };
   const commits = `${GITHUB_API}/repos/${source.repo}/commits?sha=${repo.default_branch}&per_page=1`;
   const first = await required<GhCommit[]>(client, commits);
   const newest = first.data[0];
@@ -33,7 +41,7 @@ async function repoFacts(client: Client, source: WorkSource & { repo: string }) 
   const pkgbuilds = source.pkgbuilds
     ? toPkgbuilds((await required<GhTree>(client, `${GITHUB_API}/repos/${source.repo}/git/trees/${repo.default_branch}?recursive=1`)).data)
     : undefined;
-  return { facts, pkgbuilds };
+  return pkgbuilds ? { facts, pkgbuilds } : { facts };
 }
 
 async function packageFacts(client: Client, pkg: PackageRef) {
@@ -90,7 +98,7 @@ export async function collectFacts(sources: readonly WorkSource[], client: Clien
     if (!source.repo && !source.site && source.packages.length === 0) continue;
     const facts: WorkFacts = { packages: [] };
     if (source.repo) {
-      const { facts: repo, pkgbuilds } = await repoFacts(client, { ...source, repo: source.repo });
+      const { facts: repo, pkgbuilds } = await repoFacts(client, { ...source, repo: source.repo }, options.previous);
       facts.repo = repo;
       if (pkgbuilds) facts.pkgbuilds = pkgbuilds;
     }

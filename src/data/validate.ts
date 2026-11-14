@@ -105,6 +105,8 @@ export function validatePortfolio(p: Portfolio, facts: Snapshot): string[] {
     data.metrics.forEach((metric, index) => {
       errors.push(...lintAll(`${at} metrics[${index}]`, { label: metric.label, 'headline label': metric.headline?.label }, false));
     });
+    // Every surface links a repo only once the Snapshot has found it public; a missing entry is an unrefreshed Story.
+    if (data.repo && facts.works[id] && !facts.works[id].repo) errors.push(`${at}: no repository Facts in the Snapshot; run pnpm fetch-facts`);
     const sourced = data.repo || data.site || data.packages.length > 0 || data.pkgbuilds;
     if (sourced && !facts.works[id]) errors.push(`${at}: no Facts in the Snapshot; run pnpm fetch-facts`);
   }

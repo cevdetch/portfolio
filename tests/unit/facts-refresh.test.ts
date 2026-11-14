@@ -6,6 +6,7 @@ import { test } from 'node:test';
 import { pathToFileURL } from 'node:url';
 import { createClient, type Client } from '../../src/facts/client.ts';
 import { collectFacts, highlightedPulls } from '../../src/facts/refresh.ts';
+import { publicRepo } from '../../src/facts/schema.ts';
 import { contributionOverridesSchema } from '../../src/schemas/contributions.ts';
 import { readWorkSources } from '../../scripts/fetch-facts.ts';
 
@@ -52,8 +53,8 @@ test('collectFacts reads every source for a Work and the Contributions', async (
     { id: 'astro-metadata-lab', site: 'https://astro-metadata-lab.cevdet.ch/', packages: [], pkgbuilds: false },
     { id: 'homelab', packages: [], pkgbuilds: false },
   ], client);
-  assert.equal(collected.works['deadhead']?.repo?.commitCount, 412);
-  assert.equal(collected.works['deadhead']?.repo?.firstCommit, '2026-09-01T10:00:00Z');
+  assert.equal(publicRepo(collected.works['deadhead'])?.commitCount, 412);
+  assert.equal(publicRepo(collected.works['deadhead'])?.firstCommit, '2026-09-01T10:00:00Z');
   assert.deepEqual(collected.works['deadhead']?.packages.map(p => p.published), [true, false]);
   assert.equal(collected.works['deadhead']?.icon?.file, 'icons/deadhead.svg');
   assert.equal(collected.works['astro-metadata-lab']?.icon, null);
@@ -92,14 +93,30 @@ test('a single-commit repository needs no second page', async () => {
     [search]: { data: { total_count: 0, items: [] } },
   });
   const collected = await collectFacts([{ id: 'x', repo: 'cevdetch/x', packages: [], pkgbuilds: false }], client);
-  assert.equal(collected.works['x']?.repo?.commitCount, 1);
-  assert.equal(collected.works['x']?.repo?.firstCommit, '2026-11-01T10:00:00Z');
+  assert.equal(publicRepo(collected.works['x'])?.commitCount, 1);
+  assert.equal(publicRepo(collected.works['x'])?.firstCommit, '2026-11-01T10:00:00Z');
 });
 
-test('a private repo, a non-SVG icon or an unsafe icon stops the refresh', async () => {
-  await assert.rejects(collectFacts([{ id: 'one', repo: 'cevdetch/one', packages: [], pkgbuilds: false }], fakeClient({
+test('a private repo records only that it is private', async () => {
+  const client = fakeClient({
     [`${api}/repos/cevdetch/one`]: { data: { private: true, default_branch: 'main', license: null } },
-  })), /private/);
+    [search]: { data: { total_count: 0, items: [] } },
+  });
+  const collected = await collectFacts([{ id: 'one', repo: 'cevdetch/one', packages: [], pkgbuilds: true }], client);
+  assert.deepEqual(collected.works['one'], { repo: { private: true }, packages: [] });
+  assert.deepEqual(client.requested, [`${api}/repos/cevdetch/one`, search]);
+});
+
+test('a repo the token cannot see stays private only if the last refresh found it private', async () => {
+  const routes = { [`${api}/repos/cevdetch/one`]: null, [search]: { data: { total_count: 0, items: [] } } };
+  const source = { id: 'one', repo: 'cevdetch/one', packages: [], pkgbuilds: false };
+  const previous = { version: 1 as const, refreshedAt: '2026-11-09T06:00:00.000Z', works: { one: { repo: { private: true as const }, packages: [] } }, contributions: [] };
+  const collected = await collectFacts([source], fakeClient(routes), { previous });
+  assert.deepEqual(collected.works['one']?.repo, { private: true });
+  await assert.rejects(collectFacts([source], fakeClient(routes)), /cevdetch\/one: not found/);
+});
+
+test('a non-SVG icon or an unsafe icon stops the refresh', async () => {
   await assert.rejects(collectFacts([{ id: 'x', site: 'https://x.cevdet.ch/', packages: [], pkgbuilds: false }], fakeClient({
     'https://x.cevdet.ch/icon.svg': { body: '<html></html>', contentType: 'text/html' },
   })), /not image\/svg\+xml/);

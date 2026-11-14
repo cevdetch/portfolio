@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { publicRepo } from '../../src/facts/schema.ts';
 import { describeChanges, mergeSnapshot, stableJson } from '../../src/facts/snapshot.ts';
 import { fixtureSnapshot } from '../helpers/portfolio-fixture.ts';
 
@@ -31,7 +32,7 @@ test('describeChanges writes a reviewable line per Fact change', () => {
   const previous = fixtureSnapshot();
   const next = structuredClone(previous);
   next.works['deadhead']!.packages = [{ registry: 'npm', name: 'deadhead', published: true, version: '0.4.0', releasedAt: '2026-11-15T10:00:00.000Z', url: 'https://www.npmjs.com/package/deadhead' }];
-  next.works['deadhead']!.repo!.commitCount = 420;
+  publicRepo(next.works['deadhead'])!.commitCount = 420;
   next.works['one']!.icon = { file: 'icons/one.svg', sha256: 'b'.repeat(64) };
   next.contributions.unshift({ upstream: 'immich-app/immich', number: 5, title: 'Fix', url: 'https://github.com/immich-app/immich/pull/5', mergedAt: '2026-11-10T00:00:00Z' });
   assert.deepEqual(describeChanges(previous, next), [
@@ -41,6 +42,17 @@ test('describeChanges writes a reviewable line per Fact change', () => {
     'contribution: immich-app/immich#5 merged',
   ]);
   assert.deepEqual(describeChanges(undefined, next), ['first Snapshot']);
+});
+
+test('describeChanges names a repository that turned public or private', () => {
+  const previous = fixtureSnapshot();
+  const next = structuredClone(previous);
+  next.works['homelab']!.repo = { ...previous.works['astro-minimal-template']!.repo! };
+  next.works['astro-minimal-template']!.repo = { private: true };
+  assert.deepEqual(describeChanges(previous, next), [
+    'astro-minimal-template: source public → private',
+    'homelab: source private → public',
+  ]);
 });
 
 test('describeChanges names a change in a highlighted pull\'s review discussion', () => {
@@ -55,11 +67,11 @@ test('describeChanges names a change in a highlighted pull\'s review discussion'
 test('describeChanges still names a Work or the contributions when only an unlisted Fact moved', () => {
   const previous = fixtureSnapshot();
   const next = structuredClone(previous);
-  next.works['deadhead']!.repo!.lastCommit = '2026-11-12T10:00:00Z';
+  publicRepo(next.works['deadhead'])!.lastCommit = '2026-11-12T10:00:00Z';
   next.works['deadhead']!.packages = [{ registry: 'npm', name: 'deadhead', published: true, version: '0.3.1', releasedAt: '2026-10-21T10:00:00.000Z', url: 'https://www.npmjs.com/package/deadhead' }];
   next.contributions[0]!.title = 'Handle the base path in the sitemap';
   assert.deepEqual(describeChanges(previous, next), ['deadhead: Facts updated', 'contributions updated']);
-  next.works['deadhead']!.repo!.commitCount = 413;
+  publicRepo(next.works['deadhead'])!.commitCount = 413;
   assert.deepEqual(describeChanges(previous, next), ['deadhead: 412 → 413 commits', 'contributions updated']);
   assert.deepEqual(describeChanges(previous, structuredClone(previous)), []);
 });

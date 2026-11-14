@@ -9,7 +9,7 @@ import { techCategories } from '../schemas/tech.ts';
 const data = await loadPortfolio();
 const techs = new Map(data.techs.map(tech => [tech.id, tech]));
 const works = new Map(data.works.map(work => [work.id, work]));
-const packageWorks = orderWorks(data.works).map(work => ({ work, facts: workFactsView(work.id, data.facts) }))
+const packageWorks = orderWorks(data.works).map(work => ({ work, facts: workFactsView(work.id, data.facts, work.data.repo) }))
   .filter(({ facts }) => facts.packages.length > 0 || facts.pkgbuildCount !== undefined);
 const groups = upstreamGroups(data.facts.contributions, data.contributions);
 const totals = contributionTotals(groups);
@@ -34,8 +34,8 @@ const span = contributionSpan(data.facts.contributions, data.contributions, data
                     : `not published on ${pkg.registry}`}
                 </li>
               ))}
-              {facts.pkgbuildCount !== undefined && work.data.repo && (
-                <li>{facts.pkgbuildCount} PKGBUILDs in <a href={`https://github.com/${work.data.repo}`}>{work.data.repo}</a></li>
+              {facts.pkgbuildCount !== undefined && facts.repoUrl && (
+                <li>{facts.pkgbuildCount} PKGBUILDs in <a href={facts.repoUrl}>{work.data.repo}</a></li>
               )}
             </ul>
           </li>

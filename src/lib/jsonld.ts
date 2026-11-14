@@ -1,6 +1,6 @@
 import { fullName } from '../data/profile.ts';
 import type { WorkEntry } from '../data/validate.ts';
-import type { WorkFacts } from '../facts/schema.ts';
+import { publicRepo, type WorkFacts } from '../facts/schema.ts';
 import type { Profile } from '../schemas/profile.ts';
 import { techCategories, type Tech } from '../schemas/tech.ts';
 
@@ -48,8 +48,10 @@ export function workNode(work: WorkEntry, facts: WorkFacts | undefined, techs: r
   const languages = work.data.stack.map(id => techs.find(tech => tech.id === id)).filter(tech => tech?.category === 'language').map(tech => tech!.label);
   return {
     '@type': 'SoftwareSourceCode', ...base,
-    ...(work.data.repo ? { codeRepository: `https://github.com/${work.data.repo}` } : {}),
-    ...(facts?.repo?.license ? { license: `https://spdx.org/licenses/${facts.repo.license}.html` } : {}),
+    // Only a repository the Snapshot found public; schema.org has no natural field for "source private", so a
+    // private Work simply has no codeRepository.
+    ...(work.data.repo && publicRepo(facts) ? { codeRepository: `https://github.com/${work.data.repo}` } : {}),
+    ...(publicRepo(facts)?.license ? { license: `https://spdx.org/licenses/${publicRepo(facts)!.license}.html` } : {}),
     ...(languages.length ? { programmingLanguage: languages } : {}),
   };
 }

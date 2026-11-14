@@ -1,4 +1,4 @@
-import type { Contribution, PackageFacts, Snapshot, WorkFacts } from '../facts/schema.ts';
+import { publicRepo, type Contribution, type PackageFacts, type Snapshot, type WorkFacts } from '../facts/schema.ts';
 import type { ContributionOverrides } from '../schemas/contributions.ts';
 import type { Profile } from '../schemas/profile.ts';
 import { techCategories, type Tech, type TechCategory } from '../schemas/tech.ts';
@@ -132,12 +132,16 @@ export interface WorkFactsView {
   release?: { tag: string; publishedAt: string };
   pkgbuildCount?: number;
   icon?: string;
+  // The one rule for linking a repository: the Story names it and the Snapshot found it public.
+  repoUrl?: string;
+  // The Snapshot found the Work's repository private: the page says so where the repository link would be.
+  sourcePrivate?: true;
 }
 
-export function workFactsView(id: string, snapshot: Snapshot): WorkFactsView {
+export function workFactsView(id: string, snapshot: Snapshot, repoName?: string): WorkFactsView {
   const facts = snapshot.works[id];
   if (!facts) return { packages: [] };
-  const repo = facts.repo;
+  const repo = publicRepo(facts);
   return {
     packages: facts.packages,
     ...(repo?.license ? { license: repo.license } : {}),
@@ -145,6 +149,8 @@ export function workFactsView(id: string, snapshot: Snapshot): WorkFactsView {
     ...(repo?.latestRelease ? { release: repo.latestRelease } : {}),
     ...(facts.pkgbuilds ? { pkgbuildCount: facts.pkgbuilds.length } : {}),
     ...(facts.icon ? { icon: facts.icon.file } : {}),
+    ...(repoName && repo ? { repoUrl: `https://github.com/${repoName}` } : {}),
+    ...(facts.repo?.private ? { sourcePrivate: true as const } : {}),
   };
 }
 

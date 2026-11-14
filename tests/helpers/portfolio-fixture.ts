@@ -63,7 +63,7 @@ export function fixturePortfolio(): Portfolio {
         cvLine: '{pkgbuilds} PKGBUILDs with Python audit tools.',
       }) },
       { id: 'homelab', body: caseStudyBody, data: workSchema.parse({
-        title: 'Homelab', kind: 'infrastructure', status: 'active', stack: ['astro'],
+        title: 'Homelab', kind: 'infrastructure', status: 'active', repo: 'cevdetch/homelab', stack: ['astro'],
         tagline: 'Self-hosted services', summary: 'Runs self-hosted services.', role: 'Designer and operator', highlights: [],
         cvLine: 'self-hosted services with no public ports.',
       }) },
@@ -101,19 +101,20 @@ export function fixtureSnapshot(): Snapshot {
     refreshedAt: '2026-11-09T06:00:00.000Z',
     works: {
       deadhead: {
-        repo: { license: 'MIT', firstCommit: '2026-09-01T10:00:00Z', lastCommit: '2026-11-01T10:00:00Z', commitCount: 412, latestRelease: { tag: 'v0.3.1', publishedAt: '2026-10-20T10:00:00Z' } },
+        repo: { private: false, license: 'MIT', firstCommit: '2026-09-01T10:00:00Z', lastCommit: '2026-11-01T10:00:00Z', commitCount: 412, latestRelease: { tag: 'v0.3.1', publishedAt: '2026-10-20T10:00:00Z' } },
         packages: [{ registry: 'npm', name: 'deadhead', published: true, version: '0.3.1', releasedAt: '2026-10-20T10:00:00.000Z', url: 'https://www.npmjs.com/package/deadhead' }],
         icon: { file: 'icons/deadhead.svg', sha256: 'a'.repeat(64) },
       },
       one: { packages: [], icon: null },
       'astro-minimal-template': {
-        repo: { license: 'MIT', firstCommit: '2026-10-24T21:25:18Z', lastCommit: '2026-10-28T22:02:50Z', commitCount: 40, latestRelease: null },
+        repo: { private: false, license: 'MIT', firstCommit: '2026-10-24T21:25:18Z', lastCommit: '2026-10-28T22:02:50Z', commitCount: 40, latestRelease: null },
         packages: [],
       },
       'arch-waypure': {
-        repo: { license: null, firstCommit: '2025-12-24T22:35:44Z', lastCommit: '2026-11-06T18:07:27Z', commitCount: 90, latestRelease: null },
+        repo: { private: false, license: null, firstCommit: '2025-12-24T22:35:44Z', lastCommit: '2026-11-06T18:07:27Z', commitCount: 90, latestRelease: null },
         packages: [], pkgbuilds: ['mpv', 'sway', 'wlroots'],
       },
+      homelab: { repo: { private: true }, packages: [] },
     },
     contributions: [
       { upstream: 'withastro/astro', number: 102, title: 'Handle base in sitemap', url: 'https://github.com/withastro/astro/pull/102', mergedAt: '2026-07-01T08:22:12Z' },

@@ -46,7 +46,8 @@ const neutral = {
   status: z.enum(workStatuses),
   featured: z.boolean().default(false),
   order: z.number().int().positive().optional(),
-  // Public repositories only; a private Work has no repo link and no GitHub Facts.
+  // The Work's GitHub repository. fetch-facts records whether it is private; a private one gets no link and no
+  // GitHub Facts, only "Source private" on the Work page.
   repo: z.string().regex(/^cevdetch\/[A-Za-z0-9._-]+$/).optional(),
   site: httpsUrl.optional(),
   packages: z.array(packageRefSchema).default([]),

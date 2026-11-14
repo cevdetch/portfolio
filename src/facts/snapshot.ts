@@ -1,4 +1,4 @@
-import type { Snapshot } from './schema.ts';
+import { publicRepo, type Snapshot } from './schema.ts';
 
 type Payload = Pick<Snapshot, 'works' | 'contributions'>;
 
@@ -43,11 +43,20 @@ export function describeChanges(previous: Snapshot | undefined, next: Snapshot):
       const to = pkg.published ? pkg.version : 'unpublished';
       if (from !== to) lines.push(`${id}: ${pkg.registry} ${pkg.name} ${from} → ${to}`);
     }
-    if (before.repo?.license !== after.repo?.license) lines.push(`${id}: licence ${before.repo?.license ?? 'none'} → ${after.repo?.license ?? 'none'}`);
-    if (before.repo?.latestRelease?.tag !== after.repo?.latestRelease?.tag) {
-      lines.push(`${id}: release ${before.repo?.latestRelease?.tag ?? 'none'} → ${after.repo?.latestRelease?.tag ?? 'none'}`);
+    const was = before.repo?.private;
+    const is = after.repo?.private;
+    if (was !== undefined && is !== undefined && was !== is) {
+      // One line for the flip; the public side's licence, release and commits appearing or vanishing follow from it.
+      lines.push(`${id}: source ${was ? 'private' : 'public'} → ${is ? 'private' : 'public'}`);
+    } else {
+      const from = publicRepo(before);
+      const to = publicRepo(after);
+      if (from?.license !== to?.license) lines.push(`${id}: licence ${from?.license ?? 'none'} → ${to?.license ?? 'none'}`);
+      if (from?.latestRelease?.tag !== to?.latestRelease?.tag) {
+        lines.push(`${id}: release ${from?.latestRelease?.tag ?? 'none'} → ${to?.latestRelease?.tag ?? 'none'}`);
+      }
+      if (from?.commitCount !== to?.commitCount) lines.push(`${id}: ${from?.commitCount ?? 0} → ${to?.commitCount ?? 0} commits`);
     }
-    if (before.repo?.commitCount !== after.repo?.commitCount) lines.push(`${id}: ${before.repo?.commitCount ?? 0} → ${after.repo?.commitCount ?? 0} commits`);
     if (before.pkgbuilds?.join() !== after.pkgbuilds?.join()) lines.push(`${id}: ${before.pkgbuilds?.length ?? 0} → ${after.pkgbuilds?.length ?? 0} PKGBUILDs`);
     if (before.icon?.sha256 !== after.icon?.sha256) lines.push(`${id}: icon ${after.icon ? 'changed' : 'removed'}`);
     // A change with no line of its own (lastCommit, a release date) still gets one.

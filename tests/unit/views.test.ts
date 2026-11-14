@@ -146,6 +146,15 @@ test('a social URL yields the handle in its path', () => {
   assert.throws(() => socialUsername('https://github.com/'), /no username/);
 });
 
+test('workFactsView gives a repository link only for a repo the Snapshot found public', () => {
+  const snapshot = fixtureSnapshot();
+  assert.equal(workFactsView('deadhead', snapshot, 'cevdetch/deadhead').repoUrl, 'https://github.com/cevdetch/deadhead');
+  assert.equal(workFactsView('homelab', snapshot, 'cevdetch/homelab').repoUrl, undefined);
+  assert.equal(workFactsView('deadhead', snapshot).repoUrl, undefined);
+  delete snapshot.works['deadhead']!.repo;
+  assert.equal(workFactsView('deadhead', snapshot, 'cevdetch/deadhead').repoUrl, undefined);
+});
+
 test('Featured Works come in Featured order', () => {
   assert.deepEqual(featuredWorks(fixturePortfolio().works).map(w => w.id), ['deadhead']);
 });
@@ -159,7 +168,8 @@ test('workFactsView exposes only the displayed Facts', () => {
     release: { tag: 'v0.3.1', publishedAt: '2026-10-20T10:00:00Z' },
     icon: 'icons/deadhead.svg',
   });
-  assert.deepEqual(workFactsView('homelab', fixtureSnapshot()), { packages: [] });
+  assert.deepEqual(workFactsView('homelab', fixtureSnapshot()), { packages: [], sourcePrivate: true });
+  assert.deepEqual(workFactsView('missing', fixtureSnapshot()), { packages: [] });
 });
 
 test('a cvLine fills {pkgbuilds} from the Snapshot and reports what it cannot fill', () => {

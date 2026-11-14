@@ -3,13 +3,17 @@ import { httpsUrl, isoDateTime } from '../schemas/common.ts';
 
 const registry = z.enum(['npm', 'aur']);
 
-export const repoFactsSchema = z.strictObject({
+export const publicRepoFactsSchema = z.strictObject({
+  private: z.literal(false),
   license: z.string().nullable(),
   firstCommit: isoDateTime,
   lastCommit: isoDateTime,
   commitCount: z.number().int().positive(),
   latestRelease: z.strictObject({ tag: z.string(), publishedAt: isoDateTime }).nullable(),
 });
+
+// A private repository yields one Fact, that its source is private: no link, dates or counts.
+export const repoFactsSchema = z.discriminatedUnion('private', [publicRepoFactsSchema, z.strictObject({ private: z.literal(true) })]);
 
 export const packageFactsSchema = z.discriminatedUnion('published', [
   z.strictObject({ registry, name: z.string(), published: z.literal(false) }),
@@ -44,5 +48,11 @@ export const snapshotSchema = z.strictObject({
 export type Snapshot = z.infer<typeof snapshotSchema>;
 export type WorkFacts = z.infer<typeof workFactsSchema>;
 export type RepoFacts = z.infer<typeof repoFactsSchema>;
+export type PublicRepoFacts = z.infer<typeof publicRepoFactsSchema>;
 export type PackageFacts = z.infer<typeof packageFactsSchema>;
 export type Contribution = z.infer<typeof contributionSchema>;
+
+/** The repository Facts when the repository is public; undefined when it is private or absent. */
+export function publicRepo(facts: WorkFacts | undefined): PublicRepoFacts | undefined {
+  return facts?.repo && !facts.repo.private ? facts.repo : undefined;
+}

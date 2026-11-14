@@ -19,7 +19,7 @@ export async function getStaticPaths() {
 const { entry } = Astro.props;
 const data = await loadPortfolio();
 const work = data.works.find(item => item.id === entry.id)!;
-const facts = workFactsView(entry.id, data.facts);
+const facts = workFactsView(entry.id, data.facts, work.data.repo);
 const techs = new Map(data.techs.map(tech => [tech.id, tech]));
 const icon = iconUrl(facts.icon);
 // Present only when `pnpm capture-screenshots` has captured this Work's site; the build never fails or fetches for it.
@@ -51,7 +51,8 @@ const { Content } = await render(entry);
         <dt>Kind</dt><dd>{work.data.kind}</dd>
         <dt>Status</dt><dd>{work.data.status}</dd>
         {work.data.site && <><dt>Site</dt><dd><a href={work.data.site}>{new URL(work.data.site).host}</a></dd></>}
-        {work.data.repo && <><dt>Repository</dt><dd><a href={`https://github.com/${work.data.repo}`}>{work.data.repo}</a></dd></>}
+        {facts.repoUrl && <><dt>Repository</dt><dd><a href={facts.repoUrl}>{work.data.repo}</a></dd></>}
+        {facts.sourcePrivate && <><dt>Repository</dt><dd>Source private</dd></>}
         {facts.packages.map(pkg => <>
           <dt>{pkg.registry} {pkg.name}</dt>
           <dd>{pkg.published ? <><a href={pkg.url}>{pkg.version}</a>, released {formatDay(pkg.releasedAt)}</> : `not published on ${pkg.registry}`}</dd>

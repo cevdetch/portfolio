@@ -2,7 +2,7 @@ import type { LoadedPortfolio } from '../data/portfolio.ts';
 import { fullName, languageItem, socialUsername } from '../data/profile.ts';
 import { contributionSpan, fillCvLine, mergedPullsUrl, upstreamLabel } from '../data/views.ts';
 import type { WorkEntry } from '../data/validate.ts';
-import type { Snapshot } from '../facts/schema.ts';
+import { publicRepo, type Snapshot } from '../facts/schema.ts';
 import { joinList } from '../lib/format.ts';
 import type { ContributionOverrides } from '../schemas/contributions.ts';
 import type { CvChoices } from '../schemas/cv.ts';
@@ -54,15 +54,16 @@ const month = (iso: string) => iso.slice(0, 7);
 const ongoing = (work: WorkEntry) => work.data.status === 'active' || work.data.status === 'maintained';
 const host = (url: string) => new URL(url).host;
 
-function linkedTitle({ data }: WorkEntry): string {
+/** Links the public repository, else the site; a private repository is never linked. */
+function linkedTitle({ id, data }: WorkEntry, facts: Snapshot): string {
   const title = escapeMarkdown(data.title);
-  const link = data.repo ? `https://github.com/${data.repo}` : data.site;
+  const link = data.repo && publicRepo(facts.works[id]) ? `https://github.com/${data.repo}` : data.site;
   return link ? `[${title}](${link})` : title;
 }
 
 /** From the earliest first commit to "present" while any Work is ongoing, else to the latest last commit. */
 function dates(works: readonly WorkEntry[], facts: Snapshot): Entry {
-  const repos = works.flatMap(work => facts.works[work.id]?.repo ?? []);
+  const repos = works.flatMap(work => publicRepo(facts.works[work.id]) ?? []);
   if (!repos.length) return {};
   const start = repos.map(repo => repo.firstCommit).sort()[0]!;
   const end = repos.map(repo => repo.lastCommit).sort().at(-1)!;
@@ -73,13 +74,13 @@ function project(entry: CvChoices['projects'][number], works: ReadonlyMap<string
   const members = entry.works.map(id => works.get(id)!);
   if (!entry.title) {
     const [work] = members as [WorkEntry];
-    const site = work.data.repo && work.data.site ? ` · [${host(work.data.site)}](${work.data.site})` : '';
-    return { name: `${linkedTitle(work)}${site}`, ...dates(members, facts), highlights: work.data.highlights.map(escapeMarkdown) };
+    const site = work.data.repo && publicRepo(facts.works[work.id]) && work.data.site ? ` · [${host(work.data.site)}](${work.data.site})` : '';
+    return { name: `${linkedTitle(work, facts)}${site}`, ...dates(members, facts), highlights: work.data.highlights.map(escapeMarkdown) };
   }
   return {
     name: escapeMarkdown(entry.title),
     ...dates(members, facts),
-    highlights: members.map(work => `${linkedTitle(work)}: ${fillCvLine(escapeMarkdown(work.data.cvLine!), facts.works[work.id]).text}`),
+    highlights: members.map(work => `${linkedTitle(work, facts)}: ${fillCvLine(escapeMarkdown(work.data.cvLine!), facts.works[work.id]).text}`),
   };
 }
 

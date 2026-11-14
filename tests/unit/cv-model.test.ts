@@ -94,6 +94,12 @@ test('a titled entry prints one cvLine per Work, from its first commit to its la
   });
 });
 
+test('a private repository is never linked from the CV', () => {
+  const p = data();
+  p.cv.projects = [{ works: ['homelab'], optional: false }];
+  assert.equal(buildCv(p).cv.sections.projects[0]!['name'], 'Homelab');
+});
+
 test('a group fills {pkgbuilds} from the Snapshot and takes its earliest start', () => {
   const p = data();
   p.cv.projects[2]!.optional = false;
