@@ -43,6 +43,15 @@ test('describeChanges writes a reviewable line per Fact change', () => {
   assert.deepEqual(describeChanges(undefined, next), ['first Snapshot']);
 });
 
+test('describeChanges names a change in a highlighted pull\'s review discussion', () => {
+  const previous = fixtureSnapshot();
+  const next = structuredClone(previous);
+  next.contributions[2]!.discussion = { comments: 5 };
+  assert.deepEqual(describeChanges(previous, next), ['contribution: withastro/astro#101 discussion 0 → 5 comments']);
+  next.contributions[2]!.discussion = { comments: 1 };
+  assert.deepEqual(describeChanges(previous, next), ['contribution: withastro/astro#101 discussion 0 → 1 comment']);
+});
+
 test('describeChanges still names a Work or the contributions when only an unlisted Fact moved', () => {
   const previous = fixtureSnapshot();
   const next = structuredClone(previous);

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { availabilityLine, fillBio, languageItem, socialUsername } from '../../src/data/profile.ts';
-import { contributionHighlights, contributionSpan, contributionTotals, featuredWorks, fillCvLine, firstCitations, homeMetrics, inSourceOrder, mergedPullsUrl, metricDisplay, newestFirst, recentlyShipped, skillGroups, splitOnTitles, upstreamGroups, upstreamLabel, workFactsView } from '../../src/data/views.ts';
+import { contributionHighlights, contributionSpan, discussionLine, contributionTotals, featuredWorks, fillCvLine, firstCitations, homeMetrics, inSourceOrder, mergedPullsUrl, metricDisplay, newestFirst, recentlyShipped, skillGroups, splitOnTitles, upstreamGroups, upstreamLabel, workFactsView } from '../../src/data/views.ts';
 import { formatDay, formatDayRange, formatMonth, joinList } from '../../src/lib/format.ts';
 import { fixturePortfolio, fixtureSnapshot } from '../helpers/portfolio-fixture.ts';
 
@@ -234,6 +234,13 @@ test('Recently shipped shows two same-day releases of one Work as one line, with
   snapshot.works['deadhead']!.packages[1] = npm('eslint-plugin-deadhead', '0.3.1', '2026-10-20T19:35:35.071Z');
   const tied = recentlyShipped(snapshot, p.works, p.contributions, 10, 'cevdetch').flatMap(item => item.kind === 'release' ? [item.package] : []);
   assert.deepEqual(tied, ['deadhead', 'deadhead-old']);
+});
+
+test('a highlight cites its review discussion only from three comments up', () => {
+  assert.equal(discussionLine({ comments: 13 }), '13 comments in review');
+  assert.equal(discussionLine({ comments: 3 }), '3 comments in review');
+  assert.equal(discussionLine({ comments: 2 }), undefined);
+  assert.equal(discussionLine(undefined), undefined);
 });
 
 test('Recently shipped collapses pulls to one Upstream merged within 7 days of each other, dated by the newest', () => {

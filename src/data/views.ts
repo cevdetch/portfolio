@@ -83,6 +83,13 @@ export function contributionHighlights(groups: readonly UpstreamGroup[]): Contri
   return highlights.sort((a, b) => (a.pull.order ?? Number.MAX_SAFE_INTEGER) - (b.pull.order ?? Number.MAX_SAFE_INTEGER));
 }
 
+const discussionFloor = 3;
+
+/** A Contribution highlight's quiet review signal, "13 comments in review", from three comments up. */
+export function discussionLine(discussion: Contribution['discussion']): string | undefined {
+  return discussion && discussion.comments >= discussionFloor ? `${discussion.comments} comments in review` : undefined;
+}
+
 /** The counts behind "N merged pull requests to M upstream repositories", for /open-source/. */
 export function contributionTotals(groups: readonly UpstreamGroup[]): { pulls: number; upstreams: number } {
   return { pulls: groups.reduce((sum, group) => sum + group.pulls.length, 0), upstreams: groups.length };

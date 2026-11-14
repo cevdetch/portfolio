@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { snapshotSchema } from '../../src/facts/schema.ts';
-import { lastPage, toContribution, toPkgbuilds, toRepoFacts } from '../../src/facts/sources/github.ts';
+import { countDiscussion, lastPage, toContribution, toPkgbuilds, toRepoFacts } from '../../src/facts/sources/github.ts';
 import { checkSvg, sha256 } from '../../src/facts/sources/icons.ts';
 import { toAurFacts, toNpmFacts } from '../../src/facts/sources/registries.ts';
 import { fixtureSnapshot } from '../helpers/portfolio-fixture.ts';
@@ -35,6 +35,15 @@ test('toContribution keeps only what is displayed and rejects unmerged items', (
   const item = { html_url: 'https://github.com/withastro/astro/pull/101', number: 101, title: ' Fix sitemap ', repository_url: 'https://api.github.com/repos/withastro/astro', pull_request: { merged_at: '2026-06-24T12:35:44Z' } };
   assert.deepEqual(toContribution(item), { upstream: 'withastro/astro', number: 101, title: 'Fix sitemap', url: 'https://github.com/withastro/astro/pull/101', mergedAt: '2026-06-24T12:35:44Z' });
   assert.throws(() => toContribution({ ...item, pull_request: { merged_at: null } }), /unmerged/);
+});
+
+test('countDiscussion counts what other people wrote in review, never the author, bots or a bare approval', () => {
+  const by = (login: string, type = 'User', body = 'Looks good, one nit.') => ({ user: { login, type }, body });
+  assert.equal(countDiscussion({
+    reviews: [by('maintainer'), by('maintainer', 'User', ''), by('maintainer', 'User', '  '), by('cevdetch')],
+    reviewComments: [by('maintainer'), by('maintainer'), by('cevdetch'), { user: null, body: 'from a deleted account' }],
+    issueComments: [by('reviewer'), by('netlify[bot]'), by('renovate', 'Bot'), by('astrobot-houston'), by('CevdetCH')],
+  }, 'cevdetch'), 4);
 });
 
 test('toPkgbuilds lists top-level folders holding a PKGBUILD', () => {

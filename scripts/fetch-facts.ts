@@ -1,9 +1,10 @@
 import { mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { parse } from 'yaml';
 import { createClient } from '../src/facts/client.ts';
-import { collectFacts, type WorkSource } from '../src/facts/refresh.ts';
+import { collectFacts, highlightedPulls, type WorkSource } from '../src/facts/refresh.ts';
 import { snapshotSchema, type Snapshot } from '../src/facts/schema.ts';
 import { describeChanges, mergeSnapshot, stableJson } from '../src/facts/snapshot.ts';
+import { contributionOverridesSchema } from '../src/schemas/contributions.ts';
 import { workSchema } from '../src/schemas/work.ts';
 
 const root = new URL('../', import.meta.url);
@@ -41,7 +42,10 @@ if (import.meta.main) {
     const facts = new URL('src/facts/', root);
     const snapshotFile = new URL('snapshot.json', facts);
     const previous = await readSnapshot(snapshotFile);
-    const collected = await collectFacts(await readWorkSources(new URL('src/content/work/', root)), createClient(token));
+    const overrides = contributionOverridesSchema.parse(parse(await readFile(new URL('src/content/contributions.yaml', root), 'utf8')));
+    const collected = await collectFacts(await readWorkSources(new URL('src/content/work/', root)), createClient(token), {
+      highlights: highlightedPulls(overrides),
+    });
     const { snapshot, changed } = mergeSnapshot(previous, collected, new Date());
     const lines = changed ? describeChanges(previous, snapshot) : [];
     if (changed) {

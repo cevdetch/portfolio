@@ -1,6 +1,7 @@
 import type { Contribution, RepoFacts } from '../schema.ts';
 
 export const GITHUB_API = 'https://api.github.com';
+export const HANDLE = 'cevdetch';
 // Contributions: merged, authored by cevdetch, in public repositories cevdetch does not own.
 export const contributionsQuery = 'is:pr is:merged is:public author:cevdetch -user:cevdetch';
 
@@ -10,6 +11,27 @@ export interface GhRelease { tag_name: string; published_at: string; draft: bool
 export interface GhSearchItem { html_url: string; number: number; title: string; repository_url: string; pull_request?: { merged_at: string | null } }
 export interface GhSearch { total_count: number; items: GhSearchItem[] }
 export interface GhTree { truncated: boolean; tree: { path: string; type: 'blob' | 'tree' | 'commit' }[] }
+
+export interface GhUser { login: string; type: string }
+export interface GhComment { user: GhUser | null; body?: string | null }
+
+// Bot accounts registered as ordinary users, so neither GitHub's type nor a [bot] suffix gives them away.
+const userBots = new Set(['astrobot-houston']);
+
+function isBot(user: GhUser): boolean {
+  return user.type === 'Bot' || user.login.endsWith('[bot]') || userBots.has(user.login.toLowerCase());
+}
+
+/**
+ * What other people wrote while reviewing a pull request: review summaries with a body, inline review comments and
+ * conversation comments. The author's own replies, bots and bare approvals do not count.
+ */
+export function countDiscussion(input: { reviews: GhComment[]; reviewComments: GhComment[]; issueComments: GhComment[] }, author: string): number {
+  const counts = (comment: GhComment) => comment.user !== null && !isBot(comment.user)
+    && comment.user.login.toLowerCase() !== author.toLowerCase();
+  return input.reviews.filter(review => counts(review) && Boolean(review.body?.trim())).length
+    + input.reviewComments.filter(counts).length + input.issueComments.filter(counts).length;
+}
 
 export function lastPage(link: string | null): number | null {
   const last = link?.split(',').find(part => /rel="last"/.test(part));

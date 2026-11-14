@@ -58,6 +58,12 @@ export function describeChanges(previous: Snapshot | undefined, next: Snapshot):
   const has = new Set(next.contributions.map(c => c.url));
   for (const c of next.contributions) if (!had.has(c.url)) lines.push(`contribution: ${c.upstream}#${c.number} merged`);
   for (const c of previous.contributions) if (!has.has(c.url)) lines.push(`contribution: ${c.upstream}#${c.number} no longer listed`);
+  const before = new Map(previous.contributions.map(c => [c.url, c.discussion?.comments ?? 0]));
+  for (const c of next.contributions) {
+    const from = before.get(c.url) ?? 0;
+    const to = c.discussion?.comments ?? 0;
+    if (from !== to) lines.push(`contribution: ${c.upstream}#${c.number} discussion ${from} → ${to} ${to === 1 ? 'comment' : 'comments'}`);
+  }
   if (lines.length === workLines && stableJson(previous.contributions) !== stableJson(next.contributions)) lines.push('contributions updated');
   return lines;
 }

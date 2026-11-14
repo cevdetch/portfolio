@@ -4,7 +4,7 @@ import SocialLinks from '../components/SocialLinks.astro';
 import Layout from '../layouts/Layout.astro';
 import { fullName } from '../data/profile.ts';
 import { loadPortfolio } from '../data/portfolio.ts';
-import { contributionHighlights, featuredWorks, homeMetrics, metricDisplay, recentlyShipped, splitOnTitles, upstreamGroups, upstreamLabel } from '../data/views.ts';
+import { contributionHighlights, discussionLine, featuredWorks, homeMetrics, metricDisplay, recentlyShipped, splitOnTitles, upstreamGroups, upstreamLabel } from '../data/views.ts';
 import { formatDay, formatDayRange, joinList } from '../lib/format.ts';
 import { graph, personNode, profilePageNode, websiteNode } from '../lib/jsonld.ts';
 
@@ -58,6 +58,7 @@ const proofParts = splitOnTitles(profile.proof, proofWorks.map(work => work.data
             <li>
               <a href={group.url}>{upstreamLabel(group.repo, data.contributions)}</a> <a href={pull.url}>#{pull.number}</a>: {pull.title}
               {pull.note && <> ({pull.note})</>}
+              {discussionLine(pull.discussion) && <> · {discussionLine(pull.discussion)}</>}
             </li>
           ))}
         </ul>

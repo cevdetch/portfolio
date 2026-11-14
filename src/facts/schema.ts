@@ -30,6 +30,8 @@ export const contributionSchema = z.strictObject({
   title: z.string(),
   url: httpsUrl,
   mergedAt: isoDateTime,
+  // Highlighted pulls only: comments by people other than the author, bots excluded (see countDiscussion).
+  discussion: z.strictObject({ comments: z.number().int().nonnegative() }).optional(),
 });
 
 export const snapshotSchema = z.strictObject({

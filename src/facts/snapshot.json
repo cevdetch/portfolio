@@ -1,6 +1,9 @@
 {
   "contributions": [
     {
+      "discussion": {
+        "comments": 2
+      },
       "mergedAt": "2026-10-27T15:07:03Z",
       "number": 32594,
       "title": "perf(web): reduce favicon assets",
@@ -8,6 +11,9 @@
       "url": "https://github.com/immich-app/immich/pull/32594"
     },
     {
+      "discussion": {
+        "comments": 1
+      },
       "mergedAt": "2026-10-09T23:26:13Z",
       "number": 1684,
       "title": "Reorder head per capo.js priority",
@@ -22,6 +28,9 @@
       "url": "https://github.com/lennart-k/rustical/pull/242"
     },
     {
+      "discussion": {
+        "comments": 8
+      },
       "mergedAt": "2026-07-16T10:29:38Z",
       "number": 29801,
       "title": "chore(seo): remove redundant twitter metadata tags",
@@ -176,6 +185,9 @@
       "url": "https://github.com/lumeland/lume.land/pull/160"
     },
     {
+      "discussion": {
+        "comments": 4
+      },
       "mergedAt": "2024-07-23T17:52:27Z",
       "number": 2137,
       "title": "Deleting unnecessary twitter meta tags, quick fixes",
@@ -197,7 +209,7 @@
       "url": "https://github.com/sveltejs/svelte/pull/12526"
     }
   ],
-  "refreshedAt": "2026-11-14T09:13:38.049Z",
+  "refreshedAt": "2026-11-14T11:13:43.593Z",
   "version": 1,
   "works": {
     "arch-waypure": {
@@ -349,9 +361,9 @@
         }
       ],
       "repo": {
-        "commitCount": 121,
+        "commitCount": 122,
         "firstCommit": "2026-10-04T17:49:18Z",
-        "lastCommit": "2026-11-14T09:11:13Z",
+        "lastCommit": "2026-11-14T09:45:37Z",
         "latestRelease": null,
         "license": "MIT"
       }

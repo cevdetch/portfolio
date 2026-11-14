@@ -5,7 +5,8 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { pathToFileURL } from 'node:url';
 import { createClient, type Client } from '../../src/facts/client.ts';
-import { collectFacts } from '../../src/facts/refresh.ts';
+import { collectFacts, highlightedPulls } from '../../src/facts/refresh.ts';
+import { contributionOverridesSchema } from '../../src/schemas/contributions.ts';
 import { readWorkSources } from '../../scripts/fetch-facts.ts';
 
 type Route = { data?: unknown; link?: string; body?: string; contentType?: string } | null;
@@ -59,6 +60,28 @@ test('collectFacts reads every source for a Work and the Contributions', async (
   assert.equal('homelab' in collected.works, false);
   assert.deepEqual(collected.icons, [{ workId: 'deadhead', svg }]);
   assert.equal(collected.contributions.length, 1);
+});
+
+test('collectFacts records the review discussion of highlighted pulls only, across pages', async () => {
+  const pr = (n: number) => ({ html_url: `https://github.com/withastro/astro/pull/${n}`, number: n, title: 'Fix', repository_url: `${api}/repos/withastro/astro`, pull_request: { merged_at: '2026-06-24T12:35:44Z' } });
+  const comment = (login: string) => ({ user: { login, type: 'User' }, body: 'Please rename this.' });
+  const client = fakeClient({
+    [search]: { data: { total_count: 2, items: [pr(101), pr(102)] } },
+    [`${api}/repos/withastro/astro/pulls/101/reviews?per_page=100&page=1`]: { data: [comment('maintainer')] },
+    [`${api}/repos/withastro/astro/pulls/101/comments?per_page=100&page=1`]: { data: Array.from({ length: 100 }, () => comment('maintainer')) },
+    [`${api}/repos/withastro/astro/pulls/101/comments?per_page=100&page=2`]: { data: [comment('maintainer'), comment('cevdetch')] },
+    [`${api}/repos/withastro/astro/issues/101/comments?per_page=100&page=1`]: { data: [comment('netlify[bot]')] },
+  });
+  const collected = await collectFacts([], client, { highlights: ['withastro/astro#101'] });
+  assert.deepEqual(collected.contributions.map(c => [c.number, c.discussion]), [[101, { comments: 102 }], [102, undefined]]);
+});
+
+test('highlightedPulls names the pinned pulls as repo#number', () => {
+  const overrides = contributionOverridesSchema.parse({ upstreams: [
+    { repo: 'withastro/astro', pulls: { '101': { highlight: true }, '102': { note: 'A note.' } } },
+    { repo: 'sveltejs/svelte', pulls: { '7': { highlight: true } } },
+  ] });
+  assert.deepEqual(highlightedPulls(overrides), ['withastro/astro#101', 'sveltejs/svelte#7']);
 });
 
 test('a single-commit repository needs no second page', async () => {
