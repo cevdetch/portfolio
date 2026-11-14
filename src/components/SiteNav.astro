@@ -1,6 +1,9 @@
 ---
+import { fullName } from '../data/profile.ts';
+import { siteProfile } from '../data/site-profile.ts';
+
 const links = [
-  ['/', 'Cevdet'], ['/work/', 'Work'], ['/open-source/', 'Open source'], ['/skills/', 'Skills'],
+  ['/', fullName(siteProfile)], ['/work/', 'Work'], ['/open-source/', 'Open source'], ['/skills/', 'Skills'],
   ['/uses/', 'Uses'], ['/about/', 'About'], ['/hire/', 'Hire'],
 ] as const;
 const current = Astro.url.pathname;

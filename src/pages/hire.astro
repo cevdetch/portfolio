@@ -3,7 +3,7 @@ import SiteNav from '../components/SiteNav.astro';
 import SocialLinks from '../components/SocialLinks.astro';
 import Layout from '../layouts/Layout.astro';
 import { loadPortfolio } from '../data/portfolio.ts';
-import { availabilityLine } from '../data/profile.ts';
+import { availabilityLine, fullName, pageTitle } from '../data/profile.ts';
 import { firstCitations } from '../data/views.ts';
 
 const data = await loadPortfolio();
@@ -14,7 +14,7 @@ const firstCited = firstCitations(profile.services);
 const mailto = `mailto:${profile.email}?subject=${encodeURIComponent(profile.contactSubject)}`;
 ---
 
-<Layout title="Hire - Cevdet" description="Hire Cevdet for fast websites, SEO and metadata audits, or Astro starters and upkeep: what is on offer, how a project runs and how to get in touch.">
+<Layout title={pageTitle(profile, 'Hire')} description={`Hire ${fullName(profile)} for fast websites, SEO and metadata audits, or Astro starters and upkeep: what is on offer, how a project runs and how to get in touch.`}>
   <SiteNav />
   <main>
     <h1>Work with me</h1>

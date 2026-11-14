@@ -35,10 +35,15 @@ export function fillBio(text: string, education: readonly Education[]): { text: 
   return { text: filled, problems };
 }
 
-// The full name is published; the CV header, the home h1 and title, /about/ and the JSON-LD
-// Person all derive it from here, so it stays one decision.
+// The full name is published; the CV header, every page title, the home h1, /about/, the Work bylines and the
+// JSON-LD Person and WebSite all derive it from here, so it stays one decision.
 export function fullName(profile: Pick<Profile, 'name' | 'familyName'>): string {
   return `${profile.name} ${profile.familyName}`;
+}
+
+/** `<Title> - Cevdet Haran` on every page; the home page, with no title, leads with the name and the job title. */
+export function pageTitle(profile: Pick<Profile, 'name' | 'familyName' | 'jobTitle'>, title?: string): string {
+  return title === undefined ? `${fullName(profile)} - ${profile.jobTitle}` : `${title} - ${fullName(profile)}`;
 }
 
 /** "Turkish (Native)" style: the one language-display format for the CV and /about/. */

@@ -3,7 +3,7 @@ import Portrait from '../components/Portrait.astro';
 import SiteNav from '../components/SiteNav.astro';
 import SocialLinks from '../components/SocialLinks.astro';
 import Layout from '../layouts/Layout.astro';
-import { fullName } from '../data/profile.ts';
+import { fullName, pageTitle } from '../data/profile.ts';
 import { publicPortraitPath, readPortraitSize } from '../data/portrait.ts';
 import { loadPortfolio } from '../data/portfolio.ts';
 import { contributionHighlights, discussionLine, featuredWorks, homeMetrics, lighthouseNumber, metricDisplay, recentlyShipped, splitOnTitles, upstreamGroups, upstreamLabel } from '../data/views.ts';
@@ -26,7 +26,7 @@ const proofLinks = new Map(proofWorks.map(work => [work.data.title, `/work/${wor
 const proofParts = splitOnTitles(profile.proof, proofWorks.map(work => work.data.title));
 ---
 
-<Layout title={`${fullName(profile)} - ${profile.jobTitle}`} description={profile.headline}
+<Layout title={pageTitle(profile)} description={profile.headline}
   jsonLd={graph(profilePageNode(profile), personNode(profile, data.techs, portrait), websiteNode(profile))}>
   <SiteNav />
   <main>
@@ -101,7 +101,7 @@ const proofParts = splitOnTitles(profile.proof, proofWorks.map(work => work.data
       <h2 id="about">About</h2>
       <p>{profile.jobTitle}</p>
       <p>{profile.bio}</p>
-      <p><a href="/about/">More about Cevdet</a></p>
+      <p><a href="/about/">More about {fullName(profile)}</a></p>
     </section>
     <SocialLinks socials={profile.socials} />
     <p><a href="/hire/">Work with me</a></p>

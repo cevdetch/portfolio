@@ -1,6 +1,6 @@
 # cevdet.ch
 
-Cevdet's portfolio. This repository is the single source for
+Cevdet Haran's portfolio. This repository is the single source for
 [cevdet.ch](https://cevdet.ch/) and for the CV, built with Astro as a static
 site and deployed by Cloudflare Pages.
 

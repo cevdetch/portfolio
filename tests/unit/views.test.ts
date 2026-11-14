@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { availabilityLine, fillBio, languageItem, socialUsername } from '../../src/data/profile.ts';
+import { availabilityLine, fillBio, languageItem, pageTitle, socialUsername } from '../../src/data/profile.ts';
 import { contributionHighlights, contributionSpan, discussionLine, contributionTotals, featuredWorks, fillCvLine, firstCitations, homeMetrics, inSourceOrder, lighthouseNumber, mergedPullsUrl, metricDisplay, newestFirst, recentlyShipped, skillGroups, splitOnTitles, upstreamGroups, upstreamLabel, workFactsView } from '../../src/data/views.ts';
 import { formatDay, formatDayRange, formatMonth, joinList } from '../../src/lib/format.ts';
 import { fixturePortfolio, fixtureSnapshot } from '../helpers/portfolio-fixture.ts';
@@ -91,6 +91,12 @@ test("Contribution highlights follow their own pinned order, never the Upstream 
 
 test('an Upstream links to the merged pulls by the Handle, never to a count', () => {
   assert.equal(mergedPullsUrl('withastro/astro', 'cevdetch'), 'https://github.com/withastro/astro/pulls?q=is%3Apr+is%3Amerged+author%3Acevdetch');
+});
+
+test('page titles credit the full name; the home page leads with it and the job title', () => {
+  const { profile } = fixturePortfolio();
+  assert.equal(pageTitle(profile, 'Hire'), 'Hire - Cevdet Haran');
+  assert.equal(pageTitle(profile), 'Cevdet Haran - Software Developer');
 });
 
 test('availability reads as one line, with the capacity on employment and the country in place of the time zone', () => {

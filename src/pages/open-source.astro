@@ -2,6 +2,7 @@
 import SiteNav from '../components/SiteNav.astro';
 import Layout from '../layouts/Layout.astro';
 import { loadPortfolio } from '../data/portfolio.ts';
+import { fullName, pageTitle } from '../data/profile.ts';
 import { contributionSpan, contributionTotals, orderWorks, upstreamGroups, workFactsView } from '../data/views.ts';
 import { formatDay, formatMonth } from '../lib/format.ts';
 import { techCategories } from '../schemas/tech.ts';
@@ -16,7 +17,7 @@ const totals = contributionTotals(groups);
 const span = contributionSpan(data.facts.contributions, data.contributions, data.facts.refreshedAt, true);
 ---
 
-<Layout title="Open source - Cevdet" description="The packages Cevdet publishes, from npm tools to Arch Linux PKGBUILDs, and the fixes accepted into other open-source projects such as Immich and Starlight.">
+<Layout title={pageTitle(data.profile, 'Open source')} description={`The packages ${fullName(data.profile)} publishes, from npm tools to Arch Linux PKGBUILDs, and the fixes accepted into other open-source projects such as Immich and Starlight.`}>
   <SiteNav />
   <main>
     <h1>Open source</h1>

@@ -36,10 +36,10 @@ test('the @ids One already references stay stable', () => {
   });
 });
 
-test('the home WebSite keeps its site name and credits the person by name', () => {
+test('the home WebSite takes the full name as its site name and credits the person by name', () => {
   const { profile } = fixturePortfolio();
   assert.deepEqual(websiteNode(profile), {
-    '@type': 'WebSite', '@id': 'https://cevdet.ch/#website', url: 'https://cevdet.ch/', name: 'Cevdet',
+    '@type': 'WebSite', '@id': 'https://cevdet.ch/#website', url: 'https://cevdet.ch/', name: 'Cevdet Haran',
     alternateName: 'cevdet.ch', inLanguage: 'en', publisher: owner,
   });
 });

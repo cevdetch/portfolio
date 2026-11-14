@@ -3,12 +3,13 @@ import SiteNav from '../../components/SiteNav.astro';
 import Layout from '../../layouts/Layout.astro';
 import { iconUrl } from '../../data/icons.ts';
 import { loadPortfolio } from '../../data/portfolio.ts';
+import { fullName, pageTitle } from '../../data/profile.ts';
 import { orderWorks, workFactsView } from '../../data/views.ts';
 
 const data = await loadPortfolio();
 ---
 
-<Layout title="Work - Cevdet" description="The projects Cevdet has built: developer tools, website templates, a writing site, research, Linux packages and self-hosted infrastructure.">
+<Layout title={pageTitle(data.profile, 'Work')} description={`The projects ${fullName(data.profile)} has built: developer tools, website templates, a writing site, research, Linux packages and self-hosted infrastructure.`}>
   <SiteNav />
   <main>
     <h1>Work</h1>

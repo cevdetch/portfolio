@@ -6,6 +6,7 @@ import SiteNav from '../../components/SiteNav.astro';
 import Layout from '../../layouts/Layout.astro';
 import { iconUrl } from '../../data/icons.ts';
 import { loadPortfolio } from '../../data/portfolio.ts';
+import { fullName, pageTitle } from '../../data/profile.ts';
 import { findScreenshots, screenshotAlt, screenshotDevices, type ScreenshotDevice } from '../../data/screenshots.ts';
 import { workFactsView } from '../../data/views.ts';
 import { formatDay, formatMonth } from '../../lib/format.ts';
@@ -30,7 +31,7 @@ const crumbs = workCrumbs(work);
 const { Content } = await render(entry);
 ---
 
-<Layout title={`${work.data.title} - Cevdet`} description={work.data.summary}
+<Layout title={pageTitle(data.profile, work.data.title)} description={work.data.summary}
   jsonLd={graph(workNode(work, data.facts.works[work.id], data.techs), breadcrumbNode(work))}>
   <SiteNav />
   <nav aria-label="Breadcrumb">
@@ -43,6 +44,8 @@ const { Content } = await render(entry);
       <header>
         {icon ? <img src={icon} alt="" width="48" height="48" /> : <span aria-hidden="true">{work.data.title.charAt(0).toUpperCase()}</span>}
         <h1>{work.data.title}</h1>
+        {/* The visible credit for the JSON-LD author and publisher. */}
+        <p>By {fullName(data.profile)}</p>
         <p>{work.data.tagline}</p>
         <p>{work.data.summary}</p>
         {work.data.caveat && <p>{work.data.caveat}</p>}

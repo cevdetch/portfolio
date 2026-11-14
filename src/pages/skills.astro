@@ -2,13 +2,14 @@
 import SiteNav from '../components/SiteNav.astro';
 import Layout from '../layouts/Layout.astro';
 import { loadPortfolio } from '../data/portfolio.ts';
+import { fullName, pageTitle } from '../data/profile.ts';
 import { skillGroups } from '../data/views.ts';
 
 const data = await loadPortfolio();
 const groups = skillGroups(data.techs, data.works);
 ---
 
-<Layout title="Skills - Cevdet" description="The programming languages, frameworks, tools and platforms Cevdet works with, with links to the projects that use them.">
+<Layout title={pageTitle(data.profile, 'Skills')} description={`The programming languages, frameworks, tools and platforms ${fullName(data.profile)} works with, with links to the projects that use them.`}>
   <SiteNav />
   <main>
     <h1>Skills</h1>

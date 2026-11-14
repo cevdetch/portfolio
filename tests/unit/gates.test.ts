@@ -7,13 +7,13 @@ import {
   denylistStatus, findDenylistTerms, findPrivacyViolations, isScannedTextFile, parseDenylist, splitCommitLog,
 } from '../../src/gates/privacy.ts';
 
-const page = `<!doctype html><html lang="en"><head><title>Cevdet - Software Developer</title>
+const page = `<!doctype html><html lang="en"><head><title>Cevdet Haran - Software Developer</title>
 <meta name="theme-color" content="#5685AD">
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Person","@id":"https://cevdet.ch/#person","name":"Cevdet","jobTitle":"Software Developer","description":"Builds tools."},{"@type":"WebSite","@id":"https://cevdet.ch/#website","name":"Cevdet"}]}</script>
-</head><body><h1>Cevdet</h1><p>Software   Developer</p><p>Builds tools.</p><a href="mailto:hello@cevdet.ch?subject=Hi">mail</a><script>var hidden = 1</script></body></html>`;
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Person","@id":"https://cevdet.ch/#person","name":"Cevdet Haran","jobTitle":"Software Developer","description":"Builds tools."},{"@type":"WebSite","@id":"https://cevdet.ch/#website","name":"Cevdet Haran"}]}</script>
+</head><body><h1>Cevdet Haran</h1><p>Software   Developer</p><p>Builds tools.</p><a href="mailto:hello@cevdet.ch?subject=Hi">mail</a><script>var hidden = 1</script></body></html>`;
 
 test('html helpers read what a reader and a crawler see', () => {
-  assert.equal(visibleText(page), 'Cevdet Software Developer Builds tools. mail');
+  assert.equal(visibleText(page), 'Cevdet Haran Software Developer Builds tools. mail');
   assert.equal(jsonLdBlocks(page).length, 1);
   assert.deepEqual(metaContents(page, 'theme-color'), ['#5685AD']);
   assert.deepEqual(hrefs(page), ['mailto:hello@cevdet.ch?subject=Hi']);
@@ -27,8 +27,8 @@ test('JSON-LD claims must be visible on the page', () => {
 });
 
 test('every Person sameAs URL must be a link on the same page', () => {
-  const person = '{"@type":"Person","@id":"https://cevdet.ch/#person","name":"Cevdet","sameAs":["https://github.com/cevdetch","https://www.npmjs.com/~cevdetch"]}';
-  const linked = `<html><body><p>Cevdet</p><a href="https://github.com/cevdetch">GitHub</a><a href="https://www.npmjs.com/~cevdetch">npm</a></body></html>`;
+  const person = '{"@type":"Person","@id":"https://cevdet.ch/#person","name":"Cevdet Haran","sameAs":["https://github.com/cevdetch","https://www.npmjs.com/~cevdetch"]}';
+  const linked = `<html><body><p>Cevdet Haran</p><a href="https://github.com/cevdetch">GitHub</a><a href="https://www.npmjs.com/~cevdetch">npm</a></body></html>`;
   assert.deepEqual(checkJsonLd([person], visibleText(linked), hrefs(linked)), []);
   const unlinked = linked.replace('<a href="https://www.npmjs.com/~cevdetch">npm</a>', '<p>npm</p>');
   assert.deepEqual(checkJsonLd([person], visibleText(unlinked), hrefs(unlinked)),

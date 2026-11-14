@@ -1,4 +1,4 @@
-import { fullName } from '../data/profile.ts';
+import { fullName, pageTitle } from '../data/profile.ts';
 import type { WorkEntry } from '../data/validate.ts';
 import { publicRepo, type WorkFacts } from '../facts/schema.ts';
 import type { Profile } from '../schemas/profile.ts';
@@ -29,12 +29,12 @@ export function personNode(profile: Profile, techs: readonly Tech[], portrait?: 
 }
 
 export function websiteNode(profile: Profile) {
-  return shared.websiteNode({ url: site, name: profile.name, alternateName: 'cevdet.ch', inLanguage: 'en' });
+  return shared.websiteNode({ url: site, name: fullName(profile), alternateName: 'cevdet.ch', inLanguage: 'en' });
 }
 
 export function profilePageNode(profile: Profile) {
   // The name mirrors the home page's <title>, not body text (see the exclusion in src/gates/jsonld.ts).
-  return shared.profilePageNode({ url: site, name: `${fullName(profile)} - ${profile.jobTitle}` });
+  return shared.profilePageNode({ url: site, name: pageTitle(profile) });
 }
 
 export function workNode(work: WorkEntry, facts: WorkFacts | undefined, techs: readonly Tech[]) {
