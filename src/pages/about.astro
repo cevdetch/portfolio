@@ -15,7 +15,7 @@ const workLinks = new Map(data.works.map(work => [work.data.title, `/work/${work
 const paragraphs = (profile.about ?? [profile.bio]).map(text => splitOnTitles(text, [...workLinks.keys()]));
 ---
 
-<Layout title="About - Cevdet" description={profile.headline}>
+<Layout title="About - Cevdet" description={`${fullName(profile)}, software developer and Gymnasium student: the web tools, the open-source fixes, the Linux packaging, and the studies, writing and languages.`}>
   <SiteNav />
   <main>
     <h1>About {fullName(profile)}</h1>

@@ -4,7 +4,7 @@ handle: cevdetch
 jobTitle: Software Developer
 specialisation: Web performance · Developer tooling · Open source
 country: Switzerland
-headline: Builds the tools that make websites fast and correct, and ships the fixes upstream.
+headline: Builds fast websites and the tools that check web pages, and fixes the same problems in open-source projects.
 bio: >-
   Builds web tools and fast sites in TypeScript and Astro. Created deadhead, an HTML head linter
   published on npm, and favseed, a favicon generator; fixes merged into Immich, Starlight and Astro's
