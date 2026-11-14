@@ -57,6 +57,10 @@ const { Content } = await render(entry);
         <dt>Kind</dt><dd>{work.data.kind}</dd>
         <dt>Status</dt><dd>{work.data.status}</dd>
         {work.data.site && <><dt>Site</dt><dd><a href={work.data.site}>{new URL(work.data.site).host}</a></dd></>}
+        {facts.lighthouse && <><dt>Lighthouse</dt><dd>
+          Performance {facts.lighthouse.performance} · Accessibility {facts.lighthouse.accessibility} · Best practices {facts.lighthouse.bestPractices} · SEO {facts.lighthouse.seo},
+          measured by <a href={facts.lighthouse.analysisUrl}>PageSpeed Insights</a> (mobile), {formatDay(facts.lighthouse.measuredAt)}
+        </dd></>}
         {facts.repoUrl && <><dt>Repository</dt><dd><a href={facts.repoUrl}>{work.data.repo}</a></dd></>}
         {facts.sourcePrivate && <><dt>Repository</dt><dd>Source private</dd></>}
         {facts.packages.map(pkg => <>

@@ -1,4 +1,5 @@
-import { publicRepo, type Contribution, type PackageFacts, type Snapshot, type WorkFacts } from '../facts/schema.ts';
+import { publicRepo, type Contribution, type LighthouseFacts, type PackageFacts, type Snapshot, type WorkFacts } from '../facts/schema.ts';
+import { analysisUrl } from '../facts/sources/pagespeed.ts';
 import type { ContributionOverrides } from '../schemas/contributions.ts';
 import type { Profile } from '../schemas/profile.ts';
 import { techCategories, type Tech, type TechCategory } from '../schemas/tech.ts';
@@ -137,9 +138,11 @@ export interface WorkFactsView {
   repoUrl?: string;
   // The Snapshot found the Work's repository private: the page says so where the repository link would be.
   sourcePrivate?: true;
+  // Measured on the Work's site only, linked to the live analysis so a reader can re-run it.
+  lighthouse?: LighthouseFacts & { analysisUrl: string };
 }
 
-export function workFactsView(id: string, snapshot: Snapshot, work?: Pick<Work, 'repo' | 'source'>): WorkFactsView {
+export function workFactsView(id: string, snapshot: Snapshot, work?: Partial<Pick<Work, 'repo' | 'source' | 'site'>>): WorkFactsView {
   const facts = snapshot.works[id];
   const repo = publicRepo(facts);
   return {
@@ -153,6 +156,7 @@ export function workFactsView(id: string, snapshot: Snapshot, work?: Pick<Work, 
     ...(work?.repo && repo ? { repoUrl: `https://github.com/${work.repo}` } : {}),
     // Either the Story names the source private outright, or the Snapshot found a once-public repo now 404ing.
     ...(work?.source === 'private' || facts?.repo?.private ? { sourcePrivate: true as const } : {}),
+    ...(work?.site && facts?.lighthouse ? { lighthouse: { ...facts.lighthouse, analysisUrl: analysisUrl(work.site) } } : {}),
   };
 }
 
@@ -201,6 +205,30 @@ export interface MetricDisplay { value: string; label: string }
 /** The numbers strip prefers a Metric's short headline; falls back to its full value and label when it has none. */
 export function metricDisplay(metric: Metric): MetricDisplay {
   return metric.headline ? { value: metric.headline.value, label: metric.headline.label } : { value: metric.value, label: metric.label };
+}
+
+export interface HomeNumber extends MetricDisplay { source: Metric['source'] }
+
+/**
+ * The numbers strip's Lighthouse Number: the lowest mobile Performance score across the Works with a site, linked
+ * to the live analysis of the lowest-scoring site (the first in Work order on a tie). Undefined when none is measured.
+ */
+export function lighthouseNumber(works: readonly WorkEntry[], snapshot: Snapshot): HomeNumber | undefined {
+  const measured = orderWorks(works).flatMap(work => {
+    const lighthouse = snapshot.works[work.id]?.lighthouse;
+    return work.data.site && lighthouse ? [{ site: work.data.site, performance: lighthouse.performance }] : [];
+  });
+  const lowest = measured.reduce<(typeof measured)[number] | undefined>((low, item) => !low || item.performance < low.performance ? item : low, undefined);
+  if (!lowest) return undefined;
+  // One site has no lowest, so the label names the only one rather than counting it.
+  const label = measured.length === 1
+    ? 'mobile Lighthouse Performance score of the only live site'
+    : `lowest mobile Lighthouse Performance score of the ${measured.length} live sites`;
+  return {
+    value: String(lowest.performance),
+    label,
+    source: { label: 'PageSpeed Insights', url: analysisUrl(lowest.site) },
+  };
 }
 
 /** An Upstream's display name, from its base `overrides.upstreams` entry; falls back to the repo id when unset. */

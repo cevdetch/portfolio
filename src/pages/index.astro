@@ -6,7 +6,7 @@ import Layout from '../layouts/Layout.astro';
 import { fullName } from '../data/profile.ts';
 import { publicPortraitPath, readPortraitSize } from '../data/portrait.ts';
 import { loadPortfolio } from '../data/portfolio.ts';
-import { contributionHighlights, discussionLine, featuredWorks, homeMetrics, metricDisplay, recentlyShipped, splitOnTitles, upstreamGroups, upstreamLabel } from '../data/views.ts';
+import { contributionHighlights, discussionLine, featuredWorks, homeMetrics, lighthouseNumber, metricDisplay, recentlyShipped, splitOnTitles, upstreamGroups, upstreamLabel } from '../data/views.ts';
 import { formatDay, formatDayRange, joinList } from '../lib/format.ts';
 import { graph, personNode, profilePageNode, websiteNode } from '../lib/jsonld.ts';
 
@@ -15,6 +15,7 @@ const { profile } = data;
 const groups = upstreamGroups(data.facts.contributions, data.contributions);
 const highlights = contributionHighlights(groups);
 const metrics = homeMetrics(profile.homeMetrics, data.works);
+const lighthouse = lighthouseNumber(data.works, data.facts);
 // The Person names the public/ copy only when it exists, with the dimensions read from the file.
 const portrait = await readPortraitSize(publicPortraitPath);
 const shipped = recentlyShipped(data.facts, data.works, data.contributions, 5, profile.handle);
@@ -46,6 +47,12 @@ const proofParts = splitOnTitles(profile.proof, proofWorks.map(work => work.data
             </div>
           );
         })}
+        {lighthouse && (
+          <div>
+            <dt>{lighthouse.value}</dt>
+            <dd>{lighthouse.label} (<a href={lighthouse.source.url}>{lighthouse.source.label}</a>)</dd>
+          </div>
+        )}
       </dl>
     </section>
     <section aria-labelledby="featured">

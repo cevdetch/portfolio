@@ -32,7 +32,6 @@ homeMetrics:
   - { work: deadhead, label: Sourced rules }
   - { work: deadhead, label: Homepages audited }
   - { work: favseed, label: "Raster bytes saved vs favseed's quality-80 fast encode" }
-  - { work: astro-reels-template, label: 'Home page Lighthouse accessibility, best practices and SEO' }
 email: hello@cevdet.ch
 website: https://cevdet.ch/
 contactSubject: Enquiry from cevdet.ch

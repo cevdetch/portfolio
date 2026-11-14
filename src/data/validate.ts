@@ -127,6 +127,8 @@ export function validatePortfolio(p: Portfolio, facts: Snapshot): string[] {
     if (data.repo && facts.works[id] && !facts.works[id].repo) errors.push(`${at}: no repository Facts in the Snapshot; run pnpm fetch-facts`);
     const sourced = data.repo || data.site || data.packages.length > 0 || data.pkgbuilds;
     if (sourced && !facts.works[id]) errors.push(`${at}: no Facts in the Snapshot; run pnpm fetch-facts`);
+    // The Work page and the home Number show a site's scores; a site with none would quietly drop out of both.
+    if (data.site && facts.works[id] && !facts.works[id].lighthouse) errors.push(`${at}: no Lighthouse Facts in the Snapshot; run pnpm fetch-facts with PSI_API_KEY set`);
     if (data.rules && !data.repo) errors.push(`${at}: rules are counted from a repo, and this Work has none`);
     else if (data.rules && facts.works[id] && !facts.works[id].rules) errors.push(`${at}: no rule counts in the Snapshot; run pnpm fetch-facts`);
     const rules = facts.works[id]?.rules;

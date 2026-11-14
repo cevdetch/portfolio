@@ -322,3 +322,9 @@ test("a Metric headline's label is linted too, alongside its full label", () => 
     'work/deadhead metrics[0] headline label: placeholder text',
   ]);
 });
+
+test('a Work with a site needs Lighthouse Facts in the Snapshot', () => {
+  const facts = fixtureSnapshot();
+  delete facts.works['one']!.lighthouse;
+  assert.deepEqual(validatePortfolio(fixturePortfolio(), facts), ['work/one: no Lighthouse Facts in the Snapshot; run pnpm fetch-facts with PSI_API_KEY set']);
+});
