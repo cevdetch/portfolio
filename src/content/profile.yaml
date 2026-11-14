@@ -59,7 +59,7 @@ process:
 services:
   - id: static-sites
     name: Fast static sites
-    summary: "Astro sites that ship no JavaScript unless a feature needs it, checked with deadhead; the Astro Reels Template demo's home page scores 100 in Lighthouse for accessibility, best practices and SEO."
+    summary: 'Astro sites that ship no JavaScript unless a feature needs it, checked with deadhead; each project page publishes its mobile Lighthouse scores.'
     evidence: [deadhead, astro-minimal-template, astro-reels-template]
   - id: css-experiences
     name: App-like experiences without JavaScript

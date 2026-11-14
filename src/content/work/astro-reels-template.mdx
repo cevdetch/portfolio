@@ -12,14 +12,8 @@ summary: Shows short pieces one per screen, like a reels feed, each with a page 
 role: Creator and maintainer
 highlights:
   - Builds a one-piece-per-screen feed from HTML and CSS alone, with deep links, paging and a page of its own for every piece.
-  - Scored 100 in Lighthouse for accessibility, best practices and SEO on its home page, with a contrast test and a deadhead audit in the checks.
-cvLine: a reels-style feed in HTML and CSS alone (scroll-snap, view transitions), scoring 100 in Lighthouse for accessibility, best practices and SEO on its home page.
-metrics:
-  - label: Home page Lighthouse accessibility, best practices and SEO
-    value: '100 each'
-    measuredAt: 2026-11-08
-    source: { label: Astro Reels Template README, url: https://github.com/cevdetch/astro-reels-template/blob/main/README.md }
-    headline: { value: '100', label: 'Lighthouse accessibility, best practices and SEO, home page' }
+  - Checks every build with a contrast test and a deadhead audit.
+cvLine: a reels-style feed in HTML and CSS alone (scroll-snap, view transitions).
 ---
 
 ## Problem
@@ -47,7 +41,6 @@ A reels-style feed shows one short piece per screen. The goal was that format wi
 ## Results
 
 - The [demo](https://astro-reels-template.cevdet.ch/) publishes all 154 of Shakespeare's sonnets, imported from Project Gutenberg by a script that records the source file and its hash and fails unless it finds exactly 154 sonnets in order.
-- Lighthouse scored 100 for accessibility, best practices and SEO on the home page, the one page the demo leaves open to search engines.
 - No built page ships JavaScript beyond structured data, and the deadhead audit and contrast test pass.
 
 ## Next
