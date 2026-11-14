@@ -10,7 +10,8 @@ export interface GhCommit { commit: { author: { date: string } } }
 export interface GhRelease { tag_name: string; published_at: string; draft: boolean }
 export interface GhSearchItem { html_url: string; number: number; title: string; repository_url: string; pull_request?: { merged_at: string | null } }
 export interface GhSearch { total_count: number; items: GhSearchItem[] }
-export interface GhTree { truncated: boolean; tree: { path: string; type: 'blob' | 'tree' | 'commit' }[] }
+export interface GhTree { truncated: boolean; tree: { path: string; type: 'blob' | 'tree' | 'commit'; sha?: string }[] }
+export interface GhBlob { encoding: string; content: string }
 
 export interface GhUser { login: string; type: string }
 export interface GhComment { user: GhUser | null; body?: string | null }
@@ -70,4 +71,27 @@ export function toPkgbuilds(tree: GhTree): string[] {
     .filter(entry => entry.type === 'blob' && /^[^/]+\/PKGBUILD$/.test(entry.path))
     .map(entry => entry.path.split('/')[0]!)
     .sort();
+}
+
+/** deadhead-style rule catalogues: one Markdown file per rule, one folder deep under content/rules. */
+export function toRuleFiles(tree: GhTree): { path: string; sha: string }[] {
+  if (tree.truncated) throw new Error('The rule tree is truncated; list content/rules per directory instead.');
+  return tree.tree
+    .filter(entry => entry.type === 'blob' && entry.sha && /^content\/rules\/[^/]+\/[^/]+\.md$/.test(entry.path))
+    .map(entry => ({ path: entry.path, sha: entry.sha! }));
+}
+
+const ruleScopes = new Set(['head', 'body', 'any']);
+
+/** Every rule, and those whose frontmatter `scope` is `head` (the others are `body` or `any`). */
+export function toRuleCounts(files: readonly string[]): { total: number; head: number } {
+  let head = 0;
+  for (const text of files) {
+    const front = text.match(/^---\r?\n([\s\S]*?)\r?\n---/)?.[1];
+    const scope = front?.match(/^scope:\s*"?([a-z]+)"?\s*$/m)?.[1];
+    if (!scope) throw new Error(`a rule file has no scope in its frontmatter: ${text.slice(0, 80)}`);
+    if (!ruleScopes.has(scope)) throw new Error(`a rule file has an unknown scope "${scope}": ${text.slice(0, 80)}`);
+    if (scope === 'head') head++;
+  }
+  return { total: files.length, head };
 }

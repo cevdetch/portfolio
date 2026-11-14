@@ -169,6 +169,9 @@ test('workFactsView exposes only the displayed Facts', () => {
     icon: 'icons/deadhead.svg',
   });
   assert.deepEqual(workFactsView('homelab', fixtureSnapshot()), { packages: [], sourcePrivate: true });
+  const withRules = fixtureSnapshot();
+  withRules.works['deadhead']!.rules = { total: 203, head: 92 };
+  assert.deepEqual(workFactsView('deadhead', withRules).rules, { total: 203, head: 92 });
   assert.deepEqual(workFactsView('missing', fixtureSnapshot()), { packages: [] });
 });
 

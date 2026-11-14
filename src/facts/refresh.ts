@@ -3,13 +3,13 @@ import type { PackageRef } from '../schemas/work.ts';
 import type { Client } from './client.ts';
 import type { Contribution, RepoFacts, Snapshot, WorkFacts } from './schema.ts';
 import {
-  contributionsQuery, countDiscussion, GITHUB_API, HANDLE, lastPage, toContribution, toPkgbuilds, toRepoFacts,
-  type GhComment, type GhCommit, type GhRelease, type GhRepo, type GhSearch, type GhTree,
+  contributionsQuery, countDiscussion, GITHUB_API, HANDLE, lastPage, toContribution, toPkgbuilds, toRepoFacts, toRuleCounts, toRuleFiles,
+  type GhBlob, type GhComment, type GhCommit, type GhRelease, type GhRepo, type GhSearch, type GhTree,
 } from './sources/github.ts';
 import { checkSvg, sha256 } from './sources/icons.ts';
 import { toAurFacts, toNpmFacts, type AurInfo, type NpmDoc } from './sources/registries.ts';
 
-export interface WorkSource { id: string; repo?: string; site?: string; packages: readonly PackageRef[]; pkgbuilds: boolean }
+export interface WorkSource { id: string; repo?: string; site?: string; packages: readonly PackageRef[]; pkgbuilds: boolean; rules?: boolean }
 export interface CollectOptions { highlights?: readonly string[]; previous?: Snapshot | undefined }
 export interface Collected { works: Record<string, WorkFacts>; contributions: Contribution[]; icons: { workId: string; svg: string }[] }
 
@@ -19,7 +19,24 @@ async function required<T>(client: Client, url: string): Promise<{ data: T; head
   return result;
 }
 
-async function repoFacts(client: Client, source: WorkSource & { repo: string }, previous: Snapshot | undefined): Promise<{ facts: RepoFacts; pkgbuilds?: string[] }> {
+interface RepoResult { facts: RepoFacts; pkgbuilds?: string[]; rules?: WorkFacts['rules'] }
+
+/** Reads each rule file's blob, a few at a time, at the given ref, and counts the rules and the head-scoped ones. */
+async function ruleCounts(client: Client, repo: string, ref: string): Promise<NonNullable<WorkFacts['rules']>> {
+  const files = toRuleFiles((await required<GhTree>(client, `${GITHUB_API}/repos/${repo}/git/trees/${ref}?recursive=1`)).data);
+  if (files.length === 0) throw new Error(`${repo}@${ref}: no rule files under content/rules`);
+  const texts: string[] = [];
+  for (let i = 0; i < files.length; i += 8) {
+    texts.push(...await Promise.all(files.slice(i, i + 8).map(async file => {
+      const { data } = await required<GhBlob>(client, `${GITHUB_API}/repos/${repo}/git/blobs/${file.sha}`);
+      if (data.encoding !== 'base64') throw new Error(`${repo}/${file.path}: unexpected blob encoding ${data.encoding}`);
+      return Buffer.from(data.content, 'base64').toString('utf8');
+    })));
+  }
+  return toRuleCounts(texts);
+}
+
+async function repoFacts(client: Client, source: WorkSource & { repo: string }, previous: Snapshot | undefined): Promise<RepoResult> {
   const url = `${GITHUB_API}/repos/${source.repo}`;
   const found = await client.json<GhRepo>(url);
   if (!found) {
@@ -41,7 +58,13 @@ async function repoFacts(client: Client, source: WorkSource & { repo: string }, 
   const pkgbuilds = source.pkgbuilds
     ? toPkgbuilds((await required<GhTree>(client, `${GITHUB_API}/repos/${source.repo}/git/trees/${repo.default_branch}?recursive=1`)).data)
     : undefined;
-  return pkgbuilds ? { facts, pkgbuilds } : { facts };
+  // The published catalogue: the latest release's tag, or the default branch before a first release. A tag never
+  // moves, so the last counts stand while it is unchanged, sparing a few hundred blob requests a run.
+  const before = previous?.works[source.id];
+  const tag = facts.latestRelease?.tag;
+  const kept = tag && before?.rules && before.repo && !before.repo.private && before.repo.latestRelease?.tag === tag ? before.rules : undefined;
+  const rules = source.rules ? kept ?? await ruleCounts(client, source.repo, tag ?? repo.default_branch) : undefined;
+  return { facts, ...(pkgbuilds ? { pkgbuilds } : {}), ...(rules ? { rules } : {}) };
 }
 
 async function packageFacts(client: Client, pkg: PackageRef) {
@@ -98,9 +121,10 @@ export async function collectFacts(sources: readonly WorkSource[], client: Clien
     if (!source.repo && !source.site && source.packages.length === 0) continue;
     const facts: WorkFacts = { packages: [] };
     if (source.repo) {
-      const { facts: repo, pkgbuilds } = await repoFacts(client, { ...source, repo: source.repo }, options.previous);
+      const { facts: repo, pkgbuilds, rules } = await repoFacts(client, { ...source, repo: source.repo }, options.previous);
       facts.repo = repo;
       if (pkgbuilds) facts.pkgbuilds = pkgbuilds;
+      if (rules) facts.rules = rules;
     }
     for (const pkg of source.packages) facts.packages.push(await packageFacts(client, pkg));
     if (source.site) {

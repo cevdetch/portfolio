@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { snapshotSchema } from '../../src/facts/schema.ts';
-import { countDiscussion, lastPage, toContribution, toPkgbuilds, toRepoFacts } from '../../src/facts/sources/github.ts';
+import { countDiscussion, lastPage, toContribution, toPkgbuilds, toRepoFacts, toRuleCounts, toRuleFiles } from '../../src/facts/sources/github.ts';
 import { checkSvg, sha256 } from '../../src/facts/sources/icons.ts';
 import { toAurFacts, toNpmFacts } from '../../src/facts/sources/registries.ts';
 import { fixtureSnapshot } from '../helpers/portfolio-fixture.ts';
@@ -44,6 +44,25 @@ test('countDiscussion counts what other people wrote in review, never the author
     reviewComments: [by('maintainer'), by('maintainer'), by('cevdetch'), { user: null, body: 'from a deleted account' }],
     issueComments: [by('reviewer'), by('netlify[bot]'), by('renovate', 'Bot'), by('astrobot-houston'), by('CevdetCH')],
   }, 'cevdetch'), 4);
+});
+
+test('toRuleFiles lists the Markdown rule files, one folder deep under content/rules', () => {
+  const tree = { truncated: false, tree: [
+    { path: 'content/rules/head/charset-position.md', type: 'blob' as const, sha: 'a' },
+    { path: 'content/rules/meta/viewport.md', type: 'blob' as const, sha: 'b' },
+    { path: 'content/rules/README.md', type: 'blob' as const, sha: 'c' },
+    { path: 'content/rules/head', type: 'tree' as const, sha: 'd' },
+    { path: 'content/rules/head/notes/x.md', type: 'blob' as const, sha: 'e' },
+  ] };
+  assert.deepEqual(toRuleFiles(tree), [{ path: 'content/rules/head/charset-position.md', sha: 'a' }, { path: 'content/rules/meta/viewport.md', sha: 'b' }]);
+  assert.throws(() => toRuleFiles({ ...tree, truncated: true }), /truncated/);
+});
+
+test('toRuleCounts counts every rule and the head-scoped ones from the frontmatter scope', () => {
+  const rule = (scope: string) => `---\nruleId: "x"\nscope: ${scope}\nmatch: "logic"\n---\n\nscope: "head" in the prose does not count.\n`;
+  assert.deepEqual(toRuleCounts([rule('"head"'), rule('"any"'), rule('"body"'), rule('head')]), { total: 4, head: 2 });
+  assert.throws(() => toRuleCounts(['---\ntitle: x\n---\n\nscope: head\n']), /no scope/);
+  assert.throws(() => toRuleCounts([rule('"heads"')]), /unknown scope "heads"/);
 });
 
 test('toPkgbuilds lists top-level folders holding a PKGBUILD', () => {

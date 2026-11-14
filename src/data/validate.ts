@@ -44,6 +44,24 @@ function proofLinkErrors(at: string, proof: string, linked: WorkEntry): string[]
   return pattern.test(proof) ? [] : [`${at}: proof must name "${linked.data.title}" as a whole word`];
 }
 
+const leadingNumber = (text: string) => Number(/^[\d,]+/.exec(text.trim())?.[0]?.replaceAll(',', '') ?? NaN);
+
+/** A rule count typed into a Metric ("Sourced rules") or a highlight ("203 sourced rules") must match the fetched one. */
+function ruleCountErrors(at: string, data: Work, total: number): string[] {
+  const errors: string[] = [];
+  data.metrics.forEach((metric, index) => {
+    if (/\brules$/i.test(metric.label) && leadingNumber(metric.value) !== total) {
+      errors.push(`${at} metrics[${index}]: ${metric.label} is ${metric.value}; the Snapshot counts ${total}`);
+    }
+  });
+  data.highlights.forEach((text, index) => {
+    for (const match of text.matchAll(/([\d,]+) sourced rules/g)) {
+      if (leadingNumber(match[1]!) !== total) errors.push(`${at} highlights[${index}]: says ${match[1]} sourced rules; the Snapshot counts ${total}`);
+    }
+  });
+  return errors;
+}
+
 function cvErrors(cv: CvChoices, works: ReadonlyMap<string, WorkEntry>, techIds: ReadonlySet<string>): string[] {
   const errors: string[] = [];
   const placed = new Set<string>();
@@ -109,6 +127,10 @@ export function validatePortfolio(p: Portfolio, facts: Snapshot): string[] {
     if (data.repo && facts.works[id] && !facts.works[id].repo) errors.push(`${at}: no repository Facts in the Snapshot; run pnpm fetch-facts`);
     const sourced = data.repo || data.site || data.packages.length > 0 || data.pkgbuilds;
     if (sourced && !facts.works[id]) errors.push(`${at}: no Facts in the Snapshot; run pnpm fetch-facts`);
+    if (data.rules && !data.repo) errors.push(`${at}: rules are counted from a repo, and this Work has none`);
+    else if (data.rules && facts.works[id] && !facts.works[id].rules) errors.push(`${at}: no rule counts in the Snapshot; run pnpm fetch-facts`);
+    const rules = facts.works[id]?.rules;
+    if (rules) errors.push(...ruleCountErrors(at, data, rules.total));
   }
   const orders = p.works.flatMap(({ data }) => data.featured && data.order !== undefined ? [data.order] : []).sort((a, b) => a - b);
   if (orders.some((order, index) => order !== index + 1)) {

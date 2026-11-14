@@ -22,6 +22,7 @@ export async function readWorkSources(dir: URL): Promise<WorkSource[]> {
       ...(work.site ? { site: work.site } : {}),
       packages: work.packages,
       pkgbuilds: work.pkgbuilds,
+      ...(work.rules ? { rules: true } : {}),
     };
   }));
 }

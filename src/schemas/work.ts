@@ -53,6 +53,9 @@ const neutral = {
   packages: z.array(packageRefSchema).default([]),
   // Fetch the list of top-level PKGBUILD folders from this Work's repo.
   pkgbuilds: z.boolean().default(false),
+  // Count this Work's lint rules, and those scoped to the head, from the frontmatter of content/rules/*/*.md at
+  // its latest release tag.
+  rules: z.boolean().default(false),
   stack: z.array(id).min(1),
   metrics: z.array(metricSchema).default([]),
 };

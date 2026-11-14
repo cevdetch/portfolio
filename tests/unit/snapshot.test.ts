@@ -44,6 +44,14 @@ test('describeChanges writes a reviewable line per Fact change', () => {
   assert.deepEqual(describeChanges(undefined, next), ['first Snapshot']);
 });
 
+test('describeChanges names a change in the rule counts', () => {
+  const previous = fixtureSnapshot();
+  previous.works['deadhead']!.rules = { total: 203, head: 92 };
+  const next = structuredClone(previous);
+  next.works['deadhead']!.rules = { total: 204, head: 93 };
+  assert.deepEqual(describeChanges(previous, next), ['deadhead: 203 → 204 rules, 92 → 93 for the head']);
+});
+
 test('describeChanges names a repository that turned public or private', () => {
   const previous = fixtureSnapshot();
   const next = structuredClone(previous);

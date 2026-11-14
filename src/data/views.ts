@@ -131,6 +131,7 @@ export interface WorkFactsView {
   commitCount?: number;
   release?: { tag: string; publishedAt: string };
   pkgbuildCount?: number;
+  rules?: { total: number; head: number };
   icon?: string;
   // The one rule for linking a repository: the Story names it and the Snapshot found it public.
   repoUrl?: string;
@@ -148,6 +149,7 @@ export function workFactsView(id: string, snapshot: Snapshot, repoName?: string)
     ...(repo ? { active: { from: repo.firstCommit, to: repo.lastCommit }, commitCount: repo.commitCount } : {}),
     ...(repo?.latestRelease ? { release: repo.latestRelease } : {}),
     ...(facts.pkgbuilds ? { pkgbuildCount: facts.pkgbuilds.length } : {}),
+    ...(facts.rules ? { rules: facts.rules } : {}),
     ...(facts.icon ? { icon: facts.icon.file } : {}),
     ...(repoName && repo ? { repoUrl: `https://github.com/${repoName}` } : {}),
     ...(facts.repo?.private ? { sourcePrivate: true as const } : {}),

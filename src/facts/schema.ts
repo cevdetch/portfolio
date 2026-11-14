@@ -24,6 +24,8 @@ export const workFactsSchema = z.strictObject({
   repo: repoFactsSchema.optional(),
   packages: z.array(packageFactsSchema),
   pkgbuilds: z.array(z.string()).optional(),
+  // The rule catalogue at the latest release: every rule file, and those scoped to the head.
+  rules: z.strictObject({ total: z.number().int().positive(), head: z.number().int().nonnegative() }).optional(),
   // null: the site serves no /icon.svg, so the Work gets a monogram.
   icon: z.strictObject({ file: z.string().regex(/^icons\/[a-z0-9-]+\.svg$/), sha256: z.string().regex(/^[0-9a-f]{64}$/) }).nullable().optional(),
 });

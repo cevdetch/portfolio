@@ -97,6 +97,38 @@ test('a single-commit repository needs no second page', async () => {
   assert.equal(publicRepo(collected.works['x'])?.firstCommit, '2026-11-01T10:00:00Z');
 });
 
+test('a Work with rules counts them from its rule files at the latest release', async () => {
+  const blob = (scope: string) => ({ data: { encoding: 'base64', content: Buffer.from(`---\nscope: "${scope}"\n---\n`).toString('base64') } });
+  const client = fakeClient({
+    [`${api}/repos/cevdetch/x`]: { data: { private: false, default_branch: 'main', license: null } },
+    [`${api}/repos/cevdetch/x/commits?sha=main&per_page=1`]: { data: [{ commit: { author: { date: '2026-11-01T10:00:00Z' } } }] },
+    [`${api}/repos/cevdetch/x/releases/latest`]: { data: { tag_name: 'v0.3.1', published_at: '2026-10-20T10:00:00Z', draft: false } },
+    [`${api}/repos/cevdetch/x/git/trees/v0.3.1?recursive=1`]: { data: { truncated: false, tree: [
+      { path: 'content/rules/head/a.md', type: 'blob', sha: 'a1' },
+      { path: 'content/rules/element/b.md', type: 'blob', sha: 'b2' },
+    ] } },
+    [`${api}/repos/cevdetch/x/git/blobs/a1`]: blob('head'),
+    [`${api}/repos/cevdetch/x/git/blobs/b2`]: blob('body'),
+    [search]: { data: { total_count: 0, items: [] } },
+  });
+  const collected = await collectFacts([{ id: 'x', repo: 'cevdetch/x', packages: [], pkgbuilds: false, rules: true }], client);
+  assert.deepEqual(collected.works['x']?.rules, { total: 2, head: 1 });
+});
+
+test('rule counts carry over while the latest release tag is unchanged', async () => {
+  const client = fakeClient({
+    [`${api}/repos/cevdetch/x`]: { data: { private: false, default_branch: 'main', license: null } },
+    [`${api}/repos/cevdetch/x/commits?sha=main&per_page=1`]: { data: [{ commit: { author: { date: '2026-11-01T10:00:00Z' } } }] },
+    [`${api}/repos/cevdetch/x/releases/latest`]: { data: { tag_name: 'v0.3.1', published_at: '2026-10-20T10:00:00Z', draft: false } },
+    [search]: { data: { total_count: 0, items: [] } },
+  });
+  const repo = { private: false as const, license: null, firstCommit: '2026-11-01T10:00:00Z', lastCommit: '2026-11-01T10:00:00Z', commitCount: 1, latestRelease: { tag: 'v0.3.1', publishedAt: '2026-10-20T10:00:00Z' } };
+  const previous = { version: 1 as const, refreshedAt: '2026-11-09T06:00:00.000Z', works: { x: { repo, packages: [], rules: { total: 203, head: 92 } } }, contributions: [] };
+  const collected = await collectFacts([{ id: 'x', repo: 'cevdetch/x', packages: [], pkgbuilds: false, rules: true }], client, { previous });
+  assert.deepEqual(collected.works['x']?.rules, { total: 203, head: 92 });
+  assert.ok(!client.requested.some(url => url.includes('/git/')));
+});
+
 test('a private repo records only that it is private', async () => {
   const client = fakeClient({
     [`${api}/repos/cevdetch/one`]: { data: { private: true, default_branch: 'main', license: null } },

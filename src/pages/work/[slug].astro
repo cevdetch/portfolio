@@ -62,6 +62,7 @@ const { Content } = await render(entry);
         {facts.active && <><dt>Active</dt><dd>{formatMonth(facts.active.from)} to {formatMonth(facts.active.to)}</dd></>}
         {facts.commitCount !== undefined && <><dt>Commits</dt><dd>{facts.commitCount}</dd></>}
         {facts.pkgbuildCount !== undefined && <><dt>PKGBUILDs</dt><dd>{facts.pkgbuildCount}</dd></>}
+        {facts.rules && <><dt>Rules</dt><dd>{facts.rules.total} sourced rules, {facts.rules.head} for the head</dd></>}
       </dl>
       <section aria-labelledby="stack">
         <h2 id="stack">Stack</h2>

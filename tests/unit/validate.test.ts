@@ -148,6 +148,31 @@ test('a Work with a repo needs repository Facts, so an unrefreshed repo is never
   ]);
 });
 
+test('a Work that counts its rules needs a repo and the counts in the Snapshot', () => {
+  const p = fixturePortfolio();
+  p.works[0]!.data.rules = true;
+  p.works[1]!.data.rules = true;
+  assert.deepEqual(validatePortfolio(p, fixtureSnapshot()).sort(), [
+    'work/deadhead: no rule counts in the Snapshot; run pnpm fetch-facts',
+    'work/one: rules are counted from a repo, and this Work has none',
+  ]);
+});
+
+test('a typed rule count must match the fetched one, in Metrics and highlights', () => {
+  const p = fixturePortfolio();
+  const facts = fixtureSnapshot();
+  p.works[0]!.data.rules = true;
+  facts.works['deadhead']!.rules = { total: 203, head: 92 };
+  p.works[0]!.data.highlights = ['Built a linter with 203 sourced rules.'];
+  assert.deepEqual(validatePortfolio(p, facts), []);
+  facts.works['deadhead']!.rules = { total: 1204, head: 92 };
+  p.works[0]!.data.metrics[0]!.value = '1,204';
+  assert.deepEqual(validatePortfolio(p, facts), ['work/deadhead highlights[0]: says 203 sourced rules; the Snapshot counts 1204']);
+  p.works[0]!.data.metrics[0]!.value = '203';
+  p.works[0]!.data.highlights = [];
+  assert.deepEqual(validatePortfolio(p, facts), ['work/deadhead metrics[0]: Sourced rules is 203; the Snapshot counts 1204']);
+});
+
 test('overrides must point at Contributions in the Snapshot', () => {
   const p = fixturePortfolio();
   p.contributions.upstreams[0]!.pulls['999'] = { hidden: true, highlight: false };

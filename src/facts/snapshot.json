@@ -209,7 +209,7 @@
       "url": "https://github.com/sveltejs/svelte/pull/12526"
     }
   ],
-  "refreshedAt": "2026-11-14T11:16:56.721Z",
+  "refreshedAt": "2026-11-14T11:20:35.146Z",
   "version": 1,
   "works": {
     "arch-waypure": {
@@ -357,6 +357,10 @@
         },
         "license": "MIT",
         "private": false
+      },
+      "rules": {
+        "head": 92,
+        "total": 203
       }
     },
     "favseed": {

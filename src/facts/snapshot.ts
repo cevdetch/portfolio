@@ -58,6 +58,9 @@ export function describeChanges(previous: Snapshot | undefined, next: Snapshot):
       if (from?.commitCount !== to?.commitCount) lines.push(`${id}: ${from?.commitCount ?? 0} → ${to?.commitCount ?? 0} commits`);
     }
     if (before.pkgbuilds?.join() !== after.pkgbuilds?.join()) lines.push(`${id}: ${before.pkgbuilds?.length ?? 0} → ${after.pkgbuilds?.length ?? 0} PKGBUILDs`);
+    if (before.rules?.total !== after.rules?.total || before.rules?.head !== after.rules?.head) {
+      lines.push(`${id}: ${before.rules?.total ?? 0} → ${after.rules?.total ?? 0} rules, ${before.rules?.head ?? 0} → ${after.rules?.head ?? 0} for the head`);
+    }
     if (before.icon?.sha256 !== after.icon?.sha256) lines.push(`${id}: icon ${after.icon ? 'changed' : 'removed'}`);
     // A change with no line of its own (lastCommit, a release date) still gets one.
     if (lines.length === emitted && stableJson(before) !== stableJson(after)) lines.push(`${id}: Facts updated`);
