@@ -35,7 +35,7 @@ test('findScreenshots ignores files outside the device-scheme naming and other s
 });
 
 test('findScreenshots returns no devices for a Work with no captures', () => {
-  assert.deepEqual(findScreenshots({}, 'homelab'), {});
+  assert.deepEqual(findScreenshots({}, 'private-tool'), {});
 });
 
 test('screenshotAlt describes a Work\'s home page by title and device', () => {

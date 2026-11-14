@@ -55,11 +55,11 @@ test('describeChanges names a change in the rule counts', () => {
 test('describeChanges names a repository that turned public or private', () => {
   const previous = fixtureSnapshot();
   const next = structuredClone(previous);
-  next.works['homelab']!.repo = { ...previous.works['astro-minimal-template']!.repo! };
+  next.works['private-tool']!.repo = { ...previous.works['astro-minimal-template']!.repo! };
   next.works['astro-minimal-template']!.repo = { private: true };
   assert.deepEqual(describeChanges(previous, next), [
     'astro-minimal-template: source public → private',
-    'homelab: source private → public',
+    'private-tool: source private → public',
   ]);
 });
 

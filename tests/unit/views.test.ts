@@ -155,7 +155,7 @@ test('a social URL yields the handle in its path', () => {
 test('workFactsView gives a repository link only for a repo the Snapshot found public', () => {
   const snapshot = fixtureSnapshot();
   assert.equal(workFactsView('deadhead', snapshot, { repo: 'cevdetch/deadhead' }).repoUrl, 'https://github.com/cevdetch/deadhead');
-  assert.equal(workFactsView('homelab', snapshot, { repo: 'cevdetch/homelab' }).repoUrl, undefined);
+  assert.equal(workFactsView('private-tool', snapshot, { repo: 'cevdetch/private-tool' }).repoUrl, undefined);
   assert.equal(workFactsView('deadhead', snapshot).repoUrl, undefined);
   delete snapshot.works['deadhead']!.repo;
   assert.equal(workFactsView('deadhead', snapshot, { repo: 'cevdetch/deadhead' }).repoUrl, undefined);
@@ -179,7 +179,7 @@ test('workFactsView exposes only the displayed Facts', () => {
     release: { tag: 'v0.3.1', publishedAt: '2026-10-20T10:00:00Z' },
     icon: 'icons/deadhead.svg',
   });
-  assert.deepEqual(workFactsView('homelab', fixtureSnapshot()), { packages: [], sourcePrivate: true });
+  assert.deepEqual(workFactsView('private-tool', fixtureSnapshot()), { packages: [], sourcePrivate: true });
   const withRules = fixtureSnapshot();
   withRules.works['deadhead']!.rules = { total: 203, head: 92 };
   assert.deepEqual(workFactsView('deadhead', withRules).rules, { total: 203, head: 92 });

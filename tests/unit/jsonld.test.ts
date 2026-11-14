@@ -97,8 +97,8 @@ test('a site Work without a site falls back to SoftwareSourceCode', () => {
 
 test('a private repository is never named as the codeRepository', () => {
   const { works, techs } = fixturePortfolio();
-  const homelab = works.find(work => work.id === 'homelab')!;
-  assert.equal(field(workNode(homelab, fixtureSnapshot().works['homelab'], techs), 'codeRepository'), undefined);
+  const privateTool = works.find(work => work.id === 'private-tool')!;
+  assert.equal(field(workNode(privateTool, fixtureSnapshot().works['private-tool'], techs), 'codeRepository'), undefined);
   assert.equal(field(workNode(works[0]!, undefined, techs), 'codeRepository'), undefined);
   assert.equal(field(workNode(works[0]!, undefined, techs), 'license'), undefined);
 });

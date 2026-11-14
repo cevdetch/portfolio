@@ -103,8 +103,8 @@ test('a titled entry prints one cvLine per Work, from its first commit to its la
 
 test('a private repository is never linked from the CV', () => {
   const p = data();
-  p.cv.projects = [{ works: ['homelab'], optional: false }];
-  assert.equal(buildCv(p).cv.sections.projects[0]!['name'], 'Homelab');
+  p.cv.projects = [{ works: ['private-tool'], optional: false }];
+  assert.equal(buildCv(p).cv.sections.projects[0]!['name'], 'Private tool');
 });
 
 test('a group fills {pkgbuilds} from the Snapshot and takes its earliest start', () => {
@@ -114,7 +114,7 @@ test('a group fills {pkgbuilds} from the Snapshot and takes its earliest start',
     name: 'Linux & infrastructure', start_date: '2025-12', end_date: 'present',
     highlights: [
       '[arch-waypure](https://github.com/cevdetch/arch-waypure): 3 PKGBUILDs with Python audit tools.',
-      'Homelab: self-hosted services with no public ports.',
+      'Private tool: self-hosted services with no public ports.',
     ],
   });
 });
@@ -122,7 +122,7 @@ test('a group fills {pkgbuilds} from the Snapshot and takes its earliest start',
 test('a group of finished Works ends at the latest last commit; a group without Facts has no dates', () => {
   const p = data();
   for (const work of p.works) work.data.status = 'complete';
-  p.cv.projects = [{ title: 'Packaging', works: ['astro-minimal-template', 'arch-waypure'], optional: false }, { title: 'Server', works: ['homelab'], optional: false }];
+  p.cv.projects = [{ title: 'Packaging', works: ['astro-minimal-template', 'arch-waypure'], optional: false }, { title: 'Server', works: ['private-tool'], optional: false }];
   const [packaging, server] = buildCv(p).cv.sections.projects;
   assert.equal(packaging!['start_date'], '2025-12');
   assert.equal(packaging!['end_date'], '2026-11');

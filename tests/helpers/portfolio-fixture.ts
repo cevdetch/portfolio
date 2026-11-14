@@ -62,8 +62,8 @@ export function fixturePortfolio(): Portfolio {
         tagline: 'Arch Linux PKGBUILDs', summary: 'Packages a Wayland-only desktop.', role: 'Creator and maintainer', highlights: [],
         cvLine: '{pkgbuilds} PKGBUILDs with Python audit tools.',
       }) },
-      { id: 'homelab', body: caseStudyBody, data: workSchema.parse({
-        title: 'Homelab', kind: 'infrastructure', status: 'active', repo: 'cevdetch/homelab', stack: ['astro'],
+      { id: 'private-tool', body: caseStudyBody, data: workSchema.parse({
+        title: 'Private tool', kind: 'infrastructure', status: 'active', repo: 'cevdetch/private-tool', stack: ['astro'],
         tagline: 'Self-hosted services', summary: 'Runs self-hosted services.', role: 'Designer and operator', highlights: [],
         cvLine: 'self-hosted services with no public ports.',
       }) },
@@ -85,7 +85,7 @@ export function fixturePortfolio(): Portfolio {
       projects: [
         { works: ['deadhead'] },
         { title: 'Astro templates', works: ['astro-minimal-template'] },
-        { title: 'Linux & infrastructure', works: ['arch-waypure', 'homelab'], optional: true },
+        { title: 'Linux & infrastructure', works: ['arch-waypure', 'private-tool'], optional: true },
       ],
       skills: [
         { label: 'Languages', items: [{ techs: ['typescript'] }] },
@@ -115,7 +115,7 @@ export function fixtureSnapshot(): Snapshot {
         repo: { private: false, license: null, firstCommit: '2025-12-24T22:35:44Z', lastCommit: '2026-11-06T18:07:27Z', commitCount: 90, latestRelease: null },
         packages: [], pkgbuilds: ['mpv', 'sway', 'wlroots'],
       },
-      homelab: { repo: { private: true }, packages: [] },
+      'private-tool': { repo: { private: true }, packages: [] },
     },
     contributions: [
       { upstream: 'withastro/astro', number: 102, title: 'Handle base in sitemap', url: 'https://github.com/withastro/astro/pull/102', mergedAt: '2026-07-01T08:22:12Z' },
