@@ -5,10 +5,11 @@
 // modules its own `import.meta.glob('/src/assets/screenshots/*/*.webp', { eager: true })` resolved.
 
 /** The two devices each Work's site is captured on, in CSS pixels; the masters are `screenshotScale` times
- *  larger. `widths` are the sizes the build derives from a master for the page's `srcset`. */
+ *  larger. `widths` are the sizes the build derives from a master for the page's `srcset`: 1x, 1.5x and 2x of
+ *  the CSS width, so a 1.5x screen isn't served the 1x copy, plus half width on the desktop for narrow viewports. */
 export const screenshotDevices = {
-  desktop: { width: 1280, height: 800, mobile: false, widths: [640, 1280, 2560] },
-  phone: { width: 390, height: 844, mobile: true, widths: [390, 780] },
+  desktop: { width: 1280, height: 800, mobile: false, widths: [640, 1280, 1920, 2560] },
+  phone: { width: 390, height: 844, mobile: true, widths: [390, 585, 780] },
 } as const;
 export type ScreenshotDevice = keyof typeof screenshotDevices;
 export const screenshotSchemes = ['light', 'dark'] as const;

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { findScreenshots, screenshotAlt, screenshotSizes } from '../../src/data/screenshots.ts';
+import { findScreenshots, screenshotAlt, screenshotDevices, screenshotScale, screenshotSizes } from '../../src/data/screenshots.ts';
 
 const image = (name: string) => ({ default: { src: `/${name}.abc123.webp`, width: 2560, height: 1600 } });
 
@@ -46,4 +46,14 @@ test('screenshotAlt describes a Work\'s home page by title and device', () => {
 test('screenshotSizes caps the image at its CSS width and fills narrower viewports', () => {
   assert.equal(screenshotSizes(1280), '(min-width: 1280px) 1280px, 100vw');
   assert.equal(screenshotSizes(390), '(min-width: 390px) 390px, 100vw');
+});
+
+test('each device derives its CSS width at 1x, 1.5x and the capture scale, so a 1.5x screen gets a close match', () => {
+  for (const device of Object.values(screenshotDevices)) {
+    const { width } = device;
+    const widths: readonly number[] = device.widths;
+    for (const ratio of [1, 1.5, screenshotScale]) assert.ok(widths.includes(width * ratio), `${width * ratio}w in ${widths.join(', ')}`);
+    assert.deepEqual([...widths], [...widths].sort((a, b) => a - b));
+    assert.ok(Math.max(...widths) <= width * screenshotScale, 'no width larger than the master');
+  }
 });

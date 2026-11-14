@@ -31,7 +31,7 @@ const proofParts = splitOnTitles(profile.proof, proofWorks.map(work => work.data
   <SiteNav />
   <main>
     <h1>{fullName(profile)}</h1>
-    <Portrait alt={fullName(profile)} />
+    <Portrait alt={fullName(profile)} priority />
     <p>{profile.specialisation}</p>
     <p>{proofParts.map(part => proofLinks.has(part) ? <a href={proofLinks.get(part)}>{part}</a> : part)}</p>
     <p><a href="/hire/">Work with me</a> · <a href="/cv.pdf">CV (PDF)</a></p>
