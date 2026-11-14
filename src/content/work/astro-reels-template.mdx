@@ -12,14 +12,14 @@ summary: Shows short pieces one per screen, each with its own page, using CSS sc
 role: Creator and maintainer
 highlights:
   - Builds a one-piece-per-screen feed from HTML and CSS alone, with deep links, paging and a page of its own for every piece.
-  - Scored 100 in Lighthouse for accessibility, best practices and SEO, with a contrast test and a deadhead audit in the checks.
-cvLine: a reels-style feed in HTML and CSS alone (scroll-snap, view transitions), scoring 100 in Lighthouse for accessibility, best practices and SEO.
+  - Scored 100 in Lighthouse for accessibility, best practices and SEO on its home page, with a contrast test and a deadhead audit in the checks.
+cvLine: a reels-style feed in HTML and CSS alone (scroll-snap, view transitions), scoring 100 in Lighthouse for accessibility, best practices and SEO on its home page.
 metrics:
-  - label: Lighthouse accessibility, best practices and SEO
+  - label: Home page Lighthouse accessibility, best practices and SEO
     value: '100 each'
     measuredAt: 2026-11-08
     source: { label: Astro Reels Template README, url: https://github.com/cevdetch/astro-reels-template/blob/main/README.md }
-    headline: { value: '100', label: 'Lighthouse for accessibility, SEO and best practices' }
+    headline: { value: '100', label: 'Lighthouse accessibility, best practices and SEO, home page' }
 ---
 
 ## Problem
@@ -37,7 +37,7 @@ A reels-style feed shows one short piece per screen. The goal was that format wi
 ## Decisions
 
 - **CSS does the motion.** Scroll-snap holds one piece per screen, and the mouse wheel, touch and native keys (arrows, Page Down, Space) move card by card. Page turns cross-fade with a cross-document view transition. With reduced motion requested, snapping relaxes and the transition is off.
-- **Paged, not infinite.** The feed is split into pages of 20, each ending with a card that opens the next page, and every feed page is indexable with a self-referencing canonical rather than pointing back to page one.
+- **Paged, not infinite.** The feed is split into pages of 20, each ending with a card that opens the next page. While the pieces are public-domain demo text, found on many other sites, only the home feed page is indexed: later feed pages and every piece's own page carry `noindex, follow` and stay out of the sitemap, but keep self-referencing canonicals and share images, since they are still the links people share. An `indexPieces` setting makes them all indexable for a site with pieces of its own.
 - **Anchors are deep links.** Each card has the piece's number as its ID, so `/#18` and `/page/2/#25` land on the right card, and each piece's own page links to its neighbours and back into the feed.
 - **Verse is typeset as lines.** A line too long for the screen wraps with a hanging indent, so its remainder never reads as a new line. Indentation comes from the source text, so irregular sonnets keep their own shape.
 - **Off-screen cards are skipped** with `content-visibility`, and the system serif stack replaces a web font.
@@ -47,7 +47,7 @@ A reels-style feed shows one short piece per screen. The goal was that format wi
 ## Results
 
 - The [demo](https://astro-reels-template.cevdet.ch/) publishes all 154 of Shakespeare's sonnets, imported from Project Gutenberg by a script that records the source file and its hash and fails unless it finds exactly 154 sonnets in order.
-- Lighthouse scored 100 for accessibility, best practices and SEO on the first feed page, a later feed page and a sonnet page.
+- Lighthouse scored 100 for accessibility, best practices and SEO on the home page, the one page the demo leaves open to search engines.
 - No built page ships JavaScript beyond structured data, and the deadhead audit and contrast test pass.
 
 ## Next

@@ -16,7 +16,7 @@ homeMetrics:
   - { work: deadhead, label: Sourced rules }
   - { work: deadhead, label: Homepages audited }
   - { work: favseed, label: Raster bytes saved by the encode search vs quality 80 }
-  - { work: astro-reels-template, label: 'Lighthouse accessibility, best practices and SEO' }
+  - { work: astro-reels-template, label: 'Home page Lighthouse accessibility, best practices and SEO' }
 email: hello@cevdet.ch
 website: https://cevdet.ch/
 contactSubject: Enquiry from cevdet.ch
@@ -44,7 +44,7 @@ process:
 services:
   - id: static-sites
     name: Fast static sites
-    summary: Astro sites that ship no JavaScript unless a feature needs it and score 100 in Lighthouse, checked by the same tools published on npm.
+    summary: "Astro sites that ship no JavaScript unless a feature needs it, checked with deadhead; the Astro Reels Template demo's home page scores 100 in Lighthouse for accessibility, best practices and SEO."
     evidence: [deadhead, astro-minimal-template, astro-reels-template]
   - id: css-experiences
     name: App-like experiences without JavaScript
