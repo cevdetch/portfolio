@@ -44,10 +44,11 @@ test('the preview compares both schemes per device, and shows a site without a d
   assert.equal(result.code, 0, result.log);
 
   const both = await readFile(new URL('both/index.html', result.outDir), 'utf8');
-  // The desktop pair is the largest paint and loads first, the light copy at high priority; the phone pair waits.
+  // The desktop pair is the largest paint in either scheme, so both copies load first at high priority; the phone
+  // pair waits until shown.
   assert.deepEqual(pictures(both), [
     ['shot shot-light', 'source type=image/webp', 'img 1280x800 eager high'],
-    ['shot shot-dark', 'source type=image/webp', 'img 1280x800 eager'],
+    ['shot shot-dark', 'source type=image/webp', 'img 1280x800 eager high'],
     ['shot shot-light', 'source type=image/webp', 'img 390x844 lazy'],
     ['shot shot-dark', 'source type=image/webp', 'img 390x844 lazy'],
   ]);

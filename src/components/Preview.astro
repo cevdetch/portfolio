@@ -51,9 +51,10 @@ const frames = await Promise.all(devices.map(async device => {
           {shots.map(({ scheme, webp, png, alt }) => (
             <picture class={`shot shot-${scheme}`}>
               <source type="image/webp" srcset={webp.srcSet.attribute} sizes={sizes[device]} />
-              {/* The desktop pair is the page's largest paint, so it loads first; the phone pair waits until shown. */}
+              {/* The desktop pair is the page's largest paint in either scheme, so both load first at high priority; the
+                  phone pair waits until shown. */}
               <img src={png.src} srcset={png.srcSet.attribute} sizes={sizes[device]} width={width} height={height} alt={alt}
-                loading={device === 'desktop' ? 'eager' : 'lazy'} fetchpriority={device === 'desktop' && scheme === 'light' ? 'high' : undefined} decoding="async" />
+                loading={device === 'desktop' ? 'eager' : 'lazy'} fetchpriority={device === 'desktop' ? 'high' : undefined} decoding="async" />
             </picture>
           ))}
           {shots.length > 1 && (
