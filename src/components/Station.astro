@@ -1,0 +1,11 @@
+---
+// The station header: each page's own field in --brand-bg, under the band and the site header. The aside slot
+// holds the portrait where a page has one.
+---
+
+<div class="station">
+  <div class="wrap">
+    <div class="station-main"><slot /></div>
+    <slot name="aside" />
+  </div>
+</div>

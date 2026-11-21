@@ -1,0 +1,15 @@
+---
+// A departure board: a ruled table under its caption, the column headers in a banded row. The caption names the
+// section; the rows come in the default slot and anything that follows the table in the "after" slot.
+interface Props { id: string; caption: string; columns: readonly string[] }
+const { id, caption, columns } = Astro.props;
+---
+
+<section class="block" aria-labelledby={id}>
+  <table class="board">
+    <caption id={id}>{caption}</caption>
+    <thead><tr>{columns.map(column => <th scope="col">{column}</th>)}</tr></thead>
+    <tbody><slot /></tbody>
+  </table>
+  <slot name="after" />
+</section>

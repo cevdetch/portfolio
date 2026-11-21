@@ -1,108 +1,113 @@
 ---
+import Board from '../components/Board.astro';
+import Key from '../components/Key.astro';
+import Numbers, { type NumberCell } from '../components/Numbers.astro';
 import Portrait from '../components/Portrait.astro';
-import SocialLinks from '../components/SocialLinks.astro';
+import Station from '../components/Station.astro';
+import WorkId from '../components/WorkId.astro';
 import Layout from '../layouts/Layout.astro';
 import { fullName, pageTitle } from '../data/profile.ts';
 import { publicPortraitPath, readPortraitSize } from '../data/portrait.ts';
 import { loadPortfolio } from '../data/portfolio.ts';
-import { contributionHighlights, discussionLine, featuredWorks, homeMetrics, knowsAboutTechs, lighthouseNumber, metricDisplay, recentlyShipped, splitOnTitles, upstreamGroups, upstreamLabel } from '../data/views.ts';
+import { contributionHighlights, discussionLine, featuredWorks, homeMetrics, knowsAboutTechs, lighthouseNumber, metricDisplay, recentlyShipped, splitOnTitles, upstreamGroups, upstreamLabel, workFactsView } from '../data/views.ts';
 import { formatDay, formatDayRange, joinList } from '../lib/format.ts';
 import { graph, personNode, profilePageNode, websiteNode } from '../lib/jsonld.ts';
+import { statusMeanings } from '../schemas/work.ts';
 
 const data = await loadPortfolio();
 const { profile } = data;
 const groups = upstreamGroups(data.facts.contributions, data.contributions);
 const highlights = contributionHighlights(groups);
-const metrics = homeMetrics(profile.homeMetrics, data.works);
 const lighthouse = lighthouseNumber(data.works, data.facts);
 // The Person names the public/ copy only when it exists, with the dimensions read from the file.
 const portrait = await readPortraitSize(publicPortraitPath);
 const shipped = recentlyShipped(data.facts, data.works, data.contributions, 5, profile.handle);
+const icon = (id: string) => workFactsView(id, data.facts).icon;
 
 // The proof line names each proofWorks entry by title (validated); each becomes a link to its Work page.
 const proofWorks = profile.proofWorks.map(id => data.works.find(work => work.id === id)!);
 const proofLinks = new Map(proofWorks.map(work => [work.data.title, `/work/${work.id}/`] as const));
 const proofParts = splitOnTitles(profile.proof, proofWorks.map(work => work.data.title));
+
+const numbers: NumberCell[] = [
+  ...homeMetrics(profile.homeMetrics, data.works).map(({ metric }) => ({ ...metricDisplay(metric), source: metric.source })),
+  ...(lighthouse ? [{ value: lighthouse.value, label: lighthouse.label, source: lighthouse.source, measuredAt: lighthouse.measuredAt }] : []),
+];
 ---
 
 <Layout title={pageTitle(profile)} description={profile.headline}
   jsonLd={graph(profilePageNode(profile), personNode(profile, knowsAboutTechs(data.techs, data.works, data.contributions), portrait), websiteNode(profile))}>
-  <h1>{fullName(profile)}</h1>
-  <Portrait alt={fullName(profile)} priority />
-  <p>{profile.specialisation}</p>
-  <p>{proofParts.map(part => proofLinks.has(part) ? <a href={proofLinks.get(part)}>{part}</a> : part)}</p>
-  <p><a href="/hire/">Work with me</a> · <a href="/cv.pdf">CV (PDF)</a></p>
-  <section aria-labelledby="numbers">
-    <h2 id="numbers">Numbers</h2>
-    <dl>
-      {metrics.map(({ metric }) => {
-        const display = metricDisplay(metric);
-        return (
-          <div>
-            <dt>{display.value}</dt>
-            <dd>{display.label}{metric.source.url ? <> (<a href={metric.source.url}>{metric.source.label}</a>)</> : ` (${metric.source.label})`}</dd>
-          </div>
-        );
-      })}
-      {lighthouse && (
-        <div>
-          <dt>{lighthouse.value}</dt>
-          <dd>{lighthouse.label} (<a href={lighthouse.source.url}>{lighthouse.source.label}</a>{lighthouse.measuredAt && `, ${formatDay(lighthouse.measuredAt)}`})</dd>
-        </div>
-      )}
-    </dl>
-  </section>
-  <section aria-labelledby="featured">
-    <h2 id="featured">Featured work</h2>
-    <ul>
-      {featuredWorks(data.works).map(work => <li><a href={`/work/${work.id}/`}>{work.data.title}</a>: {work.data.tagline}</li>)}
-    </ul>
-    <p><a href="/work/">All work</a></p>
-  </section>
-  <section aria-labelledby="open-source">
-    <h2 id="open-source">Open source</h2>
-    {highlights.length > 0 && (
-      <ul>
-        {highlights.map(({ group, pull }) => (
-          <li>
-            <a href={group.url}>{pull.label}</a> <a href={pull.url}>#{pull.number}</a>: {pull.title}
-            {pull.note && <> ({pull.note})</>}
-            {discussionLine(pull.discussion) && <> · {discussionLine(pull.discussion)}</>}
-          </li>
+  <Station>
+    <h1>{fullName(profile)}</h1>
+    {/* The specialisation reads as three destinations; none breaks inside itself. */}
+    <p class="destination">{profile.specialisation.split(' · ').map((part, index) => <>{index > 0 && ' · '}<span>{part}</span></>)}</p>
+    <p class="proof">{proofParts.map(part => proofLinks.has(part) ? <a href={proofLinks.get(part)}>{part}</a> : part)}</p>
+    <p class="actions"><Key href="/hire/">Work with me</Key><Key href="/cv.pdf" secondary icon="document">CV (PDF)</Key></p>
+    <Portrait slot="aside" class="portrait" alt={fullName(profile)} priority />
+  </Station>
+
+  <div class="wrap">
+    <Numbers cells={numbers} />
+
+    {shipped.length > 0 && (
+      <Board id="shipped" caption="Recently shipped" columns={['Date', 'Shipped', 'Where']}>
+        {shipped.map(item => item.kind === 'release' ? (
+          <tr>
+            <td class="when">{formatDay(item.at)}</td>
+            {item.package === item.work.id
+              // A package named after its Work: "deadhead 0.4.0 released", never "deadhead released deadhead".
+              ? <td class="what"><WorkId id={item.work.id} title={item.work.data.title} icon={icon(item.work.id)} /> <a href={item.url}>{item.version}</a> released</td>
+              : <td class="what"><WorkId id={item.work.id} title={item.work.data.title} icon={icon(item.work.id)} /> released <a href={item.url}>{item.package} {item.version}</a></td>}
+            <td class="where">{item.registry}</td>
+          </tr>
+        ) : item.kind === 'pulls' ? (
+          <tr>
+            <td class="when">{formatDayRange(item.from, item.at)}</td>
+            <td class="what"><a href={item.url}>{item.count} pull requests</a> merged</td>
+            <td class="where">{item.label}</td>
+          </tr>
+        ) : (
+          <tr>
+            <td class="when">{formatDay(item.at)}</td>
+            <td class="what"><a href={item.url}>#{item.number}</a> {item.title}</td>
+            <td class="where">{item.label}</td>
+          </tr>
+        ))}
+      </Board>
+    )}
+
+    <Board id="featured" caption="Featured work" columns={['Work', 'What it is', 'Status']}>
+      {featuredWorks(data.works).map(work => (
+        <tr>
+          <td class="what"><WorkId id={work.id} title={work.data.title} icon={icon(work.id)} /></td>
+          <td>{work.data.tagline}</td>
+          <td class="where">{work.data.kind} · {statusMeanings[work.data.status]}</td>
+        </tr>
+      ))}
+      <p slot="after" class="more"><a href="/work/">All work</a></p>
+    </Board>
+
+    <Board id="open-source" caption="Open source" columns={['Upstream', 'Merged', 'Review']}>
+      {highlights.map(({ group, pull }) => (
+        <tr>
+          <td class="what"><a href={group.url}>{pull.label}</a></td>
+          <td><a href={pull.url}>#{pull.number}</a> {pull.title}{pull.note && <> ({pull.note})</>}</td>
+          <td class="where">{discussionLine(pull.discussion)}</td>
+        </tr>
+      ))}
+      <ul slot="after" class="themes">
+        {data.contributions.themes.map(theme => (
+          <li><a href="/open-source/">{theme.lead} {joinList(theme.upstreams.map(repo => upstreamLabel(repo, data.contributions)), 'and')}{theme.note ? `, ${theme.note}` : ''}.</a></li>
         ))}
       </ul>
-    )}
-    <ul>
-      {data.contributions.themes.map(theme => (
-        <li><a href="/open-source/">{theme.lead} {joinList(theme.upstreams.map(repo => upstreamLabel(repo, data.contributions)), 'and')}{theme.note ? `, ${theme.note}` : ''}.</a></li>
-      ))}
-    </ul>
-    {shipped.length > 0 && (
-      <>
-        <h3>Recently shipped</h3>
-        <ul>
-          {shipped.map(item => (
-            <li>
-              {item.kind === 'release'
-                ? item.package === item.work.id
-                  // A package named after its Work: "deadhead 0.4.0 released on npm", never "deadhead released deadhead".
-                  ? <><a href={`/work/${item.work.id}/`}>{item.work.data.title}</a> <a href={item.url}>{item.version}</a> released on {item.registry}, {formatDay(item.at)}</>
-                  : <><a href={`/work/${item.work.id}/`}>{item.work.data.title}</a> released <a href={item.url}>{item.package} {item.version}</a>, {formatDay(item.at)}</>
-                : item.kind === 'pulls'
-                  ? <><a href={item.url}>{item.count} pull requests</a> merged into {item.label}, {formatDayRange(item.from, item.at)}</>
-                  : <><a href={item.url}>#{item.number}</a> merged into {item.label}: {item.title}, {formatDay(item.at)}</>}
-            </li>
-          ))}
-        </ul>
-      </>
-    )}
-  </section>
-  <section aria-labelledby="about">
-    <h2 id="about">About</h2>
-    <p>{profile.jobTitle}</p>
-    <p>{profile.bio}</p>
-    <p><a href="/about/">More about {fullName(profile)}</a></p>
-  </section>
-  <SocialLinks socials={profile.socials} />
-  <p><a href="/hire/">Work with me</a></p>
+    </Board>
+
+    <section class="block two" aria-labelledby="about">
+      <h2 id="about">About</h2>
+      <div class="flow">
+        <p><strong>{profile.jobTitle}.</strong> {profile.bio}</p>
+        <p><a href="/about/">More about {fullName(profile)}</a></p>
+      </div>
+    </section>
+  </div>
 </Layout>

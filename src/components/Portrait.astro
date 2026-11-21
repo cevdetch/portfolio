@@ -7,15 +7,17 @@ interface Props {
   alt: string;
   /** Set where the portrait is the page's largest contentful paint, so the browser fetches it first. */
   priority?: boolean;
+  class?: string;
 }
-const { alt, priority = false } = Astro.props;
+const { alt, priority = false, class: className } = Astro.props;
 // The portrait the Person's image shows, when `pnpm prepare-portrait` has written it; the page renders without it.
 const portraits = import.meta.glob<{ default: ImageMetadata }>('/src/assets/portrait/*.jpg', { eager: true });
 const portrait = portraits[`/src/assets/portrait/${portraitFile}`]?.default;
 ---
 
 {portrait && (
-  // AVIF with a JPEG fallback, at 1x, 1.5x and 2x of 240 CSS px; the qualities are the encoder defaults in astro.config.mjs.
-  <Picture src={portrait} formats={['avif']} fallbackFormat="jpg" width={240} height={240} widths={[240, 360, 480]} sizes="240px"
-    alt={alt} loading="eager" fetchpriority={priority ? 'high' : undefined} />
+  // AVIF with a JPEG fallback, at 1x, 1.5x and 2x of 208 CSS px, shown at 112 px in the one-column station; the
+  // qualities are the encoder defaults in astro.config.mjs.
+  <Picture src={portrait} formats={['avif']} fallbackFormat="jpg" width={208} height={208} widths={[208, 312, 416]}
+    sizes="(max-width: 52rem) 112px, 208px" class={className} alt={alt} loading="eager" fetchpriority={priority ? 'high' : undefined} />
 )}

@@ -128,6 +128,31 @@
     .scheme { margin-inline-start: 0; }
   }
 
+  /* The station header: the page's own field. */
+  .station { border-block-end: 1px solid var(--rule); background: var(--brand-bg); }
+  .station .wrap { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: calc(4 * var(--u)) calc(6 * var(--u)); align-items: start; padding-block: calc(5 * var(--u)) calc(4 * var(--u)); }
+  .station h1 { margin-block-end: calc(2 * var(--u)); }
+  .station .destination { margin-block-end: calc(3 * var(--u)); font-size: var(--step-1); font-weight: 600; letter-spacing: -0.005em; }
+  .station .destination span { white-space: nowrap; }
+  .station .proof, .station .lede { max-inline-size: 60ch; font-size: var(--step-1); line-height: 1.45; }
+  .station .lede + .lede { margin-block-start: calc(1.5 * var(--u)); }
+  .station .actions { display: flex; flex-wrap: wrap; align-items: center; gap: calc(2 * var(--u)) calc(3 * var(--u)); margin-block-start: calc(3 * var(--u)); }
+  .station .portrait { inline-size: calc(26 * var(--u)); block-size: calc(26 * var(--u)); border: 1px solid var(--rule); border-radius: 2px; background: var(--bg); object-fit: cover; }
+  @media (max-width: 52rem) {
+    .station .wrap { grid-template-columns: 1fr; padding-block: calc(5 * var(--u)); }
+    .station .wrap > picture { order: -1; }
+    .station .portrait { inline-size: calc(14 * var(--u)); block-size: calc(14 * var(--u)); }
+  }
+
+  /* Sections on the lattice: more space above a section than inside it. */
+  .block { padding-block-start: calc(6 * var(--u)); }
+  .block > h2 { margin-block-end: calc(2 * var(--u)); }
+  .more { margin-block-start: calc(2 * var(--u)); }
+  .flow > * + * { margin-block-start: calc(2 * var(--u)); }
+  .two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: calc(3 * var(--u)) calc(6 * var(--u)); }
+  .two > h2 { margin: 0; }
+  @media (max-width: 52rem) { .two { grid-template-columns: 1fr; } }
+
   /* Site footer: who, the contacts, and the page's keys. */
   .site-foot { margin-block-start: calc(10 * var(--u)); border-block-start: 1px solid var(--rule); background: var(--bg-sunk); }
   .site-foot .wrap { display: grid; grid-template-columns: 1fr auto; gap: calc(3 * var(--u)) calc(6 * var(--u)); align-items: center; padding-block: calc(5 * var(--u)); }
@@ -191,6 +216,61 @@
   .scheme .ico { inline-size: calc(2.5 * var(--u)); block-size: calc(2.5 * var(--u)); }
   .scheme .sun, .scheme[aria-pressed="true"] .moon { display: none; }
   .scheme[aria-pressed="true"] .sun { display: block; }
+
+  /* The numbers strip: a ruled row of figures, each with its source. */
+  .numbers { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-block: 1px solid var(--rule); }
+  .numbers > div { display: grid; align-content: start; gap: calc(0.5 * var(--u)); padding: calc(3 * var(--u)) calc(3 * var(--u)) calc(3 * var(--u)) 0; }
+  .numbers > div + div { padding-inline-start: calc(3 * var(--u)); border-inline-start: 1px solid var(--rule); }
+  .numbers dt { color: var(--brand-ink); font-size: var(--figure); font-weight: 700; font-stretch: var(--narrow); letter-spacing: -0.02em; line-height: 1; }
+  .numbers dd { max-inline-size: 26ch; font-size: var(--step--1); line-height: 1.4; }
+  .numbers small { display: block; margin-block-start: calc(0.5 * var(--u)); font-size: 0.8125rem; }
+  @media (max-width: 52rem) {
+    .numbers { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .numbers > div:nth-child(odd) { padding-inline-start: 0; border-inline-start: 0; }
+    .numbers > div:nth-child(n + 3) { border-block-start: 1px solid var(--rule); }
+  }
+
+  /* The board: dated rows under a banded header, tabular figures, hairline rules. */
+  .board { inline-size: 100%; }
+  .board caption { padding-block-end: calc(2 * var(--u)); caption-side: top; text-align: start; font-size: var(--step-2); font-weight: 700; font-stretch: var(--narrow); letter-spacing: -0.01em; line-height: 1.1; }
+  .board th {
+    padding: calc(1.25 * var(--u)) calc(3 * var(--u)) calc(1.25 * var(--u)) calc(1.5 * var(--u));
+    background: var(--brand-bg);
+    color: var(--text);
+    text-align: start;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .board td { padding: calc(1.5 * var(--u)) calc(3 * var(--u)) calc(1.5 * var(--u)) calc(1.5 * var(--u)); border-block-end: 1px solid var(--rule); vertical-align: top; line-height: 1.45; }
+  .board th:last-child, .board td:last-child { padding-inline-end: calc(1.5 * var(--u)); }
+  .board tbody tr { block-size: calc(7 * var(--u)); transition: background-color 160ms var(--ease-out); }
+  .board tbody tr:hover { background: var(--bg-sunk); }
+  .board .when { inline-size: 1%; color: var(--text); font-weight: 600; font-stretch: 90%; white-space: nowrap; }
+  .board .what > a:first-child, .board .id a { font-weight: 700; }
+  .board .where { inline-size: 22%; color: var(--muted); }
+  .board .num { text-align: end; white-space: nowrap; }
+  /* The link sets the baseline, so a Work named mid-sentence sits on the line with the words around it. */
+  .id { display: inline-flex; align-items: baseline; gap: calc(1.5 * var(--u)); }
+  .id img, .id .mono { align-self: center; inline-size: calc(2 * var(--u)); block-size: calc(2 * var(--u)); flex: none; }
+  .id .mono { display: inline-grid; place-items: center; background: var(--muted); color: var(--bg); font-size: 0.75rem; font-weight: 700; line-height: 1; }
+  @media (max-width: 52rem) {
+    .board thead { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); }
+    .board, .board tbody, .board caption { display: block; }
+    .board tbody tr { display: grid; gap: calc(0.5 * var(--u)); block-size: auto; padding-block: calc(2 * var(--u)); border-block-end: 1px solid var(--rule); }
+    .board td { display: block; inline-size: auto; padding: 0; border: 0; }
+    .board .when, .board .where { inline-size: auto; }
+    .board .when { font-size: var(--step--1); }
+    .board .num { text-align: start; }
+    .board .where:empty { display: none; }
+  }
+
+  /* Theme lines: one line per kind of fix, each behind a brand-ink dash. */
+  .themes { display: grid; gap: var(--u); margin-block-start: calc(3 * var(--u)); }
+  .themes li { position: relative; padding-inline-start: calc(3 * var(--u)); }
+  .themes li::before { content: ""; position: absolute; inset-block-start: 0.7em; inset-inline-start: 0; inline-size: calc(1.5 * var(--u)); block-size: 2px; background: var(--brand-ink); }
 
   /* Contact links: a glyph beside every label, in the fixed order. */
   .contact { display: flex; flex-wrap: wrap; gap: var(--u) calc(3 * var(--u)); }

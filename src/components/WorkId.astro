@@ -1,0 +1,11 @@
+---
+import { iconUrl } from '../data/icons.ts';
+
+// A Work as a board names it: its own site icon at 16 px, or a neutral monogram when it has none (ADR 0006), and
+// its title linked to its page.
+interface Props { id: string; title: string; icon?: string | undefined }
+const { id, title, icon } = Astro.props;
+const src = iconUrl(icon);
+---
+
+<span class="id">{src ? <img src={src} alt="" width="16" height="16" /> : <span class="mono" aria-hidden="true">{title.charAt(0).toUpperCase()}</span>}<a href={`/work/${id}/`}>{title}</a></span>

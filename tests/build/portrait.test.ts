@@ -10,7 +10,7 @@ const component = new URL('../../src/components/Portrait.astro', import.meta.url
 /** Each <img> tag in the page, as its raw attribute string. */
 const images = (html: string) => [...html.matchAll(/<img\b([^>]*)>/g)].map(([, attributes]) => attributes!);
 
-test('the portrait offers 1x, 1.5x and 2x of 240 CSS px, and only the prioritised copy asks for high fetch priority', async t => {
+test('the portrait offers 1x, 1.5x and 2x of 208 CSS px, and only the prioritised copy asks for high fetch priority', async t => {
   const fixture = await createBuildFixture({
     configSource: "export default { site: 'https://example.test' };",
     pages: {
@@ -28,14 +28,14 @@ import Portrait from ${JSON.stringify(component)};
   assert.equal(result.code, 0, result.log);
   const html = await readFile(new URL('index.html', result.outDir), 'utf8');
   for (const source of html.match(/<source\b[^>]*>/g) ?? []) {
-    assert.match(source, /srcset="[^"]+ 240w, [^"]+ 360w, [^"]+ 480w"/);
-    assert.match(source, /sizes="240px"/);
+    assert.match(source, /srcset="[^"]+ 208w, [^"]+ 312w, [^"]+ 416w"/);
+    assert.match(source, /sizes="\(max-width: 52rem\) 112px, 208px"/);
   }
   const [prioritised, plain] = images(html);
   assert.match(prioritised!, /alt="Prioritised"/);
   assert.match(prioritised!, /fetchpriority="high"/);
   assert.match(prioritised!, /loading="eager"/);
-  assert.match(prioritised!, /srcset="[^"]+ 240w, [^"]+ 360w, [^"]+ 480w"/);
+  assert.match(prioritised!, /srcset="[^"]+ 208w, [^"]+ 312w, [^"]+ 416w"/);
   assert.match(plain!, /alt="Plain"/);
   assert.doesNotMatch(plain!, /fetchpriority/);
   assert.match(plain!, /loading="eager"/);

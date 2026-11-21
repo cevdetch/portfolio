@@ -1,0 +1,23 @@
+---
+import { formatDay } from '../lib/format.ts';
+
+// The numbers strip: a ruled row of figures, each with its label and its source.
+export interface NumberCell { value: string; label: string; source: { label: string; url?: string | undefined }; measuredAt?: string | undefined }
+interface Props { cells: readonly NumberCell[] }
+const { cells } = Astro.props;
+---
+
+<section class="block" aria-labelledby="numbers">
+  <h2 id="numbers" class="vh">Numbers</h2>
+  <dl class="numbers">
+    {cells.map(cell => (
+      <div>
+        <dt>{cell.value}</dt>
+        <dd>
+          {cell.label}
+          <small>{cell.source.url ? <a href={cell.source.url}>{cell.source.label}</a> : cell.source.label}{cell.measuredAt && `, ${formatDay(cell.measuredAt)}`}</small>
+        </dd>
+      </div>
+    ))}
+  </dl>
+</section>
