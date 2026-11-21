@@ -158,7 +158,8 @@ test('no HTML output produces no sitemap or dangling robots reference', async t 
   t.after(() => fixture.cleanup());
   const result = await fixture.build();
   assert.equal(result.code, 0, result.log);
-  assert.deepEqual(await readdir(result.outDir), ['robots.txt']);
+  // The site font is copied whatever the pages; nothing else may be written.
+  assert.deepEqual((await readdir(result.outDir)).filter(name => name !== '_astro'), ['robots.txt']);
   assert.equal(await readFile(new URL('robots.txt', result.outDir), 'utf8'), 'User-agent: *\nAllow: /\n');
 });
 

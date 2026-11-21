@@ -1,5 +1,4 @@
 ---
-import SiteNav from '../components/SiteNav.astro';
 import Layout from '../layouts/Layout.astro';
 import { loadPortfolio } from '../data/portfolio.ts';
 import { fullName, pageTitle } from '../data/profile.ts';
@@ -18,58 +17,55 @@ const span = contributionSpan(data.facts.contributions, data.contributions, data
 ---
 
 <Layout title={pageTitle(data.profile, 'Open source')} description={`The packages ${fullName(data.profile)} publishes, from npm tools to Arch Linux PKGBUILDs, and the fixes accepted into other open-source projects such as Immich and Starlight.`}>
-  <SiteNav />
-  <main>
-    <h1>Open source</h1>
-    <section aria-labelledby="packages">
-      <h2 id="packages">Packages</h2>
-      <ul>
-        {packageWorks.map(({ work, facts }) => (
-          <li>
-            <a href={`/work/${work.id}/`}>{work.data.title}</a>
-            <ul>
-              {facts.packages.map(pkg => (
-                <li>
-                  {pkg.registry} {pkg.name}: {pkg.published
-                    ? <>released <a href={pkg.url}>{pkg.version}</a>, {formatDay(pkg.releasedAt)}</>
-                    : `not published on ${pkg.registry}`}
-                </li>
-              ))}
-              {facts.pkgbuildCount !== undefined && facts.repoUrl && (
-                <li>{facts.pkgbuildCount} PKGBUILDs in <a href={facts.repoUrl}>{work.data.repo}</a></li>
-              )}
-            </ul>
-          </li>
-        ))}
-      </ul>
-    </section>
-    <section aria-labelledby="contributions">
-      <h2 id="contributions">Contributions</h2>
-      <p>{totals.pulls} merged pull requests to {totals.upstreams} upstream repositories{span && `, ${formatMonth(span.from)} to ${span.ongoing ? 'present' : formatMonth(span.to)}`}.</p>
-      {groups.map(group => (
-        <>
-          <h3><a href={group.url}>{group.repo}</a></h3>
-          {(group.techs.length > 0 || group.works.length > 0) && (
-            <p>
-              {group.techs.map((id, index) => {
-                const tech = techs.get(id)!;
-                const href = techCategories[tech.category].skills ? `/skills/#${id}` : tech.url;
-                return <>{index > 0 && ', '}<a href={href}>{tech.label}</a></>;
-              })}
-              {group.works.length > 0 && group.techs.length > 0 && ' · '}
-              {group.works.map((id, index) => <>{index > 0 && ', '}<a href={`/work/${id}/`}>{works.get(id)!.data.title}</a></>)}
-            </p>
-          )}
+  <h1>Open source</h1>
+  <section aria-labelledby="packages">
+    <h2 id="packages">Packages</h2>
+    <ul>
+      {packageWorks.map(({ work, facts }) => (
+        <li>
+          <a href={`/work/${work.id}/`}>{work.data.title}</a>
           <ul>
-            {group.pulls.map(pull => (
+            {facts.packages.map(pkg => (
               <li>
-                <a href={pull.url}>#{pull.number}</a> {pull.title}, merged {formatDay(pull.mergedAt)}
-                {pull.note && <> ({pull.note})</>}
+                {pkg.registry} {pkg.name}: {pkg.published
+                  ? <>released <a href={pkg.url}>{pkg.version}</a>, {formatDay(pkg.releasedAt)}</>
+                  : `not published on ${pkg.registry}`}
               </li>
             ))}
+            {facts.pkgbuildCount !== undefined && facts.repoUrl && (
+              <li>{facts.pkgbuildCount} PKGBUILDs in <a href={facts.repoUrl}>{work.data.repo}</a></li>
+            )}
           </ul>
-        </>
+        </li>
       ))}
-    </section>
-  </main>
+    </ul>
+  </section>
+  <section aria-labelledby="contributions">
+    <h2 id="contributions">Contributions</h2>
+    <p>{totals.pulls} merged pull requests to {totals.upstreams} upstream repositories{span && `, ${formatMonth(span.from)} to ${span.ongoing ? 'present' : formatMonth(span.to)}`}.</p>
+    {groups.map(group => (
+      <>
+        <h3><a href={group.url}>{group.repo}</a></h3>
+        {(group.techs.length > 0 || group.works.length > 0) && (
+          <p>
+            {group.techs.map((id, index) => {
+              const tech = techs.get(id)!;
+              const href = techCategories[tech.category].skills ? `/skills/#${id}` : tech.url;
+              return <>{index > 0 && ', '}<a href={href}>{tech.label}</a></>;
+            })}
+            {group.works.length > 0 && group.techs.length > 0 && ' · '}
+            {group.works.map((id, index) => <>{index > 0 && ', '}<a href={`/work/${id}/`}>{works.get(id)!.data.title}</a></>)}
+          </p>
+        )}
+        <ul>
+          {group.pulls.map(pull => (
+            <li>
+              <a href={pull.url}>#{pull.number}</a> {pull.title}, merged {formatDay(pull.mergedAt)}
+              {pull.note && <> ({pull.note})</>}
+            </li>
+          ))}
+        </ul>
+      </>
+    ))}
+  </section>
 </Layout>

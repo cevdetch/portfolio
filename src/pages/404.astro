@@ -1,5 +1,4 @@
 ---
-import SiteNav from '../components/SiteNav.astro';
 import Layout from '../layouts/Layout.astro';
 import { pageTitle } from '../data/profile.ts';
 import { siteProfile } from '../data/site-profile.ts';
@@ -8,10 +7,7 @@ const home = import.meta.env.BASE_URL;
 ---
 
 <Layout title={pageTitle(siteProfile, 'Page not found')} description="The page you requested could not be found." noindex={true} canonical={false} image={false}>
-  <SiteNav />
-  <main>
-    <h1>Page not found</h1>
-    <p>The page may have moved, or the address may be incorrect.</p>
-    <a href={home}>Go to the home page</a>
-  </main>
+  <h1>Page not found</h1>
+  <p>The page may have moved, or the address may be incorrect.</p>
+  <a href={home}>Go to the home page</a>
 </Layout>

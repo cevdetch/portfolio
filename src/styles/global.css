@@ -1,0 +1,91 @@
+/* The departure board. One lattice unit, --u, sizes every gap, row and radius; every colour is a token. */
+@layer reset, tokens, base, layout, components, utilities;
+@import './tokens.css';
+@import './brand.css';
+
+@layer reset {
+  *, *::before, *::after { box-sizing: border-box; }
+  body, h1, h2, h3, p, ul, ol, dl, dd, figure, fieldset { margin: 0; }
+  ul, ol { padding: 0; list-style: none; }
+  fieldset { padding: 0; border: 0; min-inline-size: 0; }
+  legend { padding: 0; }
+  img, svg, picture { display: block; max-inline-size: 100%; block-size: auto; }
+  button, input { font: inherit; color: inherit; }
+  table { border-collapse: collapse; border-spacing: 0; }
+}
+
+@layer base {
+  :root {
+    /* The lattice: one unit, every size a multiple; 4:1 cell to gutter, as in the mark. */
+    --u: 0.5rem;
+    --font: var(--font-archivo), system-ui, sans-serif;
+    --mono: ui-monospace, "Cascadia Mono", "SF Mono", Menlo, Consolas, monospace;
+    --narrow: 85%;
+    --step--1: 0.9375rem;
+    --step-0: 1.0625rem;
+    --step-1: 1.25rem;
+    --step-2: 1.5rem;
+    --step-3: 2rem;
+    --step-4: clamp(2.5rem, 1.75rem + 3.5vw, 4rem);
+    --figure: clamp(2.25rem, 1.5rem + 2.5vw, 3.25rem);
+    --measure: 64ch;
+    --wrap: 76rem;
+    --gutter: clamp(1rem, 1rem + 2vw, 2.5rem);
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --focus: 3px solid var(--brand-ink);
+    --underline: color-mix(in oklab, var(--brand-ink) 45%, transparent);
+    scrollbar-color: var(--muted) var(--bg-sunk);
+  }
+  html {
+    font-family: var(--font);
+    font-size: 100%;
+    line-height: 1.55;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    background: var(--bg);
+    color: var(--text);
+  }
+  body { min-block-size: 100dvh; display: flex; flex-direction: column; font-size: var(--step-0); font-variant-numeric: tabular-nums; }
+  /* The station stripe: a textless brand band across the top of every page. */
+  body::before { content: ""; display: block; block-size: 6px; background: var(--brand); flex: none; }
+  main { flex: 1 0 auto; }
+  ::selection { background: var(--brand-bg); color: var(--text); }
+  :focus-visible { outline: var(--focus); outline-offset: 3px; border-radius: 2px; }
+  a {
+    color: var(--brand-ink);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.18em;
+    text-decoration-color: var(--underline);
+    transition: text-decoration-color 160ms var(--ease-out);
+  }
+  a:hover { text-decoration-color: currentColor; text-decoration-thickness: 2px; }
+  h1, h2, h3 { line-height: 1.1; text-wrap: balance; font-weight: 700; letter-spacing: -0.01em; font-stretch: var(--narrow); }
+  h1 { font-size: var(--step-4); font-weight: 800; letter-spacing: -0.02em; line-height: 1; }
+  h2 { font-size: var(--step-2); }
+  h3 { font-size: var(--step-1); }
+  p, li, dd, td { text-wrap: pretty; }
+  p { max-inline-size: var(--measure); }
+  code { font-family: var(--mono); font-size: 0.9em; background: var(--bg-sunk); padding: 0.1em 0.35em; border-radius: 2px; }
+  small { color: var(--muted); }
+}
+
+@layer layout {
+  .wrap { inline-size: 100%; max-inline-size: var(--wrap); margin-inline: auto; padding-inline: var(--gutter); }
+  .skip {
+    position: absolute;
+    inset-inline-start: var(--gutter);
+    inset-block-start: calc(6px + var(--u));
+    z-index: 10;
+    padding: var(--u) calc(2 * var(--u));
+    background: var(--brand-ink);
+    color: var(--bg);
+    text-decoration: none;
+    translate: 0 -200%;
+  }
+  .skip:focus-visible { translate: 0 0; outline-color: var(--text); }
+}
+
+@layer utilities {
+  .vh { position: absolute !important; inline-size: 1px; block-size: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+}

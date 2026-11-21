@@ -1,0 +1,37 @@
+/* The shared consumer neutrals from branding's palette contract, in brand.css's shape: light by default, dark when
+   the system prefers it, and the scheme toggle's data-scheme forcing either one. Change them in branding first. */
+@layer tokens {
+  :root {
+    color-scheme: light dark;
+    --bg: #fdfdfb;
+    --bg-sunk: #f4f4f0;
+    --text: #191a17;
+    --muted: #64665e;
+    --rule: #e3e3dc;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #101210;
+      --bg-sunk: #191b18;
+      --text: #e7e6e0;
+      --muted: #9b9d93;
+      --rule: #2a2d29;
+    }
+  }
+  :root[data-scheme="light"] {
+    color-scheme: light;
+    --bg: #fdfdfb;
+    --bg-sunk: #f4f4f0;
+    --text: #191a17;
+    --muted: #64665e;
+    --rule: #e3e3dc;
+  }
+  :root[data-scheme="dark"] {
+    color-scheme: dark;
+    --bg: #101210;
+    --bg-sunk: #191b18;
+    --text: #e7e6e0;
+    --muted: #9b9d93;
+    --rule: #2a2d29;
+  }
+}

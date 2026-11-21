@@ -2,7 +2,6 @@
 import type { ImageMetadata } from 'astro';
 import { getCollection, render } from 'astro:content';
 import Screenshot from '../../components/Screenshot.astro';
-import SiteNav from '../../components/SiteNav.astro';
 import Layout from '../../layouts/Layout.astro';
 import { iconUrl } from '../../data/icons.ts';
 import { loadPortfolio } from '../../data/portfolio.ts';
@@ -34,68 +33,65 @@ const { Content } = await render(entry);
 
 <Layout title={pageTitle(data.profile, work.data.title)} description={work.data.summary}
   jsonLd={graph(workNode(work, data.facts.works[work.id], data.techs), breadcrumbNode(work))}>
-  <SiteNav />
   <nav aria-label="Breadcrumb">
-    <ol>
-      {crumbs.map((crumb, index) => <li><a href={crumb.path} aria-current={index === crumbs.length - 1 ? 'page' : undefined}>{crumb.name}</a></li>)}
-    </ol>
+  <ol>
+    {crumbs.map((crumb, index) => <li><a href={crumb.path} aria-current={index === crumbs.length - 1 ? 'page' : undefined}>{crumb.name}</a></li>)}
+  </ol>
   </nav>
-  <main>
-    <article>
-      <header>
-        {icon ? <img src={icon} alt="" width="48" height="48" /> : <span aria-hidden="true">{work.data.title.charAt(0).toUpperCase()}</span>}
-        <h1>{work.data.title}</h1>
-        {/* The visible credit for the JSON-LD author and publisher. */}
-        <p>By {fullName(data.profile)}</p>
-        <p>{work.data.tagline}</p>
-        <p>{work.data.summary}</p>
-        {work.data.caveat && <p>{work.data.caveat}</p>}
-      </header>
-      {devices.map(device => {
-        const images = screenshots[device];
-        const { width, height, widths } = screenshotDevices[device];
-        return images && <Screenshot images={images} width={width} height={height} widths={widths} alt={screenshotAlt(work.data.title, device)} />;
-      })}
-      <dl>
-        <dt>Role</dt><dd>{work.data.role}</dd>
-        <dt>Kind</dt><dd>{work.data.kind}</dd>
-        <dt>Status</dt><dd>{statusMeanings[work.data.status]}</dd>
-        {work.data.site && <><dt>Site</dt><dd><a href={work.data.site}>{new URL(work.data.site).host}</a></dd></>}
-        {facts.lighthouse && <><dt>Lighthouse</dt><dd>
-          Performance {facts.lighthouse.performance} · Accessibility {facts.lighthouse.accessibility} · Best practices {facts.lighthouse.bestPractices} · SEO {facts.lighthouse.seo},
-          measured by <a href={facts.lighthouse.analysisUrl}>PageSpeed Insights</a> {lighthouseMethod()}, {formatDay(facts.lighthouse.measuredAt)}
-        </dd></>}
-        {facts.repoUrl && <><dt>Repository</dt><dd><a href={facts.repoUrl}>{work.data.repo}</a></dd></>}
-        {facts.sourcePrivate && <><dt>Repository</dt><dd>Source private</dd></>}
-        {facts.packages.map(pkg => <>
-          <dt>{pkg.registry} {pkg.name}</dt>
-          <dd>{pkg.published ? <><a href={pkg.url}>{pkg.version}</a>, released {formatDay(pkg.releasedAt)}</> : `not published on ${pkg.registry}`}</dd>
-        </>)}
-        {facts.release && <><dt>Latest release</dt><dd>{facts.release.tag}, {formatDay(facts.release.publishedAt)}</dd></>}
-        {facts.license && <><dt>Licence</dt><dd>{facts.license}</dd></>}
-        {facts.active && <><dt>Active</dt><dd>{formatMonthRange(facts.active.from, facts.active.to)}</dd></>}
-        {facts.commitCount !== undefined && <><dt>Commits</dt><dd>{facts.commitCount}</dd></>}
-        {facts.pkgbuildCount !== undefined && <><dt>PKGBUILDs</dt><dd>{facts.pkgbuildCount}</dd></>}
-        {facts.rules && <><dt>Rules</dt><dd>{facts.rules.total} sourced rules: {facts.rules.head} for the head and {facts.rules.total - facts.rules.head} for markup in the body or anywhere in the page</dd></>}
-      </dl>
-      <section aria-labelledby="stack">
-        <h2 id="stack">Stack</h2>
-        <ul>{work.data.stack.map(id => {
-          const tech = techs.get(id)!;
-          const href = techCategories[tech.category].skills ? `/skills/#${id}` : tech.url;
-          return <li><a href={href}>{tech.label}</a></li>;
-        })}</ul>
+  <article>
+    <header>
+      {icon ? <img src={icon} alt="" width="48" height="48" /> : <span aria-hidden="true">{work.data.title.charAt(0).toUpperCase()}</span>}
+      <h1>{work.data.title}</h1>
+      {/* The visible credit for the JSON-LD author and publisher. */}
+      <p>By {fullName(data.profile)}</p>
+      <p>{work.data.tagline}</p>
+      <p>{work.data.summary}</p>
+      {work.data.caveat && <p>{work.data.caveat}</p>}
+    </header>
+    {devices.map(device => {
+      const images = screenshots[device];
+      const { width, height, widths } = screenshotDevices[device];
+      return images && <Screenshot images={images} width={width} height={height} widths={widths} alt={screenshotAlt(work.data.title, device)} />;
+    })}
+    <dl>
+      <dt>Role</dt><dd>{work.data.role}</dd>
+      <dt>Kind</dt><dd>{work.data.kind}</dd>
+      <dt>Status</dt><dd>{statusMeanings[work.data.status]}</dd>
+      {work.data.site && <><dt>Site</dt><dd><a href={work.data.site}>{new URL(work.data.site).host}</a></dd></>}
+      {facts.lighthouse && <><dt>Lighthouse</dt><dd>
+        Performance {facts.lighthouse.performance} · Accessibility {facts.lighthouse.accessibility} · Best practices {facts.lighthouse.bestPractices} · SEO {facts.lighthouse.seo},
+        measured by <a href={facts.lighthouse.analysisUrl}>PageSpeed Insights</a> {lighthouseMethod()}, {formatDay(facts.lighthouse.measuredAt)}
+      </dd></>}
+      {facts.repoUrl && <><dt>Repository</dt><dd><a href={facts.repoUrl}>{work.data.repo}</a></dd></>}
+      {facts.sourcePrivate && <><dt>Repository</dt><dd>Source private</dd></>}
+      {facts.packages.map(pkg => <>
+        <dt>{pkg.registry} {pkg.name}</dt>
+        <dd>{pkg.published ? <><a href={pkg.url}>{pkg.version}</a>, released {formatDay(pkg.releasedAt)}</> : `not published on ${pkg.registry}`}</dd>
+      </>)}
+      {facts.release && <><dt>Latest release</dt><dd>{facts.release.tag}, {formatDay(facts.release.publishedAt)}</dd></>}
+      {facts.license && <><dt>Licence</dt><dd>{facts.license}</dd></>}
+      {facts.active && <><dt>Active</dt><dd>{formatMonthRange(facts.active.from, facts.active.to)}</dd></>}
+      {facts.commitCount !== undefined && <><dt>Commits</dt><dd>{facts.commitCount}</dd></>}
+      {facts.pkgbuildCount !== undefined && <><dt>PKGBUILDs</dt><dd>{facts.pkgbuildCount}</dd></>}
+      {facts.rules && <><dt>Rules</dt><dd>{facts.rules.total} sourced rules: {facts.rules.head} for the head and {facts.rules.total - facts.rules.head} for markup in the body or anywhere in the page</dd></>}
+    </dl>
+    <section aria-labelledby="stack">
+      <h2 id="stack">Stack</h2>
+      <ul>{work.data.stack.map(id => {
+        const tech = techs.get(id)!;
+        const href = techCategories[tech.category].skills ? `/skills/#${id}` : tech.url;
+        return <li><a href={href}>{tech.label}</a></li>;
+      })}</ul>
+    </section>
+    {work.data.highlights.length > 0 && (
+      <section aria-labelledby="highlights"><h2 id="highlights">Highlights</h2><ul>{work.data.highlights.map(text => <li>{text}</li>)}</ul></section>
+    )}
+    {work.data.metrics.length > 0 && (
+      <section aria-labelledby="metrics">
+        <h2 id="metrics">Metrics</h2>
+        <ul>{work.data.metrics.map(metric => <li>{metric.label}: {metric.value}, measured {formatDay(metric.measuredAt)} ({metric.source.url ? <a href={metric.source.url}>{metric.source.label}</a> : metric.source.label})</li>)}</ul>
       </section>
-      {work.data.highlights.length > 0 && (
-        <section aria-labelledby="highlights"><h2 id="highlights">Highlights</h2><ul>{work.data.highlights.map(text => <li>{text}</li>)}</ul></section>
-      )}
-      {work.data.metrics.length > 0 && (
-        <section aria-labelledby="metrics">
-          <h2 id="metrics">Metrics</h2>
-          <ul>{work.data.metrics.map(metric => <li>{metric.label}: {metric.value}, measured {formatDay(metric.measuredAt)} ({metric.source.url ? <a href={metric.source.url}>{metric.source.label}</a> : metric.source.label})</li>)}</ul>
-        </section>
-      )}
-      <Content />
-    </article>
-  </main>
+    )}
+    <Content />
+  </article>
 </Layout>

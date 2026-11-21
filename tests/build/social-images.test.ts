@@ -32,9 +32,11 @@ async function consumer(t: { after(fn: () => Promise<void>): void }, options: { 
   // data/views.ts comes along because validate.ts fills cvLine tokens with it. data/profile.ts
   // comes along because jsonld.ts derives the full name from its fullName helper. data/screenshots.ts
   // comes along because scripts/capture-screenshots.ts reads its device table. data/portrait.ts comes along
-  // because scripts/prepare-portrait.ts reads its outputs.
-  for (const path of ['lib', 'integrations', 'layouts', 'assets', 'config.ts', 'brand.json', 'schemas', 'facts',
-    'data/validate.ts', 'data/story-lint.ts', 'data/views.ts', 'data/profile.ts', 'data/screenshots.ts', 'data/portrait.ts', 'gates']) {
+  // because scripts/prepare-portrait.ts reads its outputs. components/, styles/, data/site-profile.ts and
+  // content/profile.yaml come along because Layout.astro renders the site header and imports the stylesheet.
+  for (const path of ['lib', 'integrations', 'layouts', 'components', 'styles', 'assets', 'config.ts', 'brand.json', 'schemas',
+    'facts', 'data/validate.ts', 'data/story-lint.ts', 'data/views.ts', 'data/profile.ts', 'data/site-profile.ts',
+    'data/screenshots.ts', 'data/portrait.ts', 'content/profile.yaml', 'gates']) {
     await cp(new URL(`../../src/${path}`, import.meta.url), new URL(`src/${path}`, fixture.root), { recursive: true });
   }
   await mkdir(new URL('src/pages-source/', fixture.root));
@@ -74,7 +76,8 @@ for (const base of ['/', '/project/']) for (const format of ['directory', 'file'
       const images = new Set<string>();
       for(const record of receipt.pages) {
         const html = await readFile(new URL(record.file),'utf8');
-        assert.doesNotMatch(html,/data-starter-|<script\b|<style\b/);
+        // No internal marker survives; the Layout's own styles and stored-scheme restore are expected.
+        assert.doesNotMatch(html,/data-starter-/);
         const parsed = parseDocument(html), pathname = new URL(record.url).pathname;
         const name=pathname.slice(base.length).replace(/(?:\/|\.html)$/,'');
         if(['manual','manual-no-canonical'].includes(name)) {

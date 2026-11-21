@@ -1,9 +1,12 @@
 ---
 import type { Graph } from 'schema-dts';
+import { Font } from 'astro:assets';
 import brand from '../brand.json';
+import SiteNav from '../components/SiteNav.astro';
 import { siteConfig } from '../config.ts';
 import { serializeJsonLd } from '../lib/jsonld.ts';
 import { parseSiteNoindex, resolveSeo, type LayoutProps } from '../lib/seo.ts';
+import '../styles/global.css';
 
 type Props = LayoutProps & { jsonLd?: Graph };
 
@@ -27,7 +30,10 @@ const seo = await resolveSeo(Astro.props, {
   >
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
+    {/* The stored scheme, set before the first paint so a chosen scheme never flashes the system's. */}
+    <script is:inline>try{const s=localStorage.getItem('scheme');if(s==='light'||s==='dark')document.documentElement.dataset.scheme=s}catch{}</script>
     <title>{seo.title}</title>
+    <Font cssVariable="--font-archivo" preload />
     <link rel="icon" href={seo.faviconHref} />
     <meta name="color-scheme" content="light dark" />
     <meta name="description" content={seo.description} />
@@ -48,6 +54,8 @@ const seo = await resolveSeo(Astro.props, {
     )}
   </head>
   <body>
-    <slot />
+    <a class="skip" href="#main">Skip to content</a>
+    <SiteNav />
+    <main id="main"><slot /></main>
   </body>
 </html>

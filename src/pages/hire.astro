@@ -1,5 +1,4 @@
 ---
-import SiteNav from '../components/SiteNav.astro';
 import SocialLinks from '../components/SocialLinks.astro';
 import Layout from '../layouts/Layout.astro';
 import { loadPortfolio } from '../data/portfolio.ts';
@@ -17,39 +16,36 @@ const mailto = `mailto:${profile.email}?subject=${encodeURIComponent(profile.con
 ---
 
 <Layout title={pageTitle(profile, 'Hire')} description={`Hire ${fullName(profile)} for fast websites, SEO and metadata audits, or Astro starters and upkeep: what is on offer, how a project runs and how to get in touch.`}>
-  <SiteNav />
-  <main>
-    <h1>Work with me</h1>
-    {placement && <p>{placement} <a href="/cv.pdf">CV (PDF)</a></p>}
-    {availability && <p>{availability}</p>}
-    <section aria-labelledby="services">
-      <h2 id="services">Services</h2>
-      <ul>
-        {profile.services.map((service, index) => (
-          <li>
-            <p>{service.name}: {service.summary}</p>
-            {service.evidence.length > 0 && (
-              <p>Evidence: {service.evidence.map((id, index) => (
-                <>{index > 0 && ', '}<a href={`/work/${id}/`}>{works.get(id)!.data.title}</a></>
-              ))}</p>
-            )}
-            {firstCited[index]!.map(id => works.get(id)!.data).filter(work => work.caveat).map(work => <p>{work.title}: {work.caveat}</p>)}
-          </li>
-        ))}
-      </ul>
-    </section>
-    <section aria-labelledby="how-i-work">
-      <h2 id="how-i-work">How I work</h2>
-      <ol>
-        {profile.process.map(step => (
-          <li>{step.detail}</li>
-        ))}
-      </ol>
-    </section>
-    <section aria-labelledby="contact">
-      <h2 id="contact">Contact</h2>
-      <p><a href={mailto}>{profile.email}</a></p>
-      <SocialLinks socials={profile.socials.filter(social => social.network !== 'npm')} />
-    </section>
-  </main>
+  <h1>Work with me</h1>
+  {placement && <p>{placement} <a href="/cv.pdf">CV (PDF)</a></p>}
+  {availability && <p>{availability}</p>}
+  <section aria-labelledby="services">
+    <h2 id="services">Services</h2>
+    <ul>
+      {profile.services.map((service, index) => (
+        <li>
+          <p>{service.name}: {service.summary}</p>
+          {service.evidence.length > 0 && (
+            <p>Evidence: {service.evidence.map((id, index) => (
+              <>{index > 0 && ', '}<a href={`/work/${id}/`}>{works.get(id)!.data.title}</a></>
+            ))}</p>
+          )}
+          {firstCited[index]!.map(id => works.get(id)!.data).filter(work => work.caveat).map(work => <p>{work.title}: {work.caveat}</p>)}
+        </li>
+      ))}
+    </ul>
+  </section>
+  <section aria-labelledby="how-i-work">
+    <h2 id="how-i-work">How I work</h2>
+    <ol>
+      {profile.process.map(step => (
+        <li>{step.detail}</li>
+      ))}
+    </ol>
+  </section>
+  <section aria-labelledby="contact">
+    <h2 id="contact">Contact</h2>
+    <p><a href={mailto}>{profile.email}</a></p>
+    <SocialLinks socials={profile.socials.filter(social => social.network !== 'npm')} />
+  </section>
 </Layout>

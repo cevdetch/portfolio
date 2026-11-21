@@ -80,7 +80,10 @@ export default { site: 'https://example.test', base: ${JSON.stringify(base)},
       assert.ok(home.indexOf('charset=') < home.indexOf('name="viewport"'));
       assert.ok(home.indexOf('name="viewport"') < home.indexOf('<title>'));
       // theme-color now comes from src/brand.json (Task 10): every page carries it unconditionally.
-      assert.doesNotMatch(home, /<style\b|<script\b|data-starter-|_social\/|name="generator"|rel="manifest"|apple-touch-icon/);
+      assert.doesNotMatch(home, /data-starter-|_social\/|name="generator"|rel="manifest"|apple-touch-icon/);
+      // The only script is the stored-scheme restore, which has to run before the first paint.
+      assert.deepEqual(home.match(/<script\b[^>]*>/g), ['<script>']);
+      assert.match(home, /<script>try\{const s=localStorage\.getItem\('scheme'\)/);
       assert.deepEqual(meta(home, 'theme-color'), ['#098D9C']);
       noSocial(home);
 
@@ -157,5 +160,6 @@ test('metadata values cannot inject tags or attributes into the head', async t =
   assert.deepEqual(meta(html, 'og:title'), [injected.title]);
   assert.deepEqual(meta(html, 'og:image:alt'), [injected.description]);
   assert.deepEqual(meta(html, 'injected'), []);
-  assert.deepEqual(tags(html, 'script'), []);
+  // The Layout's own stored-scheme restore is the one script element; the injected one stays text.
+  assert.equal(tags(html, 'script').length, 1);
 });

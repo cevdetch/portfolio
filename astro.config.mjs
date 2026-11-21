@@ -1,5 +1,5 @@
 // @ts-check
-import { defineConfig, sharpImageService } from 'astro/config';
+import { defineConfig, fontProviders, sharpImageService } from 'astro/config';
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 import { siteValidation } from './src/integrations/site.ts';
@@ -21,6 +21,21 @@ export default defineConfig({
       avif: { quality: 70 }, jpeg: { quality: 80, mozjpeg: true, progressive: true },
     }),
   },
+  // Every page's CSS rides in its HTML: one response paints the page, with no render-blocking stylesheet request.
+  build: { inlineStylesheets: 'always' },
+  // Archivo, one roman variable file with the width axis for the condensed voices, downloaded at build time and
+  // served from the site. Italic is synthesised; the metric-matched fallback keeps the swap from shifting layout.
+  fonts: [{
+    provider: fontProviders.google(),
+    name: 'Archivo',
+    cssVariable: '--font-archivo',
+    weights: ['100 900'],
+    styles: ['normal'],
+    subsets: ['latin'],
+    fallbacks: ['sans-serif'],
+    optimizedFallbacks: true,
+    options: { experimental: { variableAxis: { wdth: [['62', '125']] } } },
+  }],
   integrations: [
     mdx(),
     siteValidation(),

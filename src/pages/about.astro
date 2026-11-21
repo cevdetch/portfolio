@@ -1,6 +1,5 @@
 ---
 import Portrait from '../components/Portrait.astro';
-import SiteNav from '../components/SiteNav.astro';
 import Layout from '../layouts/Layout.astro';
 import { fullName, languageItem, pageTitle } from '../data/profile.ts';
 import { loadPortfolio } from '../data/portfolio.ts';
@@ -16,50 +15,47 @@ const paragraphs = (profile.about ?? [profile.bio]).map(text => splitOnTitles(te
 ---
 
 <Layout title={pageTitle(profile, 'About')} description={`${fullName(profile)}, software developer and Gymnasium student: the web tools, the open-source fixes, the Linux packaging, and the studies, writing and languages.`}>
-  <SiteNav />
-  <main>
-    <h1>About {fullName(profile)}</h1>
-    <Portrait alt={fullName(profile)} priority />
-    {paragraphs.map(parts => <p>{parts.map(part => workLinks.has(part) ? <a href={workLinks.get(part)}>{part}</a> : part)}</p>)}
-    <section aria-labelledby="experience">
-      <h2 id="experience">Experience</h2>
-      <ul>
-        {data.experience.map(entry => (
-          <li>
-            <p>{entry.role}, {entry.organisation} ({formatMonth(entry.start)} to {entry.end ? formatMonth(entry.end) : 'present'})</p>
-            {entry.highlights.length > 0 && <ul>{entry.highlights.map(text => <li>{text}</li>)}</ul>}
-          </li>
-        ))}
-      </ul>
-    </section>
-    <section aria-labelledby="education">
-      <h2 id="education">Education</h2>
-      <ul>
-        {data.education.map(entry => (
-          <li>
-            {entry.credential}{entry.field && <>, {entry.field}</>}, {entry.institution}{' '}
-            ({formatMonth(entry.start)} to {formatMonth(entry.end)}{entry.expected && ', expected'}).
-            {entry.note && <> {entry.note}</>}
-          </li>
-        ))}
-      </ul>
-    </section>
-    <section aria-labelledby="languages">
-      <h2 id="languages">Languages</h2>
-      <ul>
-        {profile.languages.map(language => <li>{languageItem(language)}</li>)}
-      </ul>
-    </section>
-    <section aria-labelledby="interests">
-      <h2 id="interests">Interests</h2>
-      <ul>
-        {profile.interests.map(interest => (
-          <li>{interest.label}: {interest.work
-            ? <a href={works.get(interest.work)!.data.site}>{interest.details}</a>
-            : interest.details}</li>
-        ))}
-      </ul>
-    </section>
-    <p><a href="/cv.pdf">CV (PDF)</a> · <a href="/hire/">Work with me</a></p>
-  </main>
+  <h1>About {fullName(profile)}</h1>
+  <Portrait alt={fullName(profile)} priority />
+  {paragraphs.map(parts => <p>{parts.map(part => workLinks.has(part) ? <a href={workLinks.get(part)}>{part}</a> : part)}</p>)}
+  <section aria-labelledby="experience">
+    <h2 id="experience">Experience</h2>
+    <ul>
+      {data.experience.map(entry => (
+        <li>
+          <p>{entry.role}, {entry.organisation} ({formatMonth(entry.start)} to {entry.end ? formatMonth(entry.end) : 'present'})</p>
+          {entry.highlights.length > 0 && <ul>{entry.highlights.map(text => <li>{text}</li>)}</ul>}
+        </li>
+      ))}
+    </ul>
+  </section>
+  <section aria-labelledby="education">
+    <h2 id="education">Education</h2>
+    <ul>
+      {data.education.map(entry => (
+        <li>
+          {entry.credential}{entry.field && <>, {entry.field}</>}, {entry.institution}{' '}
+          ({formatMonth(entry.start)} to {formatMonth(entry.end)}{entry.expected && ', expected'}).
+          {entry.note && <> {entry.note}</>}
+        </li>
+      ))}
+    </ul>
+  </section>
+  <section aria-labelledby="languages">
+    <h2 id="languages">Languages</h2>
+    <ul>
+      {profile.languages.map(language => <li>{languageItem(language)}</li>)}
+    </ul>
+  </section>
+  <section aria-labelledby="interests">
+    <h2 id="interests">Interests</h2>
+    <ul>
+      {profile.interests.map(interest => (
+        <li>{interest.label}: {interest.work
+          ? <a href={works.get(interest.work)!.data.site}>{interest.details}</a>
+          : interest.details}</li>
+      ))}
+    </ul>
+  </section>
+  <p><a href="/cv.pdf">CV (PDF)</a> · <a href="/hire/">Work with me</a></p>
 </Layout>

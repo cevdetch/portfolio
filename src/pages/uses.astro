@@ -1,5 +1,4 @@
 ---
-import SiteNav from '../components/SiteNav.astro';
 import Layout from '../layouts/Layout.astro';
 import { loadPortfolio } from '../data/portfolio.ts';
 import { fullName, pageTitle } from '../data/profile.ts';
@@ -12,26 +11,23 @@ const sections = usesSections(data.uses);
 ---
 
 <Layout title={pageTitle(data.profile, 'Uses')} description={`The desktop, editor, phone, web tools and hosting ${fullName(data.profile)} uses day to day, with links to each one.`}>
-  <SiteNav />
-  <main>
-    <h1>Uses</h1>
-    {sections.map(section => (
-      <section aria-labelledby={section.id}>
-        <h2 id={section.id}>{section.data.title}</h2>
-        {section.data.work && <p>See <a href={`/work/${section.data.work}/`}>the Case study</a>.</p>}
-        <ul>
-          {section.data.entries.map(entry => {
-            const tech = techs.get(entry.tech)!;
-            return (
-              <li>
-                <a href={tech.url}>{tech.label}</a>
-                {entry.note && <> ({entry.note})</>}
-                {entry.maintains && <> — packaged in <a href={`/work/${entry.maintains}/`}>{works.get(entry.maintains)!.data.title}</a></>}
-              </li>
-            );
-          })}
-        </ul>
-      </section>
-    ))}
-  </main>
+  <h1>Uses</h1>
+  {sections.map(section => (
+    <section aria-labelledby={section.id}>
+      <h2 id={section.id}>{section.data.title}</h2>
+      {section.data.work && <p>See <a href={`/work/${section.data.work}/`}>the Case study</a>.</p>}
+      <ul>
+        {section.data.entries.map(entry => {
+          const tech = techs.get(entry.tech)!;
+          return (
+            <li>
+              <a href={tech.url}>{tech.label}</a>
+              {entry.note && <> ({entry.note})</>}
+              {entry.maintains && <> — packaged in <a href={`/work/${entry.maintains}/`}>{works.get(entry.maintains)!.data.title}</a></>}
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  ))}
 </Layout>

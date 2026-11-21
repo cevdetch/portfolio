@@ -14,6 +14,7 @@ const projects = new URL('../../.astro/test-projects/', import.meta.url);
 const astroManifest = new URL(import.meta.resolve('astro/package.json'));
 const manifest = JSON.parse(await readFile(astroManifest, 'utf8')) as { bin: { astro: string } };
 const astroBin = fileURLToPath(new URL(manifest.bin.astro, astroManifest));
+const fixtureFont = fileURLToPath(new URL('../../src/assets/social-fonts/NotoSans-Regular.ttf', import.meta.url));
 
 export async function createBuildFixture(input: {
   configSource: string;
@@ -30,11 +31,17 @@ export async function createBuildFixture(input: {
   try {
     await put('package.json', '{"type":"module"}\n');
     await put('fixture.config.mjs', input.configSource);
+    // Layout.astro preloads the site's --font-archivo family. Fixtures register it from a committed font file
+    // with the local provider, so no fixture build reaches the network for the Google download.
     await put('astro.config.mjs', `
-import { mergeConfig } from 'astro/config';
+import { fontProviders, mergeConfig } from 'astro/config';
 import { writeFile } from 'node:fs/promises';
 import config from './fixture.config.mjs';
 export default mergeConfig(config, {
+  fonts: [{
+    provider: fontProviders.local(), name: 'Archivo', cssVariable: '--font-archivo', fallbacks: ['sans-serif'],
+    options: { variants: [{ src: [${JSON.stringify(fixtureFont)}], weight: 400, style: 'normal' }] },
+  }],
   integrations: [{
     name: 'test:output-directory',
     hooks: {
