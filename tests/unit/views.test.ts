@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { availabilityLine, fillBio, languageItem, otherWorkLine, pageTitle, placementLine, socialUsername, workingLanguages } from '../../src/data/profile.ts';
-import { contributionHighlights, contributionSpan, discussionLine, contributionTotals, featuredWorks, fillCvLine, firstCitations, homeMetrics, inSourceOrder, lighthouseMethod, lighthouseNumber, mergedPullsUrl, metricDisplay, newestFirst, recentlyShipped, skillGroups, splitOnTitles, upstreamGroups, upstreamLabel, workFactsView } from '../../src/data/views.ts';
-import { formatDay, formatDayRange, formatMonth, joinList } from '../../src/lib/format.ts';
+import { contributionHighlights, contributionSpan, discussionLine, contributionTotals, featuredWorks, fillCvLine, firstCitations, homeMetrics, inSourceOrder, knowsAboutTechs, lighthouseMethod, lighthouseNumber, mergedPullsUrl, metricDisplay, newestFirst, recentlyShipped, skillGroups, splitOnTitles, upstreamGroups, upstreamLabel, workFactsView } from '../../src/data/views.ts';
+import { formatDay, formatDayRange, formatMonth, formatMonthRange, joinList } from '../../src/lib/format.ts';
+import { statusMeanings, workStatuses } from '../../src/schemas/work.ts';
 import { fixturePortfolio, fixtureSnapshot } from '../helpers/portfolio-fixture.ts';
 
 test('skills group by category in registry order, without apps, with evidence', () => {
@@ -267,7 +268,7 @@ test('Recently shipped merges published releases and merged Contributions, newes
   const shipped = recentlyShipped(snapshot, p.works, p.contributions, 3, 'cevdetch');
   assert.deepEqual(shipped.map(item => item.kind), ['release', 'contribution', 'contribution']);
   assert.deepEqual(shipped[0], {
-    kind: 'release', at: '2026-10-20T10:00:00.000Z', work: p.works[0], package: 'deadhead', version: '0.3.1',
+    kind: 'release', at: '2026-10-20T10:00:00.000Z', work: p.works[0], registry: 'npm', package: 'deadhead', version: '0.3.1',
     url: 'https://www.npmjs.com/package/deadhead',
   });
   assert.deepEqual(shipped.slice(1).map(item => item.kind === 'contribution' ? [item.at, item.number] : []), [
@@ -412,4 +413,25 @@ test('the Lighthouse Number is the lowest mobile Performance score across the me
 
 test('the Lighthouse method names the page, the device and the runs behind the median', () => {
   assert.equal(lighthouseMethod(), 'on the home page (mobile, median of 3 runs)');
+});
+
+test('a month range names one month when it starts and ends in it', () => {
+  assert.equal(formatMonthRange('2026-11-08T10:00:00Z', '2026-11-21T10:00:00Z'), 'November 2026');
+  assert.equal(formatMonthRange('2026-09-09T10:00:00Z', '2026-11-21T10:00:00Z'), 'September 2026 to November 2026');
+  assert.equal(formatMonthRange('2025-11-30T10:00:00Z', '2026-11-01T10:00:00Z'), 'November 2025 to November 2026');
+});
+
+test('every status has a meaning a reader can see', () => {
+  for (const status of workStatuses) assert.ok(statusMeanings[status].length > 0, status);
+});
+
+test('knowsAbout keeps the skills, but desktop entries only where a Work or a Contribution uses them', () => {
+  const p = fixturePortfolio();
+  // Sway is a desktop entry no fixture Work uses, so it stays on /skills/ and /uses/ but leaves knowsAbout.
+  assert.deepEqual(knowsAboutTechs(p.techs, p.works, p.contributions).map(tech => tech.id), ['typescript', 'astro']);
+  p.works[0]!.data.stack.push('sway');
+  assert.deepEqual(knowsAboutTechs(p.techs, p.works, p.contributions).map(tech => tech.id), ['typescript', 'astro', 'sway']);
+  p.works[0]!.data.stack.pop();
+  p.contributions.upstreams[1]!.techs.push('sway');
+  assert.deepEqual(knowsAboutTechs(p.techs, p.works, p.contributions).map(tech => tech.id), ['typescript', 'astro', 'sway']);
 });

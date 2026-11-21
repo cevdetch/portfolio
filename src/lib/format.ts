@@ -6,6 +6,12 @@ export function formatMonth(iso: string): string {
   return month.format(new Date(/^\d{4}-\d{2}$/.test(iso) ? `${iso}-01T00:00:00Z` : iso));
 }
 
+/** "September 2026 to November 2026", or one month when both fall in it: "November 2026". */
+export function formatMonthRange(from: string, to: string): string {
+  const [a, b] = [formatMonth(from), formatMonth(to)];
+  return a === b ? a : `${a} to ${b}`;
+}
+
 export function formatDay(iso: string): string {
   return day.format(new Date(iso));
 }

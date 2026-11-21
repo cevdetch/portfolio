@@ -6,7 +6,7 @@ import Layout from '../layouts/Layout.astro';
 import { fullName, pageTitle } from '../data/profile.ts';
 import { publicPortraitPath, readPortraitSize } from '../data/portrait.ts';
 import { loadPortfolio } from '../data/portfolio.ts';
-import { contributionHighlights, discussionLine, featuredWorks, homeMetrics, lighthouseNumber, metricDisplay, recentlyShipped, splitOnTitles, upstreamGroups, upstreamLabel } from '../data/views.ts';
+import { contributionHighlights, discussionLine, featuredWorks, homeMetrics, knowsAboutTechs, lighthouseNumber, metricDisplay, recentlyShipped, splitOnTitles, upstreamGroups, upstreamLabel } from '../data/views.ts';
 import { formatDay, formatDayRange, joinList } from '../lib/format.ts';
 import { graph, personNode, profilePageNode, websiteNode } from '../lib/jsonld.ts';
 
@@ -27,7 +27,7 @@ const proofParts = splitOnTitles(profile.proof, proofWorks.map(work => work.data
 ---
 
 <Layout title={pageTitle(profile)} description={profile.headline}
-  jsonLd={graph(profilePageNode(profile), personNode(profile, data.techs, portrait), websiteNode(profile))}>
+  jsonLd={graph(profilePageNode(profile), personNode(profile, knowsAboutTechs(data.techs, data.works, data.contributions), portrait), websiteNode(profile))}>
   <SiteNav />
   <main>
     <h1>{fullName(profile)}</h1>
@@ -87,7 +87,10 @@ const proofParts = splitOnTitles(profile.proof, proofWorks.map(work => work.data
             {shipped.map(item => (
               <li>
                 {item.kind === 'release'
-                  ? <><a href={`/work/${item.work.id}/`}>{item.work.data.title}</a> released <a href={item.url}>{item.package} {item.version}</a>, {formatDay(item.at)}</>
+                  ? item.package === item.work.id
+                    // A package named after its Work: "deadhead 0.4.0 released on npm", never "deadhead released deadhead".
+                    ? <><a href={`/work/${item.work.id}/`}>{item.work.data.title}</a> <a href={item.url}>{item.version}</a> released on {item.registry}, {formatDay(item.at)}</>
+                    : <><a href={`/work/${item.work.id}/`}>{item.work.data.title}</a> released <a href={item.url}>{item.package} {item.version}</a>, {formatDay(item.at)}</>
                   : item.kind === 'pulls'
                     ? <><a href={item.url}>{item.count} pull requests</a> merged into {item.label}, {formatDayRange(item.from, item.at)}</>
                     : <><a href={item.url}>#{item.number}</a> merged into {item.label}: {item.title}, {formatDay(item.at)}</>}

@@ -12,8 +12,9 @@ bio: >-
   alongside Gymnasium studies (Matura {graduationYear}).
 about:
   - >-
-    The open-source work began with small fixes to the HTML head, such as removing redundant Twitter tags
-    from Starlight and Immich. deadhead came next, a linter that says why a tag is harmful, deprecated or
+    The open-source work began with HTML-head fixes for svelte.dev, astro.build and Starlight, such as
+    removing redundant Twitter tags; Astro's starter templates and Immich took the same fix later.
+    deadhead came next, a linter that says why a tag is harmful, deprecated or
     unnecessary and cites sources for every rule. Later fixes reordered the head of grapheneos.org and
     trimmed Immich's favicon set.
   - >-
@@ -60,11 +61,11 @@ process:
 services:
   - id: static-sites
     name: Fast static sites
-    summary: 'Astro sites that ship no JavaScript unless a feature needs it, checked with deadhead; each project page publishes its mobile Lighthouse scores.'
+    summary: 'Astro sites that ship no JavaScript unless a feature needs it, checked with deadhead; each live project''s page publishes its mobile Lighthouse scores.'
     evidence: [deadhead, astro-minimal-template, astro-reels-template]
   - id: css-experiences
     name: App-like experiences without JavaScript
-    summary: 'Reels-style vertical feeds, snap galleries and page transitions built with CSS scroll-snap and view transitions alone: no framework, no bundle to download, light on any phone.'
+    summary: 'Reels-style vertical feeds and page transitions built with CSS scroll-snap and view transitions alone: no framework and no bundle to download.'
     evidence: [astro-reels-template]
   - id: metadata-audit
     name: Metadata and SEO audit
@@ -73,7 +74,6 @@ services:
   - id: starters-maintenance
     name: Starters and maintenance
     summary: 'A tuned Astro starter for a new project, or an existing site kept fast: dependency updates, fixes and verified deploys.'
-    evidence: [astro-minimal-template]
 languages:
   - { name: Turkish, level: native }
   - { name: Kurdish, level: native }
@@ -85,6 +85,6 @@ interests:
     details: Philosophical essays, published at one.cevdet.ch
     cv: true
     work: one
-  - label: Pursuits
+  - label: Outside work
     details: Bouldering, hiking, mathematics, language learning, reading
     cv: false

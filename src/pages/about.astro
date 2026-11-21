@@ -10,7 +10,6 @@ import { formatMonth } from '../lib/format.ts';
 const data = await loadPortfolio();
 const { profile } = data;
 const works = new Map(data.works.map(work => [work.id, work]));
-const writing = works.get(profile.writing)!;
 // The about story names Works by title; each becomes a link to its Work page.
 const workLinks = new Map(data.works.map(work => [work.data.title, `/work/${work.id}/`] as const));
 const paragraphs = (profile.about ?? [profile.bio]).map(text => splitOnTitles(text, [...workLinks.keys()]));
@@ -61,9 +60,6 @@ const paragraphs = (profile.about ?? [profile.bio]).map(text => splitOnTitles(te
         ))}
       </ul>
     </section>
-    <section aria-labelledby="writing">
-      <h2 id="writing">Writing</h2>
-      <p>Essays and poems on <a href={writing.data.site}>{writing.data.title}</a>.</p>
-    </section>
+    <p><a href="/cv.pdf">CV (PDF)</a> · <a href="/hire/">Work with me</a></p>
   </main>
 </Layout>

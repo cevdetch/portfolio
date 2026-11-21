@@ -52,6 +52,15 @@ export function skillGroups(techs: readonly Tech[], works: readonly WorkEntry[])
     .filter(group => group.techs.length > 0);
 }
 
+/**
+ * The Techs the JSON-LD Person knowsAbout: the skills, except that an `evidenced` category keeps only the Techs a
+ * Work's Stack or an Upstream names. Registry order.
+ */
+export function knowsAboutTechs(techs: readonly Tech[], works: readonly WorkEntry[], overrides: ContributionOverrides): Tech[] {
+  const used = new Set([...works.flatMap(work => work.data.stack), ...overrides.upstreams.flatMap(upstream => upstream.techs)]);
+  return techs.filter(tech => techCategories[tech.category].skills && (!techCategories[tech.category].evidenced || used.has(tech.id)));
+}
+
 // label: what the pull touched; its own override, else the Upstream's label, else the repo id.
 export interface UpstreamPull extends Contribution { hidden: boolean; highlight: boolean; label: string; note?: string; order?: number }
 export interface UpstreamGroup { repo: string; url: string; pulls: UpstreamPull[]; techs: string[]; works: string[] }
@@ -275,7 +284,7 @@ export function upstreamLabel(repo: string, overrides: ContributionOverrides): s
 }
 
 export type ShippedItem =
-  | { kind: 'release'; at: string; work: WorkEntry; package: string; version: string; url: string }
+  | { kind: 'release'; at: string; work: WorkEntry; registry: PackageFacts['registry']; package: string; version: string; url: string }
   | { kind: 'contribution'; at: string; repo: string; label: string; number: number; title: string; url: string }
   | { kind: 'pulls'; at: string; from: string; repo: string; label: string; count: number; url: string };
 
@@ -316,7 +325,7 @@ export function recentlyShipped(
     const byDay = new Map<string, ShippedItem & { kind: 'release' }>();
     for (const pkg of facts.packages) {
       if (!pkg.published) continue;
-      const item = { kind: 'release' as const, at: pkg.releasedAt, work, package: pkg.name, version: pkg.version, url: pkg.url };
+      const item = { kind: 'release' as const, at: pkg.releasedAt, work, registry: pkg.registry, package: pkg.name, version: pkg.version, url: pkg.url };
       const day = item.at.slice(0, 10);
       const kept = byDay.get(day);
       const order = kept ? compareVersions(item.version, kept.version) || item.at.localeCompare(kept.at) : 1;

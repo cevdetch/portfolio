@@ -5,6 +5,7 @@ import { iconUrl } from '../../data/icons.ts';
 import { loadPortfolio } from '../../data/portfolio.ts';
 import { fullName, pageTitle } from '../../data/profile.ts';
 import { orderWorks, workFactsView } from '../../data/views.ts';
+import { statusMeanings } from '../../schemas/work.ts';
 
 const data = await loadPortfolio();
 ---
@@ -19,7 +20,7 @@ const data = await loadPortfolio();
         return (
           <li>
             {icon ? <img src={icon} alt="" width="32" height="32" /> : <span aria-hidden="true">{work.data.title.charAt(0).toUpperCase()}</span>}
-            <a href={`/work/${work.id}/`}>{work.data.title}</a> ({work.data.kind}, {work.data.status}): {work.data.tagline}
+            <a href={`/work/${work.id}/`}>{work.data.title}</a> ({work.data.kind}, {statusMeanings[work.data.status]}): {work.data.tagline}
           </li>
         );
       })}

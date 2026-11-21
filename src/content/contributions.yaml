@@ -19,7 +19,7 @@ upstreams:
 themes:
   - id: head-metadata
     lead: HTML-head and metadata fixes merged into
-    upstreams: [immich-app/immich, withastro/starlight, withastro/astro, sveltejs/svelte, GrapheneOS/grapheneos.org]
+    upstreams: [immich-app/immich, withastro/starlight, nuejs/nue, withastro/astro, sveltejs/svelte, GrapheneOS/grapheneos.org]
   - id: wayland-builds
     lead: Wayland-only build and packaging changes merged into
     upstreams: [freeglut/freeglut, CachyOS/firefox-wayland-cachy-hg, aerynOS/recipes]

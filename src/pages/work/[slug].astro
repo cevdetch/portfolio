@@ -9,9 +9,10 @@ import { loadPortfolio } from '../../data/portfolio.ts';
 import { fullName, pageTitle } from '../../data/profile.ts';
 import { findScreenshots, screenshotAlt, screenshotDevices, type ScreenshotDevice } from '../../data/screenshots.ts';
 import { lighthouseMethod, workFactsView } from '../../data/views.ts';
-import { formatDay, formatMonth } from '../../lib/format.ts';
+import { formatDay, formatMonthRange } from '../../lib/format.ts';
 import { breadcrumbNode, graph, workCrumbs, workNode } from '../../lib/jsonld.ts';
 import { techCategories } from '../../schemas/tech.ts';
+import { statusMeanings } from '../../schemas/work.ts';
 
 export async function getStaticPaths() {
   return (await getCollection('work')).map(entry => ({ params: { slug: entry.id }, props: { entry } }));
@@ -58,7 +59,7 @@ const { Content } = await render(entry);
       <dl>
         <dt>Role</dt><dd>{work.data.role}</dd>
         <dt>Kind</dt><dd>{work.data.kind}</dd>
-        <dt>Status</dt><dd>{work.data.status}</dd>
+        <dt>Status</dt><dd>{statusMeanings[work.data.status]}</dd>
         {work.data.site && <><dt>Site</dt><dd><a href={work.data.site}>{new URL(work.data.site).host}</a></dd></>}
         {facts.lighthouse && <><dt>Lighthouse</dt><dd>
           Performance {facts.lighthouse.performance} · Accessibility {facts.lighthouse.accessibility} · Best practices {facts.lighthouse.bestPractices} · SEO {facts.lighthouse.seo},
@@ -72,10 +73,10 @@ const { Content } = await render(entry);
         </>)}
         {facts.release && <><dt>Latest release</dt><dd>{facts.release.tag}, {formatDay(facts.release.publishedAt)}</dd></>}
         {facts.license && <><dt>Licence</dt><dd>{facts.license}</dd></>}
-        {facts.active && <><dt>Active</dt><dd>{formatMonth(facts.active.from)} to {formatMonth(facts.active.to)}</dd></>}
+        {facts.active && <><dt>Active</dt><dd>{formatMonthRange(facts.active.from, facts.active.to)}</dd></>}
         {facts.commitCount !== undefined && <><dt>Commits</dt><dd>{facts.commitCount}</dd></>}
         {facts.pkgbuildCount !== undefined && <><dt>PKGBUILDs</dt><dd>{facts.pkgbuildCount}</dd></>}
-        {facts.rules && <><dt>Rules</dt><dd>{facts.rules.total} sourced rules, {facts.rules.head} for the head</dd></>}
+        {facts.rules && <><dt>Rules</dt><dd>{facts.rules.total} sourced rules: {facts.rules.head} for the head and {facts.rules.total - facts.rules.head} for markup in the body or anywhere in the page</dd></>}
       </dl>
       <section aria-labelledby="stack">
         <h2 id="stack">Stack</h2>

@@ -4,6 +4,14 @@ import { httpsUrl, id, isoDate, line } from './common.ts';
 export const workKinds = ['app', 'site', 'package', 'template', 'research', 'tool', 'infrastructure'] as const;
 export const workStatuses = ['active', 'maintained', 'complete', 'archived'] as const;
 
+// What each Status means, printed beside it so a reader never has to guess.
+export const statusMeanings: Record<(typeof workStatuses)[number], string> = {
+  active: 'in active development',
+  maintained: 'shipped and kept up to date',
+  complete: 'finished, with no further work planned',
+  archived: 'no longer updated',
+};
+
 /**
  * True when a headline value is safe to print beside its Metric's full value: equal to the full value's
  * leading number token (digits, thousands separators and a decimal point, with an optional unit such as
