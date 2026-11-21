@@ -12,6 +12,7 @@
   img, svg, picture { display: block; max-inline-size: 100%; block-size: auto; }
   button, input { font: inherit; color: inherit; }
   table { border-collapse: collapse; border-spacing: 0; }
+  [hidden] { display: none !important; }
 }
 
 @layer base {
@@ -84,6 +85,117 @@
     translate: 0 -200%;
   }
   .skip:focus-visible { translate: 0 0; outline-color: var(--text); }
+
+  /* Site header: the mark and the name, the sections, the scheme toggle. */
+  .site-head { border-block-end: 1px solid var(--rule); }
+  .site-head .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 0 calc(3 * var(--u)); min-block-size: calc(8 * var(--u)); }
+  .home {
+    display: inline-flex;
+    align-items: center;
+    gap: calc(1.5 * var(--u));
+    min-block-size: calc(6 * var(--u));
+    color: var(--text);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    text-decoration: none;
+  }
+  .home:hover .word { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 0.2em; }
+  .site-nav { margin-inline-start: auto; }
+  .site-nav ul { display: flex; gap: var(--u); }
+  .site-nav a {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: calc(6 * var(--u));
+    padding-inline: calc(1.25 * var(--u));
+    border-block-end: 2px solid transparent;
+    color: var(--text);
+    font-size: var(--step--1);
+    font-weight: 500;
+    text-decoration: none;
+  }
+  .site-nav a:hover { color: var(--brand-ink); }
+  .site-nav a[aria-current] { color: var(--brand-ink); border-block-end-color: var(--brand-ink); }
+  @media (max-width: 52rem) {
+    .site-head .wrap { gap: 0 var(--u); padding-block: var(--u) 0; }
+    .site-nav { order: 3; flex-basis: 100%; }
+    .site-nav ul { display: grid; grid-template-columns: repeat(3, max-content); column-gap: calc(2 * var(--u)); margin-inline-start: calc(-1.25 * var(--u)); }
+    .site-nav a { min-block-size: calc(5 * var(--u)); }
+    .scheme { margin-inline-start: auto; }
+  }
+  /* At the narrowest widths the toggle drops under the wordmark. */
+  @media (max-width: 22.5rem) {
+    .home { flex-basis: 100%; }
+    .scheme { margin-inline-start: 0; }
+  }
+
+  /* Site footer: who, the contacts, and the page's keys. */
+  .site-foot { margin-block-start: calc(10 * var(--u)); border-block-start: 1px solid var(--rule); background: var(--bg-sunk); }
+  .site-foot .wrap { display: grid; grid-template-columns: 1fr auto; gap: calc(3 * var(--u)) calc(6 * var(--u)); align-items: center; padding-block: calc(5 * var(--u)); }
+  .site-foot .who { font-weight: 700; }
+  .site-foot .who span { display: block; font-weight: 400; color: var(--muted); }
+  .site-foot .contact { margin-block-start: var(--u); }
+  .site-foot .actions { display: flex; flex-wrap: wrap; align-items: center; gap: calc(2 * var(--u)) calc(3 * var(--u)); }
+  @media (max-width: 52rem) { .site-foot .wrap { grid-template-columns: 1fr; } }
+}
+
+@layer components {
+  .ico { inline-size: 1em; block-size: 1em; fill: currentColor; flex: none; }
+
+  /* The mark, inline so it follows the tokens. Only the odd block moves, and only when motion is welcome. */
+  .mark { inline-size: calc(4 * var(--u)); block-size: calc(4 * var(--u)); flex: none; }
+  .mark-body { fill: var(--brand); }
+  .mark-odd { fill: var(--cta); }
+  @media (prefers-reduced-motion: no-preference) {
+    .mark-odd { animation: blink 3.2s steps(1, end) infinite; }
+  }
+  @keyframes blink { 0%, 78%, 98%, 100% { fill: var(--cta); } 68%, 88% { fill: var(--brand); } }
+
+  /* The one gold key per viewport; the ink edge keeps it at 3:1 on the light ground. */
+  .key {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--u);
+    min-block-size: calc(6 * var(--u));
+    padding-inline: calc(3 * var(--u));
+    border: 2px solid var(--cta-ink);
+    border-radius: 2px;
+    background: var(--cta);
+    color: var(--cta-ink);
+    font-weight: 700;
+    letter-spacing: -0.005em;
+    text-decoration: none;
+    transition: translate 160ms var(--ease-out), box-shadow 160ms var(--ease-out);
+  }
+  .key:hover { translate: 0 -1px; box-shadow: 0 6px 16px -6px color-mix(in oklab, var(--cta-ink) 55%, transparent); text-decoration: none; }
+  .key:active { translate: 0 1px; box-shadow: none; }
+  .key:focus-visible { outline-offset: 4px; }
+  .key-secondary { border-color: var(--brand-ink); background: transparent; color: var(--brand-ink); }
+  .key-secondary:hover { box-shadow: 0 6px 16px -6px color-mix(in oklab, var(--brand-ink) 55%, transparent); }
+  .key .ico { inline-size: 1.125em; block-size: 1.125em; }
+
+  /* The scheme toggle: one button, the sun or the moon for the scheme a click would bring. */
+  .scheme {
+    display: inline-grid;
+    place-items: center;
+    inline-size: calc(5 * var(--u));
+    block-size: calc(5 * var(--u));
+    padding: 0;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    background: var(--bg-sunk);
+    color: var(--text);
+    cursor: pointer;
+  }
+  .scheme:hover { border-color: var(--brand-ink); color: var(--brand-ink); }
+  .scheme .ico { inline-size: calc(2.5 * var(--u)); block-size: calc(2.5 * var(--u)); }
+  .scheme .sun, .scheme[aria-pressed="true"] .moon { display: none; }
+  .scheme[aria-pressed="true"] .sun { display: block; }
+
+  /* Contact links: a glyph beside every label, in the fixed order. */
+  .contact { display: flex; flex-wrap: wrap; gap: var(--u) calc(3 * var(--u)); }
+  .contact a { display: inline-flex; align-items: center; min-block-size: calc(3 * var(--u)); }
+  .contact .ico { margin-inline-end: calc(0.75 * var(--u)); }
 }
 
 @layer utilities {

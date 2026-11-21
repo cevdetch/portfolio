@@ -2,7 +2,8 @@
 import type { Graph } from 'schema-dts';
 import { Font } from 'astro:assets';
 import brand from '../brand.json';
-import SiteNav from '../components/SiteNav.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import SiteHeader from '../components/SiteHeader.astro';
 import { siteConfig } from '../config.ts';
 import { serializeJsonLd } from '../lib/jsonld.ts';
 import { parseSiteNoindex, resolveSeo, type LayoutProps } from '../lib/seo.ts';
@@ -55,7 +56,8 @@ const seo = await resolveSeo(Astro.props, {
   </head>
   <body>
     <a class="skip" href="#main">Skip to content</a>
-    <SiteNav />
+    <SiteHeader />
     <main id="main"><slot /></main>
+    <SiteFooter />
   </body>
 </html>

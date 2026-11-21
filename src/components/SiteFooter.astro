@@ -1,0 +1,22 @@
+---
+import { fullName, mailtoHref } from '../data/profile.ts';
+import { siteProfile } from '../data/site-profile.ts';
+import Contact from './Contact.astro';
+import Key from './Key.astro';
+
+// The page's own key closes it: "Work with me" everywhere, and the email itself on /hire/, where that is the action.
+const hire = Astro.url.pathname === '/hire/';
+---
+
+<footer class="site-foot">
+  <div class="wrap">
+    <div>
+      <p class="who">{fullName(siteProfile)} <span>{siteProfile.jobTitle} · {siteProfile.country}, {siteProfile.availability.timeZone}</span></p>
+      <Contact profile={siteProfile} socials={siteProfile.socials} />
+    </div>
+    <p class="actions">
+      {hire ? <Key href={mailtoHref(siteProfile)}>Email {siteProfile.email}</Key> : <Key href="/hire/">Work with me</Key>}
+      <Key href="/cv.pdf" secondary icon="document">CV (PDF)</Key>
+    </p>
+  </div>
+</footer>

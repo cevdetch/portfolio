@@ -1,0 +1,14 @@
+---
+import { mailtoHref, socialLabels } from '../data/profile.ts';
+import type { Profile } from '../schemas/profile.ts';
+import Icon from './Icon.astro';
+
+// The contact links in their fixed order: the email first, then the social profiles as the profile lists them.
+interface Props { profile: Pick<Profile, 'email' | 'contactSubject'>; socials: Profile['socials'] }
+const { profile, socials } = Astro.props;
+---
+
+<ul class="contact">
+  <li><a href={mailtoHref(profile)}><Icon name="mail" />{profile.email}</a></li>
+  {socials.map(social => <li><a href={social.url} rel="me"><Icon name={social.network} />{socialLabels[social.network]}</a></li>)}
+</ul>

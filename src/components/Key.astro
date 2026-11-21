@@ -1,0 +1,10 @@
+---
+import Icon, { type IconName } from './Icon.astro';
+
+// A key is a link styled as a control. The primary key is the one gold action of its viewport; the secondary key
+// is outlined in brand ink.
+interface Props { href: string; secondary?: boolean; icon?: IconName }
+const { href, secondary = false, icon } = Astro.props;
+---
+
+<a class:list={['key', { 'key-secondary': secondary }]} href={href}>{icon && <Icon name={icon} />}<slot /></a>

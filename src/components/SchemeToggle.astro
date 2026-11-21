@@ -1,0 +1,25 @@
+---
+import Icon from './Icon.astro';
+---
+
+{/* Hidden until its script runs: without JavaScript the page follows the system scheme and offers no dead control. */}
+<button class="scheme" type="button" aria-pressed="false" aria-label="Dark scheme" hidden><Icon name="sun" class="sun" /><Icon name="moon" class="moon" /></button>
+{/* The scheme toggle, the first of the site's two scripts. It flips light and dark; landing back on the system's
+    own scheme clears the stored choice, so following the system needs no third state. The sun or the moon shows
+    the scheme a click would bring. */}
+<script is:inline>(() => {
+  const root = document.documentElement, button = document.currentScript.previousElementSibling;
+  const query = matchMedia('(prefers-color-scheme: dark)');
+  const system = () => query.matches ? 'dark' : 'light';
+  const scheme = () => root.dataset.scheme || system();
+  const paint = () => button.setAttribute('aria-pressed', String(scheme() === 'dark'));
+  button.addEventListener('click', () => {
+    const next = scheme() === 'dark' ? 'light' : 'dark';
+    if (next === system()) delete root.dataset.scheme; else root.dataset.scheme = next;
+    try { next === system() ? localStorage.removeItem('scheme') : localStorage.setItem('scheme', next); } catch {}
+    paint();
+  });
+  query.addEventListener('change', paint);
+  paint();
+  button.hidden = false;
+})();</script>

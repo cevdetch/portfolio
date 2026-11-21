@@ -92,6 +92,11 @@ export function languageItem(language: Pick<Profile['languages'][number], 'name'
 
 export type SocialNetwork = Profile['socials'][number]['network'];
 
+/** The contact mailto, with the subject prefilled so an enquiry from the site is recognisable. */
+export function mailtoHref(profile: Pick<Profile, 'email' | 'contactSubject'>): string {
+  return `mailto:${profile.email}?subject=${encodeURIComponent(profile.contactSubject)}`;
+}
+
 export const socialLabels: Record<SocialNetwork, string> = { github: 'GitHub', linkedin: 'LinkedIn', npm: 'npm' };
 
 /** The handle in a profile URL: its last path segment, without npm's `~`. */

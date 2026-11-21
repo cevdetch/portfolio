@@ -2,7 +2,7 @@
 import SocialLinks from '../components/SocialLinks.astro';
 import Layout from '../layouts/Layout.astro';
 import { loadPortfolio } from '../data/portfolio.ts';
-import { availabilityLine, fullName, otherWorkLine, pageTitle, placementLine } from '../data/profile.ts';
+import { availabilityLine, fullName, mailtoHref, otherWorkLine, pageTitle, placementLine } from '../data/profile.ts';
 import { firstCitations } from '../data/views.ts';
 
 const data = await loadPortfolio();
@@ -12,7 +12,7 @@ const works = new Map(data.works.map(work => [work.id, work]));
 const placement = placementLine(profile);
 const availability = placement ? otherWorkLine(profile.availability, profile.country) : availabilityLine(profile.availability, profile.country);
 const firstCited = firstCitations(profile.services);
-const mailto = `mailto:${profile.email}?subject=${encodeURIComponent(profile.contactSubject)}`;
+const mailto = mailtoHref(profile);
 ---
 
 <Layout title={pageTitle(profile, 'Hire')} description={`Hire ${fullName(profile)} for fast websites, SEO and metadata audits, or Astro starters and upkeep: what is on offer, how a project runs and how to get in touch.`}>

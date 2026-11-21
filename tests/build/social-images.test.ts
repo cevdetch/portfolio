@@ -32,13 +32,16 @@ async function consumer(t: { after(fn: () => Promise<void>): void }, options: { 
   // data/views.ts comes along because validate.ts fills cvLine tokens with it. data/profile.ts
   // comes along because jsonld.ts derives the full name from its fullName helper. data/screenshots.ts
   // comes along because scripts/capture-screenshots.ts reads its device table. data/portrait.ts comes along
-  // because scripts/prepare-portrait.ts reads its outputs. components/, styles/, data/site-profile.ts and
-  // content/profile.yaml come along because Layout.astro renders the site header and imports the stylesheet.
-  for (const path of ['lib', 'integrations', 'layouts', 'components', 'styles', 'assets', 'config.ts', 'brand.json', 'schemas',
+  // because scripts/prepare-portrait.ts reads its outputs. The site header and footer components, styles/,
+  // data/site-profile.ts and content/profile.yaml come along because Layout.astro renders them.
+  const frame = ['SiteHeader', 'SiteFooter', 'Mark', 'SchemeToggle', 'Icon', 'Key', 'Contact'].map(name => `components/${name}.astro`);
+  for (const path of ['lib', 'integrations', 'layouts', ...frame, 'styles', 'assets', 'config.ts', 'brand.json', 'schemas',
     'facts', 'data/validate.ts', 'data/story-lint.ts', 'data/views.ts', 'data/profile.ts', 'data/site-profile.ts',
     'data/screenshots.ts', 'data/portrait.ts', 'content/profile.yaml', 'gates']) {
     await cp(new URL(`../../src/${path}`, import.meta.url), new URL(`src/${path}`, fixture.root), { recursive: true });
   }
+  // The site header's inline mark reads its geometry from the installed icon.
+  await cp(new URL('../../public/icon.svg', import.meta.url), new URL('public/icon.svg', fixture.root));
   await mkdir(new URL('src/pages-source/', fixture.root));
   await cp(new URL('../../src/pages/robots.txt.ts', import.meta.url), new URL('src/pages-source/robots.txt.ts', fixture.root));
   return fixture;

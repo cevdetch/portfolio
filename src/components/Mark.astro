@@ -1,0 +1,12 @@
+---
+import icon from '../../public/icon.svg?raw';
+
+// The C, inline so its fills follow the tokens: six blocks in --brand and the odd block in --cta, which blinks like
+// the station clock's pause. The geometry is read from the installed icon, so a brand reinstall moves both.
+const paths = [...icon.matchAll(/<path\b[^>]*\bd="([^"]+)"/g)].map(match => match[1]);
+if (paths.length !== 2) throw new Error(`public/icon.svg: expected the body path and the odd block, found ${paths.length} paths`);
+const [body, odd] = paths;
+interface Props { class?: string }
+---
+
+<svg class:list={['mark', Astro.props.class]} viewBox="0 0 512 512" aria-hidden="true" focusable="false"><path class="mark-body" d={body} /><path class="mark-odd" d={odd} /></svg>
