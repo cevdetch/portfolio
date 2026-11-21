@@ -3,17 +3,11 @@
     "collect": {
       "startServerCommand": "pnpm exec astro preview --host 127.0.0.1 --port 4390",
       "startServerReadyPattern": "127.0.0.1:4390",
-      "settings": { "ignoreStatusCode": true },
-      "url": [
-        "http://127.0.0.1:4390/", "http://127.0.0.1:4390/work/",
-        "http://127.0.0.1:4390/work/arch-waypure/", "http://127.0.0.1:4390/work/astro-metadata-lab/",
-        "http://127.0.0.1:4390/work/astro-minimal-template/", "http://127.0.0.1:4390/work/astro-reels-template/",
-        "http://127.0.0.1:4390/work/branding/", "http://127.0.0.1:4390/work/deadhead/", "http://127.0.0.1:4390/work/favseed/",
-        "http://127.0.0.1:4390/work/homelab/", "http://127.0.0.1:4390/work/one/",
-        "http://127.0.0.1:4390/open-source/", "http://127.0.0.1:4390/skills/", "http://127.0.0.1:4390/uses/",
-        "http://127.0.0.1:4390/about/", "http://127.0.0.1:4390/hire/", "http://127.0.0.1:4390/404/"
-      ],
-      "numberOfRuns": 3
+      "settings": {
+        "ignoreStatusCode": true, "disableFullPageScreenshot": true,
+        "onlyCategories": ["performance", "accessibility", "best-practices", "seo"]
+      },
+      "numberOfRuns": 5
     },
     "assert": {
       "assertMatrix": [

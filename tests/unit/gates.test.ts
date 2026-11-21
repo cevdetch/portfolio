@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { hrefs, jsonLdBlocks, metaContents, visibleText } from '../../src/gates/html.ts';
 import { checkJsonLd } from '../../src/gates/jsonld.ts';
-import { unauditedRoutes } from '../../src/gates/lighthouse.ts';
+import { lighthouseArgs, lighthouseRoutes, shardRoutes } from '../../src/gates/lighthouse.ts';
 import { pdfPageCount } from '../../src/gates/pdf.ts';
 import {
   denylistStatus, findDenylistTerms, findPrivacyViolations, isScannedTextFile, parseDenylist, splitCommitLog,
@@ -102,8 +102,25 @@ test('pdfPageCount counts the page objects, not the page tree, and refuses what 
   assert.throws(() => pdfPageCount(new TextEncoder().encode('<html>')), /not a PDF/);
 });
 
-test('unauditedRoutes names the built routes a Lighthouse config never visits', () => {
-  const urls = ['http://127.0.0.1:4390/', 'http://127.0.0.1:4390/work/deadhead/', 'http://127.0.0.1:4390/404/'];
-  assert.deepEqual(unauditedRoutes(urls, ['/', '/work/deadhead/', '/404/']), []);
-  assert.deepEqual(unauditedRoutes(urls, ['/', '/work/', '/work/favseed/', '/404/']), ['/work/', '/work/favseed/']);
+test('Lighthouse audits every owned page of a preview build, and refuses a build for another site', () => {
+  const page = (path: string, owned = true) => ({ file: `file:///dist${path}index.html`, url: `http://127.0.0.1:4390${path}`, owned });
+  const receipt = { site: 'http://127.0.0.1:4390/', pages: [page('/work/'), page('/'), page('/404/'), page('/vendor/', false)] };
+  assert.deepEqual(lighthouseRoutes(receipt), ['http://127.0.0.1:4390/', 'http://127.0.0.1:4390/404/', 'http://127.0.0.1:4390/work/']);
+  assert.throws(() => lighthouseRoutes({ ...receipt, site: 'https://cevdet.ch/' }), /build with --site http:\/\/127\.0\.0\.1:4390/);
+});
+
+test('a shard takes every n-th route from its own start, and the shards together cover every route once', () => {
+  const routes = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
+  assert.deepEqual(shardRoutes(routes, { index: 1, count: 3 }), ['a', 'd', 'g']);
+  assert.deepEqual(shardRoutes(routes, { index: 3, count: 3 }), ['c', 'f']);
+  assert.deepEqual([1, 2, 3].flatMap(index => shardRoutes(routes, { index, count: 3 })).sort(), routes);
+  assert.deepEqual(shardRoutes(routes, { index: 1, count: 1 }), routes);
+  assert.throws(() => shardRoutes(routes, { index: 4, count: 3 }), /Invalid shard 4\/3/);
+});
+
+test('the Lighthouse command line names passes and a shard; no names means every pass', () => {
+  assert.deepEqual(lighthouseArgs([]), { passes: ['mobile', 'desktop', 'dark', 'dark-desktop'], shard: { index: 1, count: 1 } });
+  assert.deepEqual(lighthouseArgs(['mobile', '--shard', '2/3']), { passes: ['mobile'], shard: { index: 2, count: 3 } });
+  assert.deepEqual(lighthouseArgs(['desktop', 'dark', 'dark-desktop']).passes, ['desktop', 'dark', 'dark-desktop']);
+  assert.throws(() => lighthouseArgs(['tablet']), /Unknown Lighthouse pass tablet/);
 });
