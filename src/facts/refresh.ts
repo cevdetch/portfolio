@@ -141,20 +141,24 @@ const sameScores = (a: LighthouseFacts, b: LighthouseFacts) =>
 
 /**
  * Each site's Lighthouse Facts. Unchanged scores keep the date they were first measured, so a quiet week leaves the
- * Snapshot alone; a skipped measurement keeps the last scores and their date, and warns.
+ * Snapshot alone; a skipped measurement keeps the last scores and their date, and warns. Only scores measured on the
+ * Work's current site count as the last ones: a Work that moved is measured afresh, and never shows the old site's.
  */
 async function lighthouseFacts(sources: readonly (WorkSource & { site: string })[], options: CollectOptions): Promise<Map<string, LighthouseFacts>> {
   const found = new Map<string, LighthouseFacts>();
   const { lighthouse: measure, warn = console.warn } = options;
   const results = await inPool(sources, lighthouseConcurrency, async source => measure ? measure(source.site) : undefined);
   sources.forEach((source, index) => {
-    const before = options.previous?.works[source.id]?.lighthouse;
+    const earlier = options.previous?.works[source.id]?.lighthouse;
+    const before = earlier?.site === source.site ? earlier : undefined;
     const result = results[index];
     if (result && 'facts' in result) {
-      found.set(source.id, before && sameScores(before, result.facts) ? before : result.facts);
+      found.set(source.id, before && sameScores(before, result.facts) ? before : { ...result.facts, site: source.site });
       return;
     }
-    if (result) warn(`${source.id}: Lighthouse not measured (${result.skipped}); ${before ? 'keeping the last scores' : 'no earlier scores to keep'}`);
+    const kept = before ? 'keeping the last scores'
+      : earlier ? 'the last scores were measured on another site, so none are kept' : 'no earlier scores to keep';
+    if (result) warn(`${source.id}: Lighthouse not measured (${result.skipped}); ${kept}`);
     if (before) found.set(source.id, before);
   });
   return found;

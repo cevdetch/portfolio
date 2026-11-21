@@ -27,14 +27,18 @@ export function mergeSnapshot(previous: Snapshot | undefined, next: Payload, now
   return { changed, snapshot: { version: 1, refreshedAt, ...payload } };
 }
 
-const lighthouseLabels: [keyof Omit<LighthouseFacts, 'measuredAt'>, string][] = [
+const lighthouseLabels: [keyof Omit<LighthouseFacts, 'measuredAt' | 'site'>, string][] = [
   ['performance', 'performance'], ['accessibility', 'accessibility'], ['bestPractices', 'best practices'], ['seo', 'SEO'],
 ];
 
 function lighthouseLines(id: string, before: LighthouseFacts | undefined, after: LighthouseFacts | undefined): string[] {
   if (!before && !after) return [];
   if (!after) return [`${id}: Lighthouse scores removed`];
-  if (!before) return [`${id}: Lighthouse measured, ${lighthouseLabels.map(([key, label]) => `${label} ${after[key]}`).join(', ')}`];
+  // A site measured for the first time, or afresh after a move, lists every score: there is nothing to compare.
+  if (!before || before.site !== after.site) {
+    const where = after.site ? ` on ${new URL(after.site).host}` : '';
+    return [`${id}: Lighthouse measured${where}, ${lighthouseLabels.map(([key, label]) => `${label} ${after[key]}`).join(', ')}`];
+  }
   return lighthouseLabels.filter(([key]) => before[key] !== after[key]).map(([key, label]) => `${id}: Lighthouse ${label} ${before[key]} → ${after[key]}`);
 }
 

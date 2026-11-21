@@ -243,7 +243,7 @@ test('every Work with a site gets the median Lighthouse scores, a few sites at a
   ], { ...client, json: async <T>(url: string) => url === 'https://registry.npmjs.org/pkg' ? null : client.json<T>(url) }, { lighthouse });
   assert.deepEqual(sites.sort(), ids.map(id => `https://${id}.cevdet.ch/`));
   assert.ok(most > 1 && most <= 2, `ran ${most} at once`);
-  assert.deepEqual(collected.works['a']?.lighthouse, { performance: 99, accessibility: 100, bestPractices: 100, seo: 100, measuredAt: '2026-11-14T20:00:00.000Z' });
+  assert.deepEqual(collected.works['a']?.lighthouse, { performance: 99, accessibility: 100, bestPractices: 100, seo: 100, measuredAt: '2026-11-14T20:00:00.000Z', site: 'https://a.cevdet.ch/' });
   assert.equal(collected.works['pkg']?.lighthouse, undefined);
 });
 
@@ -255,29 +255,50 @@ const lighthousePrevious = (lighthouse?: LighthouseFacts): Snapshot => ({
 const lighthouseRoutes = () => fakeClient({ 'https://x.cevdet.ch/icon.svg': null, [search]: { data: { total_count: 0, items: [] } } });
 const xSource = [{ id: 'x', site: 'https://x.cevdet.ch/', packages: [], pkgbuilds: false }];
 
+const site = 'https://x.cevdet.ch/';
+
 test('unchanged scores keep the date they were first measured, so a quiet week changes nothing', async () => {
-  const previous = lighthousePrevious({ ...scores, measuredAt: '2026-11-07T05:00:00.000Z' });
+  const previous = lighthousePrevious({ ...scores, measuredAt: '2026-11-07T05:00:00.000Z', site });
   const same = async () => ({ facts: { ...scores, measuredAt: '2026-11-14T05:00:00.000Z' } });
   assert.equal((await collectFacts(xSource, lighthouseRoutes(), { previous, lighthouse: same })).works['x']?.lighthouse?.measuredAt, '2026-11-07T05:00:00.000Z');
   const better = async () => ({ facts: { ...scores, performance: 100, measuredAt: '2026-11-14T05:00:00.000Z' } });
-  assert.deepEqual((await collectFacts(xSource, lighthouseRoutes(), { previous, lighthouse: better })).works['x']?.lighthouse, { ...scores, performance: 100, measuredAt: '2026-11-14T05:00:00.000Z' });
+  assert.deepEqual((await collectFacts(xSource, lighthouseRoutes(), { previous, lighthouse: better })).works['x']?.lighthouse, { ...scores, performance: 100, measuredAt: '2026-11-14T05:00:00.000Z', site });
+});
+
+test('scores measured on another site, or on an unrecorded one, are replaced even when they are the same', async () => {
+  const same = async () => ({ facts: { ...scores, measuredAt: '2026-11-14T05:00:00.000Z' } });
+  for (const earlier of [{ site: 'https://x.example.dev/' }, {}]) {
+    const previous = lighthousePrevious({ ...scores, measuredAt: '2026-11-07T05:00:00.000Z', ...earlier });
+    assert.deepEqual((await collectFacts(xSource, lighthouseRoutes(), { previous, lighthouse: same })).works['x']?.lighthouse, { ...scores, measuredAt: '2026-11-14T05:00:00.000Z', site });
+  }
 });
 
 test('a skipped measurement keeps the last Lighthouse Facts and warns, naming the site', async () => {
   const warnings: string[] = [];
   const skipped = async () => ({ skipped: 'HTTP 429' });
-  const previous = lighthousePrevious({ ...scores, measuredAt: '2026-11-07T05:00:00.000Z' });
+  const previous = lighthousePrevious({ ...scores, measuredAt: '2026-11-07T05:00:00.000Z', site });
   const collected = await collectFacts(xSource, lighthouseRoutes(), { previous, lighthouse: skipped, warn: message => warnings.push(message) });
-  assert.deepEqual(collected.works['x']?.lighthouse, { ...scores, measuredAt: '2026-11-07T05:00:00.000Z' });
+  assert.deepEqual(collected.works['x']?.lighthouse, { ...scores, measuredAt: '2026-11-07T05:00:00.000Z', site });
   assert.deepEqual(warnings, ['x: Lighthouse not measured (HTTP 429); keeping the last scores']);
   const first = await collectFacts(xSource, lighthouseRoutes(), { previous: lighthousePrevious(), lighthouse: skipped, warn: message => warnings.push(message) });
   assert.equal(first.works['x']?.lighthouse, undefined);
   assert.equal(warnings[1], 'x: Lighthouse not measured (HTTP 429); no earlier scores to keep');
 });
 
-test('without a measurer the last Lighthouse Facts carry over', async () => {
-  const previous = lighthousePrevious({ ...scores, measuredAt: '2026-11-07T05:00:00.000Z' });
+test('a skipped measurement drops scores from another site rather than publish them for this one', async () => {
+  const warnings: string[] = [];
+  const skipped = async () => ({ skipped: 'HTTP 429' });
+  const previous = lighthousePrevious({ ...scores, measuredAt: '2026-11-07T05:00:00.000Z', site: 'https://x.example.dev/' });
+  const collected = await collectFacts(xSource, lighthouseRoutes(), { previous, lighthouse: skipped, warn: message => warnings.push(message) });
+  assert.equal(collected.works['x']?.lighthouse, undefined);
+  assert.deepEqual(warnings, ['x: Lighthouse not measured (HTTP 429); the last scores were measured on another site, so none are kept']);
+});
+
+test('without a measurer the last Lighthouse Facts carry over, for the same site only', async () => {
+  const previous = lighthousePrevious({ ...scores, measuredAt: '2026-11-07T05:00:00.000Z', site });
   assert.equal((await collectFacts(xSource, lighthouseRoutes(), { previous })).works['x']?.lighthouse?.measuredAt, '2026-11-07T05:00:00.000Z');
+  const moved = lighthousePrevious({ ...scores, measuredAt: '2026-11-07T05:00:00.000Z', site: 'https://x.example.dev/' });
+  assert.equal((await collectFacts(xSource, lighthouseRoutes(), { previous: moved })).works['x']?.lighthouse, undefined);
 });
 
 test('a measurement that fails closed stops the refresh', async () => {

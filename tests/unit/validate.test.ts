@@ -328,3 +328,13 @@ test('a Work with a site needs Lighthouse Facts in the Snapshot', () => {
   delete facts.works['one']!.lighthouse;
   assert.deepEqual(validatePortfolio(fixturePortfolio(), facts), ['work/one: no Lighthouse Facts in the Snapshot; run pnpm fetch-facts with PSI_API_KEY set']);
 });
+
+test("a Work's Lighthouse Facts must be measured on its own site", () => {
+  const facts = fixtureSnapshot();
+  facts.works['one']!.lighthouse!.site = 'https://one.example.dev/';
+  assert.deepEqual(validatePortfolio(fixturePortfolio(), facts), [
+    'work/one: Lighthouse Facts measured on https://one.example.dev/, not the site https://one.cevdet.ch/; run pnpm fetch-facts with PSI_API_KEY set',
+  ]);
+  facts.works['one']!.lighthouse!.site = 'https://one.cevdet.ch/';
+  assert.deepEqual(validatePortfolio(fixturePortfolio(), facts), []);
+});

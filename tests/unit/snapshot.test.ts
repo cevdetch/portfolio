@@ -96,3 +96,17 @@ test('describeChanges names each Lighthouse score that moved, and new or dropped
     'deadhead: Lighthouse scores removed',
   ]);
 });
+
+test('describeChanges names a site measured afresh, even with the same scores', () => {
+  const previous = fixtureSnapshot();
+  const next = structuredClone(previous);
+  next.works['one']!.lighthouse = { ...previous.works['one']!.lighthouse!, measuredAt: '2026-11-16T06:00:00.000Z', site: 'https://one.cevdet.ch/' };
+  assert.deepEqual(describeChanges(previous, next), [
+    'one: Lighthouse measured on one.cevdet.ch, performance 100, accessibility 100, best practices 96, SEO 100',
+  ]);
+  const moved = structuredClone(next);
+  moved.works['one']!.lighthouse!.site = 'https://one.example.dev/';
+  assert.deepEqual(describeChanges(next, moved), [
+    'one: Lighthouse measured on one.example.dev, performance 100, accessibility 100, best practices 96, SEO 100',
+  ]);
+});
