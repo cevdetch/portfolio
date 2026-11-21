@@ -16,4 +16,19 @@
       --cta-ink: #101210;
     }
   }
+  /* A scheme toggle forces either scheme by setting data-scheme on the root. */
+  :root[data-scheme="light"] {
+    --brand: #098D9C;
+    --brand-ink: #005A65;
+    --brand-bg: #E5F8FB;
+    --cta: #CA8A10;
+    --cta-ink: #191A17;
+  }
+  :root[data-scheme="dark"] {
+    --brand: #098D9C;
+    --brand-ink: #4DB9C8;
+    --brand-bg: #0C2327;
+    --cta: #CA8A10;
+    --cta-ink: #101210;
+  }
 }
