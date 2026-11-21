@@ -78,6 +78,9 @@ export function medianRun(runs: readonly LighthouseRun[]): LighthouseFacts {
   };
 }
 
+// Runs per site; the Facts keep their median, and the pages say how many it was taken from.
+export const lighthouseRuns = 3;
+
 // A run takes 10 to 40 seconds on Google's side; past two minutes it is treated as an outage.
 const defaultTimeout = 120_000;
 const validKey = /^[A-Za-z0-9_-]+$/;
@@ -97,7 +100,7 @@ function errorDetail(text: string, key: string): string {
  * 5xx or a run Lighthouse could not finish skips the site, so the refresh keeps its last scores; any other failure
  * throws. A key with characters no API key has (a stray CR or space from .env) throws at once. No message names it.
  */
-export function createPageSpeed(rawKey: string | undefined, fetcher: typeof fetch = fetch, { runs = 3, timeoutMs = defaultTimeout } = {}): MeasureLighthouse {
+export function createPageSpeed(rawKey: string | undefined, fetcher: typeof fetch = fetch, { runs = lighthouseRuns, timeoutMs = defaultTimeout } = {}): MeasureLighthouse {
   const key = rawKey?.trim();
   if (key && !validKey.test(key)) throw new Error('PSI_API_KEY contains invalid characters; check .env or the secret');
   return async site => {

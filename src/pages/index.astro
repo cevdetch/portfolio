@@ -50,7 +50,7 @@ const proofParts = splitOnTitles(profile.proof, proofWorks.map(work => work.data
         {lighthouse && (
           <div>
             <dt>{lighthouse.value}</dt>
-            <dd>{lighthouse.label} (<a href={lighthouse.source.url}>{lighthouse.source.label}</a>)</dd>
+            <dd>{lighthouse.label} (<a href={lighthouse.source.url}>{lighthouse.source.label}</a>{lighthouse.measuredAt && `, ${formatDay(lighthouse.measuredAt)}`})</dd>
           </div>
         )}
       </dl>

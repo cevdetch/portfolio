@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { availabilityLine, fillBio, languageItem, pageTitle, socialUsername } from '../../src/data/profile.ts';
-import { contributionHighlights, contributionSpan, discussionLine, contributionTotals, featuredWorks, fillCvLine, firstCitations, homeMetrics, inSourceOrder, lighthouseNumber, mergedPullsUrl, metricDisplay, newestFirst, recentlyShipped, skillGroups, splitOnTitles, upstreamGroups, upstreamLabel, workFactsView } from '../../src/data/views.ts';
+import { contributionHighlights, contributionSpan, discussionLine, contributionTotals, featuredWorks, fillCvLine, firstCitations, homeMetrics, inSourceOrder, lighthouseMethod, lighthouseNumber, mergedPullsUrl, metricDisplay, newestFirst, recentlyShipped, skillGroups, splitOnTitles, upstreamGroups, upstreamLabel, workFactsView } from '../../src/data/views.ts';
 import { formatDay, formatDayRange, formatMonth, joinList } from '../../src/lib/format.ts';
 import { fixturePortfolio, fixtureSnapshot } from '../helpers/portfolio-fixture.ts';
 
@@ -347,13 +347,20 @@ test('workFactsView gives the Lighthouse scores of a Work with a site, linked to
 test('the Lighthouse Number is the lowest mobile Performance score across the measured sites, linked to that site', () => {
   const p = fixturePortfolio();
   assert.deepEqual(lighthouseNumber(p.works, fixtureSnapshot()), {
-    value: '98', label: 'lowest mobile Lighthouse Performance score of the 2 live sites',
+    value: '98', label: "lowest mobile Lighthouse Performance score of the 2 live sites' home pages",
     source: { label: 'PageSpeed Insights', url: 'https://pagespeed.web.dev/analysis?url=https%3A%2F%2Fdeadhead.cevdet.ch%2F&form_factor=mobile' },
+    // The oldest measurement among the sites, so the date never claims a site was measured later than it was.
+    measuredAt: '2026-11-07T05:20:00.000Z',
   });
   const one = fixtureSnapshot();
   delete one.works['deadhead']!.lighthouse;
   // One site has no lowest: the label names the only one instead of counting it.
-  assert.equal(lighthouseNumber(p.works, one)?.label, 'mobile Lighthouse Performance score of the only live site');
+  assert.equal(lighthouseNumber(p.works, one)?.label, "mobile Lighthouse Performance score of the only live site's home page");
+  assert.equal(lighthouseNumber(p.works, one)?.measuredAt, '2026-11-07T05:21:00.000Z');
   delete one.works['one']!.lighthouse;
   assert.equal(lighthouseNumber(p.works, one), undefined);
+});
+
+test('the Lighthouse method names the page, the device and the runs behind the median', () => {
+  assert.equal(lighthouseMethod(), 'on the home page (mobile, median of 3 runs)');
 });

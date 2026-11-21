@@ -8,7 +8,7 @@ import { iconUrl } from '../../data/icons.ts';
 import { loadPortfolio } from '../../data/portfolio.ts';
 import { fullName, pageTitle } from '../../data/profile.ts';
 import { findScreenshots, screenshotAlt, screenshotDevices, type ScreenshotDevice } from '../../data/screenshots.ts';
-import { workFactsView } from '../../data/views.ts';
+import { lighthouseMethod, workFactsView } from '../../data/views.ts';
 import { formatDay, formatMonth } from '../../lib/format.ts';
 import { breadcrumbNode, graph, workCrumbs, workNode } from '../../lib/jsonld.ts';
 import { techCategories } from '../../schemas/tech.ts';
@@ -62,7 +62,7 @@ const { Content } = await render(entry);
         {work.data.site && <><dt>Site</dt><dd><a href={work.data.site}>{new URL(work.data.site).host}</a></dd></>}
         {facts.lighthouse && <><dt>Lighthouse</dt><dd>
           Performance {facts.lighthouse.performance} · Accessibility {facts.lighthouse.accessibility} · Best practices {facts.lighthouse.bestPractices} · SEO {facts.lighthouse.seo},
-          measured by <a href={facts.lighthouse.analysisUrl}>PageSpeed Insights</a> (mobile), {formatDay(facts.lighthouse.measuredAt)}
+          measured by <a href={facts.lighthouse.analysisUrl}>PageSpeed Insights</a> {lighthouseMethod()}, {formatDay(facts.lighthouse.measuredAt)}
         </dd></>}
         {facts.repoUrl && <><dt>Repository</dt><dd><a href={facts.repoUrl}>{work.data.repo}</a></dd></>}
         {facts.sourcePrivate && <><dt>Repository</dt><dd>Source private</dd></>}
