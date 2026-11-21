@@ -35,12 +35,13 @@ export function findScreenshots<T>(modules: Readonly<Record<string, { default: T
   return found;
 }
 
-/** The one line of alt text a device's screenshot needs: no per-Work field to keep in sync. */
-export function screenshotAlt(title: string, device: ScreenshotDevice): string {
-  return `Home page of ${title} on a ${device}`;
+/** The heading over a Work's screenshots. */
+export function previewHeading(title: string): string {
+  return `Home page of ${title}`;
 }
 
-/** The `sizes` for a screenshot shown at most at its CSS width, and full width below it. */
-export function screenshotSizes(cssWidth: number): string {
-  return `(min-width: ${cssWidth}px) ${cssWidth}px, 100vw`;
+/** The one line of alt text a device's screenshot needs: no per-Work field to keep in sync. A device shown in both
+ *  schemes names the scheme, so the two images differ. */
+export function screenshotAlt(title: string, device: ScreenshotDevice, scheme?: ScreenshotScheme): string {
+  return `${previewHeading(title)} on a ${device}${scheme ? `, ${scheme} scheme` : ''}`;
 }

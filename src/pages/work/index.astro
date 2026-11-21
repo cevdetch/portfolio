@@ -1,6 +1,8 @@
 ---
+import Board from '../../components/Board.astro';
+import Station from '../../components/Station.astro';
+import WorkId from '../../components/WorkId.astro';
 import Layout from '../../layouts/Layout.astro';
-import { iconUrl } from '../../data/icons.ts';
 import { loadPortfolio } from '../../data/portfolio.ts';
 import { fullName, pageTitle } from '../../data/profile.ts';
 import { orderWorks, workFactsView } from '../../data/views.ts';
@@ -10,16 +12,18 @@ const data = await loadPortfolio();
 ---
 
 <Layout title={pageTitle(data.profile, 'Work')} description={`The projects ${fullName(data.profile)} has built: developer tools, website templates, a writing site, research, Linux packages and self-hosted infrastructure.`}>
-  <h1>Work</h1>
-  <ul>
-    {orderWorks(data.works).map(work => {
-      const icon = iconUrl(workFactsView(work.id, data.facts).icon);
-      return (
-        <li>
-          {icon ? <img src={icon} alt="" width="32" height="32" /> : <span aria-hidden="true">{work.data.title.charAt(0).toUpperCase()}</span>}
-          <a href={`/work/${work.id}/`}>{work.data.title}</a> ({work.data.kind}, {statusMeanings[work.data.status]}): {work.data.tagline}
-        </li>
-      );
-    })}
-  </ul>
+  <Station>
+    <h1 id="work">Work</h1>
+  </Station>
+  <div class="wrap">
+    <Board id="work" columns={['Work', 'What it is', 'Status']}>
+      {orderWorks(data.works).map(work => (
+        <tr>
+          <td class="what"><WorkId id={work.id} title={work.data.title} icon={workFactsView(work.id, data.facts).icon} /></td>
+          <td>{work.data.tagline}</td>
+          <td class="where">{work.data.kind} · {statusMeanings[work.data.status]}</td>
+        </tr>
+      ))}
+    </Board>
+  </div>
 </Layout>

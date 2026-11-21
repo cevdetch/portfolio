@@ -138,6 +138,17 @@
   .station .lede + .lede { margin-block-start: calc(1.5 * var(--u)); }
   .station .actions { display: flex; flex-wrap: wrap; align-items: center; gap: calc(2 * var(--u)) calc(3 * var(--u)); margin-block-start: calc(3 * var(--u)); }
   .station .portrait { inline-size: calc(26 * var(--u)); block-size: calc(26 * var(--u)); border: 1px solid var(--rule); border-radius: 2px; background: var(--bg); object-fit: cover; }
+  .station .byline { margin-block: var(--u) calc(2 * var(--u)); color: var(--muted); }
+  .station .caveat { color: var(--muted); }
+  .station .work-id { display: flex; align-items: center; gap: calc(2 * var(--u)); }
+  .station .work-id img, .station .work-id .mono { inline-size: calc(6 * var(--u)); block-size: calc(6 * var(--u)); flex: none; }
+  .station .work-id .mono { display: grid; place-items: center; background: var(--muted); color: var(--bg); font-size: var(--step-3); font-weight: 800; }
+  .station .work-id h1 { margin: 0; }
+  .crumbs { padding-block-end: calc(3 * var(--u)); color: var(--muted); font-size: var(--step--1); }
+  .crumbs ol { display: flex; flex-wrap: wrap; gap: var(--u); }
+  .crumbs li + li::before { content: "/"; margin-inline-end: var(--u); color: var(--muted); }
+  .crumbs a { display: inline-block; padding-block: 2px; }
+  .crumbs a[aria-current="page"] { color: var(--text); text-decoration: none; }
   @media (max-width: 52rem) {
     .station .wrap { grid-template-columns: 1fr; padding-block: calc(5 * var(--u)); }
     .station .wrap > picture { order: -1; }
@@ -149,6 +160,7 @@
   .block > h2 { margin-block-end: calc(2 * var(--u)); }
   .more { margin-block-start: calc(2 * var(--u)); }
   .flow > * + * { margin-block-start: calc(2 * var(--u)); }
+  .head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--u) calc(3 * var(--u)); margin-block-end: calc(2 * var(--u)); }
   .two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: calc(3 * var(--u)) calc(6 * var(--u)); }
   .two > h2 { margin: 0; }
   @media (max-width: 52rem) { .two { grid-template-columns: 1fr; } }
@@ -271,6 +283,152 @@
   .themes { display: grid; gap: var(--u); margin-block-start: calc(3 * var(--u)); }
   .themes li { position: relative; padding-inline-start: calc(3 * var(--u)); }
   .themes li::before { content: ""; position: absolute; inset-block-start: 0.7em; inset-inline-start: 0; inline-size: calc(1.5 * var(--u)); block-size: 2px; background: var(--brand-ink); }
+
+  /* Facts on a Work page: a two-column board of labels and values. */
+  .facts { display: grid; grid-template-columns: max-content minmax(0, 1fr); }
+  .facts dt, .facts dd { padding-block: calc(1.5 * var(--u)); border-block-end: 1px solid var(--rule); }
+  .facts dt { padding-block-start: calc(1.5 * var(--u) + 0.3em); padding-inline-end: calc(4 * var(--u)); color: var(--muted); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em; line-height: 1.5; text-transform: uppercase; }
+  .facts dd { line-height: 1.45; }
+  .facts .big { display: block; color: var(--brand-ink); font-size: var(--step-1); font-weight: 700; }
+  @media (max-width: 40rem) {
+    .facts { grid-template-columns: 1fr; }
+    .facts dt { padding-block: calc(2 * var(--u)) 0; border: 0; }
+  }
+
+  /* The Stack: chip links to the Techs a Work uses. */
+  .stack { display: flex; flex-wrap: wrap; gap: var(--u); }
+  .stack a { display: inline-flex; align-items: center; min-block-size: calc(4 * var(--u)); padding-inline: calc(1.5 * var(--u)); border: 1px solid var(--rule); border-radius: 2px; background: var(--bg); font-size: var(--step--1); font-weight: 500; text-decoration: none; }
+  .stack a:hover { border-color: var(--brand-ink); }
+
+  /* Highlights and prose lists: a brand-ink dash leads each item. */
+  .highlights { display: grid; gap: calc(2 * var(--u)); max-inline-size: var(--measure); }
+  .highlights li, .prose li { position: relative; padding-inline-start: calc(3 * var(--u)); line-height: 1.5; }
+  .highlights li { padding-inline-start: calc(4 * var(--u)); }
+  .highlights li::before, .prose li::before { content: ""; position: absolute; inset-block-start: 0.7em; inset-inline-start: 0; inline-size: calc(1.5 * var(--u)); block-size: 2px; background: var(--brand-ink); }
+  .highlights li::before { inline-size: calc(2 * var(--u)); }
+
+  /* The Case study: a 64ch measure, sections parted by space alone. */
+  .prose { max-inline-size: var(--measure); }
+  .prose h2 { margin-block: calc(7 * var(--u)) calc(2 * var(--u)); }
+  .prose > h2:first-child { margin-block-start: 0; }
+  .prose p + p, .prose ul + p, .prose p + ul { margin-block-start: calc(2 * var(--u)); }
+  .prose ul { display: grid; gap: calc(1.5 * var(--u)); }
+
+  /* Preview: the device switch, and the light/dark comparison per device. */
+  .preview-tabs { display: flex; gap: var(--u); margin-block-end: calc(3 * var(--u)); border-block-end: 1px solid var(--rule); }
+  .preview-tabs input { position: absolute; inline-size: 1px; block-size: 1px; opacity: 0; pointer-events: none; }
+  .preview-tabs label { display: inline-flex; align-items: center; min-block-size: calc(5 * var(--u)); margin-block-end: -1px; padding-inline: calc(1.5 * var(--u)); border-block-end: 2px solid transparent; color: var(--muted); cursor: pointer; font-size: var(--step--1); font-weight: 600; }
+  .preview-tabs label:hover { color: var(--text); }
+  .preview-tabs input:checked + label { border-block-end-color: var(--brand-ink); color: var(--brand-ink); }
+  .preview-tabs input:focus-visible + label { outline: var(--focus); outline-offset: -3px; }
+  @media (min-width: 52.01rem) {
+    .preview:has(input[value="desktop"]:checked) .compare[data-device="phone"],
+    .preview:has(input[value="phone"]:checked) .compare[data-device="desktop"] { display: none; }
+  }
+  .compare { timeline-scope: --compare; }
+  .compare-frame { position: relative; overflow: hidden; border: 1px solid var(--rule); border-radius: 2px; background: var(--bg-sunk); }
+  .compare[data-device="phone"] .compare-frame { max-inline-size: calc(390px + 2px); }
+  .shot, .shot img { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; }
+  .shot img { object-fit: cover; }
+  .single .shot { position: static; }
+  /* The visitor's own scheme is the base; the other one reveals from the right as the handle moves. */
+  .compare { --light-reveal: none; --dark-reveal: reveal; --light-layer: 1; --dark-layer: 2; --light-still: none; --dark-still: inset(0 0 0 50%); --light-order: 0; --dark-order: 1; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-scheme="light"]) .compare { --light-reveal: reveal; --dark-reveal: none; --light-layer: 2; --dark-layer: 1; --light-still: inset(0 0 0 50%); --dark-still: none; --light-order: 1; --dark-order: 0; }
+  }
+  :root[data-scheme="dark"] .compare { --light-reveal: reveal; --dark-reveal: none; --light-layer: 2; --dark-layer: 1; --light-still: inset(0 0 0 50%); --dark-still: none; --light-order: 1; --dark-order: 0; }
+  .compare .shot { animation-timing-function: linear; animation-fill-mode: both; animation-timeline: --compare; }
+  .compare .shot-light { z-index: var(--light-layer); order: var(--light-order); animation-name: var(--light-reveal); }
+  .compare .shot-dark { z-index: var(--dark-layer); order: var(--dark-order); animation-name: var(--dark-reveal); }
+  @keyframes reveal { from { clip-path: inset(0 0 0 100%); } to { clip-path: inset(0 0 0 0); } }
+  /* Scroll-driven animations stay in longhands without a duration: the minifier would otherwise fold them into an
+     animation shorthand, which cannot carry a timeline, and the browser would drop the declaration. */
+  .compare-divider {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 100%;
+    z-index: 3;
+    inline-size: 2px;
+    background: var(--brand-ink);
+    pointer-events: none;
+    translate: -1px 0;
+    animation-name: slide;
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+    animation-timeline: --compare;
+  }
+  @keyframes slide { from { inset-inline-start: 100%; } to { inset-inline-start: 0; } }
+  /* The grip rides the divider and slides along the line as it crosses the frame, so it stays inside at both ends. */
+  .compare-divider::before {
+    content: "";
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-start: 50%;
+    inline-size: calc(3.5 * var(--u));
+    block-size: calc(6 * var(--u));
+    border-radius: 2px;
+    background:
+      linear-gradient(90deg, transparent calc(50% - 4px), var(--bg) calc(50% - 4px) calc(50% - 2px), transparent calc(50% - 2px) calc(50% + 2px), var(--bg) calc(50% + 2px) calc(50% + 4px), transparent calc(50% + 4px)) center / 100% 16px no-repeat,
+      var(--brand-ink);
+    box-shadow: 0 4px 12px -4px color-mix(in oklab, var(--text) 50%, transparent);
+    translate: -50% -50%;
+    animation-name: grip;
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+    animation-timeline: --compare;
+  }
+  @keyframes grip { from { translate: -100% -50%; } to { translate: 0 -50%; } }
+  /* The scroller over the frame: its scrollbar is the handle, and arrow keys move it. It runs right to left so the
+     scrollbar, the keys and the divider all move the same way; a horizontal touch drag goes to the drag script. */
+  .compare-track {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    overflow-x: scroll;
+    overflow-y: hidden;
+    direction: rtl;
+    scroll-timeline: --compare x;
+    scrollbar-color: var(--brand-ink) color-mix(in oklab, var(--bg) 70%, transparent);
+    touch-action: pan-y;
+    cursor: ew-resize;
+  }
+  .compare-track > div { inline-size: 200%; block-size: 100%; }
+  .compare-track:focus-visible { outline-offset: -3px; }
+  .compare-caption { display: flex; flex-wrap: wrap; gap: var(--u) calc(3 * var(--u)); margin-block-start: calc(1.5 * var(--u)); color: var(--muted); font-size: var(--step--1); }
+  .compare-caption .static, .compare-caption .stacked { display: none; }
+  /* Without motion or scroll timelines, the pair sits still at a half split, and the caption says which is which. */
+  @media (prefers-reduced-motion: reduce) {
+    .compare .shot { animation: none; }
+    .compare .shot-light { clip-path: var(--light-still); }
+    .compare .shot-dark { clip-path: var(--dark-still); }
+    .compare-divider { inset-inline-start: 50%; animation: none; }
+    .compare-divider::before { translate: -50% -50%; animation: none; }
+    .compare-track, .compare-caption .live { display: none; }
+    .compare-caption .static { display: inline; }
+  }
+  @supports not (animation-timeline: scroll()) {
+    .compare .shot { animation: none; }
+    .compare .shot-light { clip-path: var(--light-still); }
+    .compare .shot-dark { clip-path: var(--dark-still); }
+    .compare-divider { inset-inline-start: 50%; animation: none; }
+    .compare-divider::before { translate: -50% -50%; animation: none; }
+    .compare-track, .compare-caption .live { display: none; }
+    .compare-caption .static { display: inline; }
+  }
+  /* Below 52rem: no slider. The phone pair sits side by side first, the desktop pair stacks below it. */
+  @media (max-width: 52rem) {
+    .preview-tabs { display: none; }
+    .preview { display: grid; gap: calc(4 * var(--u)); }
+    .preview .head { margin: 0; }
+    .preview .compare[data-device="phone"] { order: 1; }
+    .preview .compare[data-device="desktop"] { order: 2; }
+    .compare-frame { display: grid; gap: 2px; aspect-ratio: auto !important; max-inline-size: none !important; border-color: var(--rule); background: var(--rule); }
+    .compare[data-device="phone"] .compare-frame { grid-template-columns: 1fr 1fr; }
+    .compare .shot, .compare .shot img { position: static; block-size: auto; clip-path: none; animation: none; }
+    .compare-divider, .compare-track, .compare-caption .live { display: none; }
+    .compare[data-device="phone"] .compare-caption .static, .compare[data-device="desktop"] .compare-caption .stacked { display: inline; }
+    .compare[data-device="desktop"] .compare-caption .static { display: none; }
+  }
 
   /* Contact links: a glyph beside every label, in the fixed order. */
   .contact { display: flex; flex-wrap: wrap; gap: var(--u) calc(3 * var(--u)); }

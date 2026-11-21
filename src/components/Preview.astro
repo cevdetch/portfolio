@@ -1,0 +1,87 @@
+---
+// A Work's home page as its site serves it, on a desktop and on a phone, in both colour schemes. Above 52rem a
+// device switch (radio inputs and :has(), no script) shows one device, and a light/dark comparison runs per device:
+// the visitor's own scheme is the base, and the other reveals from the right as the handle moves. A scroller over
+// the frame drives the reveal through a scroll timeline; its own scrollbar is the handle and arrow keys move it.
+// Pointer drag is the second of the site's two scripts. Below 52rem, with reduced motion, or without scroll
+// timelines the pairs sit still, each with a caption saying which is which. A site without a dark theme shows its
+// one capture.
+import type { ImageMetadata } from 'astro';
+import { getImage } from 'astro:assets';
+import { previewHeading, screenshotAlt, screenshotDevices, type ScreenshotDevice, type WorkScreenshots } from '../data/screenshots.ts';
+
+interface Props { title: string; site?: string | undefined; screenshots: WorkScreenshots<ImageMetadata> }
+const { title, site, screenshots } = Astro.props;
+const devices = (Object.keys(screenshotDevices) as ScreenshotDevice[]).filter(device => screenshots[device]);
+// The desktop frame spans the content column; a phone frame is at most its capture width, half the column when
+// the pair sits side by side.
+const sizes: Record<ScreenshotDevice, string> = { desktop: '(min-width: 1280px) 1136px, 100vw', phone: '(max-width: 52rem) 50vw, 390px' };
+
+const derive = (src: ImageMetadata, device: ScreenshotDevice, format: 'webp' | 'png') => {
+  const { width, height, widths } = screenshotDevices[device];
+  return getImage({ src, format, width, height, widths: [...widths], sizes: sizes[device] });
+};
+const frames = await Promise.all(devices.map(async device => {
+  const { light, dark } = screenshots[device]!;
+  const shots = await Promise.all((dark ? [['light', light], ['dark', dark]] as const : [['light', light]] as const).map(async ([scheme, src]) => {
+    const [webp, png] = await Promise.all([derive(src, device, 'webp'), derive(src, device, 'png')]);
+    return { scheme, webp, png, alt: dark ? screenshotAlt(title, device, scheme) : screenshotAlt(title, device) };
+  }));
+  return { device, ...screenshotDevices[device], shots };
+}));
+---
+
+{frames.length > 0 && (
+  <section class="block preview" aria-labelledby="preview">
+    <div class="head">
+      <h2 id="preview">{previewHeading(title)}</h2>
+      {site && <p><a href={site}>{new URL(site).host}</a></p>}
+    </div>
+    {frames.length > 1 && (
+      <fieldset class="preview-tabs">
+        <legend class="vh">Device</legend>
+        {frames.map(({ device }, index) => (
+          <input type="radio" name="device" id={`device-${device}`} value={device} checked={index === 0} /><label for={`device-${device}`}>{device === 'desktop' ? 'Desktop' : 'Phone'}</label>
+        ))}
+      </fieldset>
+    )}
+    {frames.map(({ device, width, height, shots }) => (
+      <div class:list={['compare', { single: shots.length === 1 }]} data-device={device}>
+        <div class="compare-frame" id={`compare-${device}`} style={`aspect-ratio: ${width} / ${height}`}>
+          {shots.map(({ scheme, webp, png, alt }) => (
+            <picture class={`shot shot-${scheme}`}>
+              <source type="image/webp" srcset={webp.srcSet.attribute} sizes={sizes[device]} />
+              {/* The desktop pair is the page's largest paint, so it loads first; the phone pair waits until shown. */}
+              <img src={png.src} srcset={png.srcSet.attribute} sizes={sizes[device]} width={width} height={height} alt={alt}
+                loading={device === 'desktop' ? 'eager' : 'lazy'} fetchpriority={device === 'desktop' && scheme === 'light' ? 'high' : undefined} decoding="async" />
+            </picture>
+          ))}
+          {shots.length > 1 && (
+            <>
+              <div class="compare-divider"></div>
+              <div class="compare-track" tabindex="0" role="scrollbar" aria-controls={`compare-${device}`} aria-label="Compare light and dark: scroll or use the arrow keys"
+                aria-orientation="horizontal" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div></div></div>
+            </>
+          )}
+        </div>
+        {shots.length > 1 && (
+          <p class="compare-caption">
+            <span class="live">Drag the handle to compare light and dark.</span>
+            <span class="static">Left: your scheme. Right: the other one.</span>
+            <span class="stacked">Top: your scheme. Below: the other one.</span>
+          </p>
+        )}
+      </div>
+    ))}
+    {/* Pointer drag: the handle follows the pointer, and the track reports how much of the other scheme shows. The
+        track scrolls right to left, so its scrollbar and the arrow keys move the same way as the divider. */}
+    {frames.some(({ shots }) => shots.length > 1) && <script is:inline>for (const track of document.querySelectorAll('.compare-track')) {
+  let start;
+  const report = () => track.setAttribute('aria-valuenow', String(Math.round(Math.abs(track.scrollLeft) / (track.scrollWidth - track.clientWidth) * 100)));
+  track.addEventListener('scroll', report, { passive: true });
+  track.addEventListener('pointerdown', event => { start = { x: event.clientX, left: track.scrollLeft }; track.setPointerCapture(event.pointerId); });
+  track.addEventListener('pointermove', event => { if (start) track.scrollLeft = start.left + (event.clientX - start.x); });
+  for (const type of ['pointerup', 'pointercancel']) track.addEventListener(type, () => { start = undefined; });
+}</script>}
+  </section>
+)}

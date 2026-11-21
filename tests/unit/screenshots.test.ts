@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { findScreenshots, screenshotAlt, screenshotDevices, screenshotScale, screenshotSizes } from '../../src/data/screenshots.ts';
+import { findScreenshots, screenshotAlt, screenshotDevices, screenshotScale } from '../../src/data/screenshots.ts';
 
 const image = (name: string) => ({ default: { src: `/${name}.abc123.webp`, width: 2560, height: 1600 } });
 
@@ -38,14 +38,10 @@ test('findScreenshots returns no devices for a Work with no captures', () => {
   assert.deepEqual(findScreenshots({}, 'private-tool'), {});
 });
 
-test('screenshotAlt describes a Work\'s home page by title and device', () => {
+test('screenshotAlt describes a Work\'s home page by title and device, and by scheme when both are shown', () => {
   assert.equal(screenshotAlt('deadhead', 'desktop'), 'Home page of deadhead on a desktop');
   assert.equal(screenshotAlt('Astro Minimal Template', 'phone'), 'Home page of Astro Minimal Template on a phone');
-});
-
-test('screenshotSizes caps the image at its CSS width and fills narrower viewports', () => {
-  assert.equal(screenshotSizes(1280), '(min-width: 1280px) 1280px, 100vw');
-  assert.equal(screenshotSizes(390), '(min-width: 390px) 390px, 100vw');
+  assert.equal(screenshotAlt('deadhead', 'phone', 'dark'), 'Home page of deadhead on a phone, dark scheme');
 });
 
 test('each device derives its CSS width at 1x, 1.5x and the capture scale, so a 1.5x screen gets a close match', () => {
