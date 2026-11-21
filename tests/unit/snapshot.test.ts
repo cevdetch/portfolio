@@ -50,6 +50,11 @@ test('describeChanges names a change in the rule counts', () => {
   const next = structuredClone(previous);
   next.works['deadhead']!.rules = { total: 204, head: 93 };
   assert.deepEqual(describeChanges(previous, next), ['deadhead: 203 → 204 rules, 92 → 93 for the head']);
+  // A count that held still is named once, not as "92 → 92".
+  next.works['deadhead']!.rules = { total: 205, head: 92 };
+  assert.deepEqual(describeChanges(previous, next), ['deadhead: 203 → 205 rules, still 92 for the head']);
+  next.works['deadhead']!.rules = { total: 203, head: 90 };
+  assert.deepEqual(describeChanges(previous, next), ['deadhead: 203 rules, 92 → 90 for the head']);
 });
 
 test('describeChanges names a repository that turned public or private', () => {

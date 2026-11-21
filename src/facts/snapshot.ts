@@ -74,7 +74,11 @@ export function describeChanges(previous: Snapshot | undefined, next: Snapshot):
     }
     if (before.pkgbuilds?.join() !== after.pkgbuilds?.join()) lines.push(`${id}: ${before.pkgbuilds?.length ?? 0} → ${after.pkgbuilds?.length ?? 0} PKGBUILDs`);
     if (before.rules?.total !== after.rules?.total || before.rules?.head !== after.rules?.head) {
-      lines.push(`${id}: ${before.rules?.total ?? 0} → ${after.rules?.total ?? 0} rules, ${before.rules?.head ?? 0} → ${after.rules?.head ?? 0} for the head`);
+      // A count that held still is named once, so the line shows only what moved.
+      const [total, head] = [[before.rules?.total ?? 0, after.rules?.total ?? 0], [before.rules?.head ?? 0, after.rules?.head ?? 0]] as const;
+      const totalPart = total[0] === total[1] ? `${total[0]} rules` : `${total[0]} → ${total[1]} rules`;
+      const headPart = head[0] === head[1] ? `still ${head[0]} for the head` : `${head[0]} → ${head[1]} for the head`;
+      lines.push(`${id}: ${totalPart}, ${headPart}`);
     }
     if (before.icon?.sha256 !== after.icon?.sha256) lines.push(`${id}: icon ${after.icon ? 'changed' : 'removed'}`);
     lines.push(...lighthouseLines(id, before.lighthouse, after.lighthouse));
