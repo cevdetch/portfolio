@@ -68,7 +68,7 @@ services:
     evidence: [astro-reels-template]
   - id: metadata-audit
     name: Metadata and SEO audit
-    summary: A full review of the HTML head, structured data, social previews and indexing with deadhead, the linter that audited 4,570 of the web's top homepages; every fix comes with its source.
+    summary: 'Send the URL. A written scope and a fixed quote come before any work starts; the deadhead report lists every finding in the head, structured data and social previews, each with its fix and source.'
     evidence: [deadhead, astro-metadata-lab]
   - id: starters-maintenance
     name: Starters and maintenance
