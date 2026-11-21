@@ -72,8 +72,9 @@ services:
     summary: 'Send the URL. A written scope and a fixed quote come before any work starts; the deadhead report lists every finding in the head, structured data and social previews, each with its fix and source.'
     evidence: [deadhead, astro-metadata-lab]
   - id: starters-maintenance
-    name: Starters and maintenance
-    summary: 'A tuned Astro starter for a new project, or an existing site kept fast: dependency updates, fixes and verified deploys.'
+    name: Astro starters and maintenance
+    summary: 'A tuned Astro starter for a new project, or an existing Astro site kept current: dependency updates, fixes, and every deployed commit built and tested in CI.'
+    evidence: [astro-minimal-template, astro-reels-template, deadhead, favseed]
 languages:
   - { name: Turkish, level: native }
   - { name: Kurdish, level: native }
