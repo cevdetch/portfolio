@@ -39,12 +39,12 @@ Most favicon generators on npm write whatever a single image encode produced, of
 
 The decisions in force, and the ones they replaced, are recorded with their measurements in the repository's decisions log.
 
-- **One engine.** `@napi-rs/image` renders, quantises and recompresses in one native module, and a Zopfli build compiled to WebAssembly finishes each PNG. The same stages run in Node and in a browser worker.
-- **Quantise before recompressing.** The quantiser re-encodes from scratch, so any order that ends in quantisation throws away the recompressor's work. Zopfli runs once per raster, on the winning encode only.
-- **The smallest encode that passes wins.** Each PNG and the ICO payload is scored against a render of the source, on black and on white, and a search over quality and palette settings keeps the smallest candidate that passes. An `effort` option trades build time for bytes, and the dev servers use the fast path.
-- **Placement is measured.** Each mark is scaled until its farthest opaque pixel sits on the W3C safe circle, then snapped to whole pixels when that at least halves the partly covered edge pixels.
-- **The ICO container is written directly**: a 22-byte header around a PNG payload, which removes the one tool that had no npm package and no Windows build.
-- **`var()` is resolved before rendering**, so a mark can be a template recoloured with `--var`, and a variable with no value is an error rather than a black square.
+- `@napi-rs/image` renders, quantises and recompresses in one native module, and a Zopfli build compiled to WebAssembly finishes each PNG. The same engine runs in Node and in a browser worker.
+- Quantisation comes before recompression, because the quantiser re-encodes from scratch and any order that ends in quantisation throws away the recompressor's work. Zopfli runs once per raster, on the winning encode only.
+- Each PNG and the ICO payload is scored against a render of the source, on black and on white, and a search over quality and palette settings keeps the smallest candidate that passes. An `effort` option trades build time for bytes, and the dev servers use the fast path.
+- Each mark is scaled until its farthest opaque pixel sits on the W3C safe circle, then snapped to whole pixels when that at least halves the partly covered edge pixels.
+- The ICO container is written directly as a 22-byte header around a PNG payload, which removes the one tool that had no npm package and no Windows build.
+- `var()` is resolved before rendering, so a mark can be a template recoloured with `--var`, and a variable with no value raises an error instead of rendering a black square.
 - The Vite plugin and Astro integration serve icons from memory in development and keep a content-addressed cache keyed on the input, the options and the engine identities, so an engine upgrade cannot serve stale files.
 
 ## Results

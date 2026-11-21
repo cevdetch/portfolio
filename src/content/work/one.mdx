@@ -27,11 +27,11 @@ Cevdet Haran's essays lived on an earlier site built with Zola, and short poems 
 
 ## Decisions
 
-- **Start lean from the Astro Minimal Template.** One began as a local copy of the [starter](https://astro-minimal-template.pages.dev/) with everything it did not use removed, and each feature added back brought its own tests. The branded share-image pipeline returned once it was needed.
-- **Content collections with strict fields.** Every entry needs a title, a description of at most 160 characters and a publication date. Drafts are filtered in one helper that every route uses, so a draft produces no page, list entry, feed item or sitemap entry.
-- **Search-ready by default.** Every URL ends in a slash and has a self-referencing canonical. `WebSite`, `Person` and `Article` structured data match the visible content only. Each sitemap entry's `lastmod` is the piece's own updated or published date, list pages carry the newest of their pieces, and pages with no meaningful date carry none rather than a guess.
-- **Redirects that preserve every link.** The old site is redeployed as a redirect map that sends each article, with and without a trailing slash, to its new URL with a 301.
-- **Reading first.** Essays get a byline with a reading time, a reading-width body and a contents list built from native `<details>` that becomes a sticky sidebar on wide screens through CSS alone. The RSS feed carries full essay HTML.
+- One began as a lean local copy of the [Astro Minimal Template](https://astro-minimal-template.pages.dev/), with everything it did not use removed, and each feature added back brought its own tests. The branded share-image pipeline returned once it was needed.
+- Every entry in the content collections needs a title, a description of at most 160 characters and a publication date. Drafts are filtered in one helper that every route uses, so a draft produces no page, list entry, feed item or sitemap entry.
+- Every URL ends in a slash and has a self-referencing canonical. `WebSite`, `Person` and `Article` structured data match the visible content only. Each sitemap entry's `lastmod` is the piece's own updated or published date, list pages carry the newest of their pieces, and pages with no meaningful date carry none rather than a guess.
+- The old site is redeployed as a redirect map that sends each article, with and without a trailing slash, to its new URL with a 301, so every old article link still resolves.
+- Essays get a byline with a reading time, a reading-width body and a contents list built from native `<details>` that becomes a sticky sidebar on wide screens through CSS alone. The RSS feed carries full essay HTML.
 - Icons, brand styles and `theme-color` are generated from the logo registry and committed, and the manifest is built from the same generated data.
 
 ## Results

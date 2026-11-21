@@ -48,12 +48,12 @@ Most linters say *that* something is wrong. Markup in the `<head>` needs *why*: 
 
 ## Decisions
 
-- **One Markdown file per rule.** The linter's registry and the documentation site at [deadhead.cevdet.ch](https://deadhead.cevdet.ch/) are both generated from the same files, so a finding and its explanation cannot drift apart. Every finding prints the URL of its rule page.
-- **Severity describes cost.** `harmful` breaks something for users, `deprecated` is formally obsolete but inert, and `unnecessary` works but is dead weight.
-- **Fixes are byte-range edits.** `--fix` splices ranges out of the original text and only ever subtracts. A rule whose detection is partial never edits a file, and overlapping fixes are skipped for a second pass rather than merged.
-- **Adapters are tested against each other.** A conformance suite runs every fixture through every adapter, including the built bookmarklet, and asserts that the CLI and ESLint autofix produce byte-identical output. The DOM's known differences are declared in the suite and asserted in both directions.
-- **Baselines count findings per file per rule**, not line numbers, so reindenting a file does not light up CI with findings nobody introduced.
-- **The docs site is a fixture.** Its build runs the CLI over its own rendered output, so the head the project ships is held to the rules it ships.
+- Each rule is one Markdown file, and the linter's registry and the documentation site at [deadhead.cevdet.ch](https://deadhead.cevdet.ch/) are both generated from those files, so a finding and its explanation cannot drift apart. Every finding prints the URL of its rule page.
+- A rule's severity describes its cost: `harmful` breaks something for users, `deprecated` is formally obsolete but inert, and `unnecessary` works but is dead weight.
+- `--fix` splices byte ranges out of the original text and only ever subtracts. A rule whose detection is partial never edits a file, and overlapping fixes are skipped for a second pass rather than merged.
+- A conformance suite tests the adapters against each other, running every fixture through every adapter, including the built bookmarklet, and asserting that the CLI and ESLint autofix produce byte-identical output. The DOM's known differences are declared in the suite and asserted in both directions.
+- Baselines count findings per file and per rule, without line numbers, so reindenting a file does not light up CI with findings nobody introduced.
+- The docs site's build runs the CLI over its own rendered output, so the head the project ships is held to the rules it ships.
 - Reports come as stylish text, JSON or SARIF, with exit codes as the CI contract. A Vite plugin reports findings for served pages during development.
 
 ## Results

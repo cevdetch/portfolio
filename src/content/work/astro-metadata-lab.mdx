@@ -36,10 +36,10 @@ Advice on what belongs in a page's `<head>` is easy to find and hard to verify. 
 
 ## Decisions
 
-- **One catalogue, three views per case.** Every fixture has its own page, a side-by-side comparison with the baseline homepage and a plain-text view of its source.
-- **Controls that are meant to fail.** Fixtures include broken images, conflicting tags, duplicate canonicals, a script-end injection in JSON-LD, a real 404, a 302 redirect and a header-only `noindex`, so failure modes are visible rather than assumed.
-- **Records separate contracts from observations.** Each case has a results page, and a shared run registry records which client produced each observation. A documented requirement of the Open Graph protocol or Google's guidance is kept apart from what a client happened to show.
-- **Checks on the artifact.** The build is verified for every case, source and comparison output, exact fixture HTML, asset bytes, manifest paths, host rules and the absence of a client bundle, including under a subpath.
+- The catalogue gives every fixture three views: its own page, a side-by-side comparison with the baseline homepage and a plain-text view of its source.
+- Some fixtures are controls meant to fail: broken images, conflicting tags, duplicate canonicals, a script-end injection in JSON-LD, a real 404, a 302 redirect and a header-only `noindex`, so each failure mode can be checked on a real page instead of assumed.
+- Each case has a results page, and a shared run registry records which client produced each observation. The records keep a documented requirement of the Open Graph protocol or Google's guidance apart from what a client happened to show.
+- Checks on the built site verify every case, source and comparison output, the exact fixture HTML, asset bytes, manifest paths, host rules and the absence of a client bundle, including under a subpath.
 
 ## Results
 
