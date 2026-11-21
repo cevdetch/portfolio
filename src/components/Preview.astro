@@ -1,11 +1,11 @@
 ---
-// A Work's home page as its site serves it, on a desktop and on a phone, in both colour schemes. Above 52rem a
-// device switch (radio inputs and :has(), no script) shows one device, and a light/dark comparison runs per device:
-// the visitor's own scheme is the base, and the other reveals from the right as the handle moves. A scroller over
-// the frame drives the reveal through a scroll timeline; its own scrollbar is the handle and arrow keys move it.
-// Pointer drag is the second of the site's two scripts. Below 52rem, with reduced motion, or without scroll
-// timelines the pairs sit still, each with a caption saying which is which. A site without a dark theme shows its
-// one capture.
+// A Work's home page as its site serves it, on a desktop and on a phone, in both colour schemes. A device switch
+// (radio inputs and :has(), no script) shows one device, and a light/dark comparison runs per device: the
+// visitor's own scheme is the base, and the other reveals from the right as the handle moves. A scroller over the
+// frame drives the reveal through a scroll timeline; its own scrollbar is the handle and arrow keys move it.
+// Pointer and touch drag are the second of the site's two scripts. With reduced motion or without scroll
+// timelines the pair sits still at a half split, with a caption saying which is which. A site without a dark
+// theme shows its one capture.
 import type { ImageMetadata } from 'astro';
 import { getImage } from 'astro:assets';
 import { previewHeading, screenshotAlt, screenshotDevices, type ScreenshotDevice, type WorkScreenshots } from '../data/screenshots.ts';
@@ -13,9 +13,9 @@ import { previewHeading, screenshotAlt, screenshotDevices, type ScreenshotDevice
 interface Props { title: string; site?: string | undefined; screenshots: WorkScreenshots<ImageMetadata> }
 const { title, site, screenshots } = Astro.props;
 const devices = (Object.keys(screenshotDevices) as ScreenshotDevice[]).filter(device => screenshots[device]);
-// The desktop frame spans the content column; a phone frame is at most its capture width, half the column when
-// the pair sits side by side.
-const sizes: Record<ScreenshotDevice, string> = { desktop: '(min-width: 1280px) 1136px, 100vw', phone: '(max-width: 52rem) 50vw, 390px' };
+// The desktop frame spans the content column; a phone frame is at most its capture width, and on a phone it
+// shrinks to fit the viewport's height.
+const sizes: Record<ScreenshotDevice, string> = { desktop: '(min-width: 1280px) 1136px, 100vw', phone: '(max-width: 52rem) 100vw, 390px' };
 
 const derive = (src: ImageMetadata, device: ScreenshotDevice, format: 'webp' | 'png') => {
   const { width, height, widths } = screenshotDevices[device];
@@ -68,7 +68,6 @@ const frames = await Promise.all(devices.map(async device => {
           <p class="compare-caption">
             <span class="live">Drag the handle to compare light and dark.</span>
             <span class="static">Left: your scheme. Right: the other one.</span>
-            <span class="stacked">Top: your scheme. Below: the other one.</span>
           </p>
         )}
       </div>

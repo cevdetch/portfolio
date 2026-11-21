@@ -340,10 +340,8 @@
   .preview-tabs label:hover { color: var(--text); }
   .preview-tabs input:checked + label { border-block-end-color: var(--brand-ink); color: var(--brand-ink); }
   .preview-tabs input:focus-visible + label { outline: var(--focus); outline-offset: -3px; }
-  @media (min-width: 52.01rem) {
-    .preview:has(input[value="desktop"]:checked) .compare[data-device="phone"],
-    .preview:has(input[value="phone"]:checked) .compare[data-device="desktop"] { display: none; }
-  }
+  .preview:has(input[value="desktop"]:checked) .compare[data-device="phone"],
+  .preview:has(input[value="phone"]:checked) .compare[data-device="desktop"] { display: none; }
   .compare { timeline-scope: --compare; }
   .compare-frame { position: relative; overflow: hidden; border: 1px solid var(--rule); border-radius: 2px; background: var(--bg-sunk); }
   .compare[data-device="phone"] .compare-frame { max-inline-size: calc(390px + 2px); }
@@ -414,7 +412,7 @@
   .compare-track > div { inline-size: 200%; block-size: 100%; }
   .compare-track:focus-visible { outline-offset: -3px; }
   .compare-caption { display: flex; flex-wrap: wrap; gap: var(--u) calc(3 * var(--u)); margin-block-start: calc(1.5 * var(--u)); color: var(--muted); font-size: var(--step--1); }
-  .compare-caption .static, .compare-caption .stacked { display: none; }
+  .compare-caption .static { display: none; }
   /* Without motion or scroll timelines, the pair sits still at a half split, and the caption says which is which. */
   @media (prefers-reduced-motion: reduce) {
     .compare .shot { animation: none; }
@@ -434,19 +432,9 @@
     .compare-track, .compare-caption .live { display: none; }
     .compare-caption .static { display: inline; }
   }
-  /* Below 52rem: no slider. The phone pair sits side by side first, the desktop pair stacks below it. */
+  /* On a phone the phone frame fits the viewport's height, so the whole capture and its handle stay on screen. */
   @media (max-width: 52rem) {
-    .preview-tabs { display: none; }
-    .preview { display: grid; gap: calc(4 * var(--u)); }
-    .preview .head { margin: 0; }
-    .preview .compare[data-device="phone"] { order: 1; }
-    .preview .compare[data-device="desktop"] { order: 2; }
-    .compare-frame { display: grid; gap: 2px; aspect-ratio: auto !important; max-inline-size: none !important; border-color: var(--rule); background: var(--rule); }
-    .compare[data-device="phone"] .compare-frame { grid-template-columns: 1fr 1fr; }
-    .compare .shot, .compare .shot img { position: static; block-size: auto; clip-path: none; animation: none; }
-    .compare-divider, .compare-track, .compare-caption .live { display: none; }
-    .compare[data-device="phone"] .compare-caption .static, .compare[data-device="desktop"] .compare-caption .stacked { display: inline; }
-    .compare[data-device="desktop"] .compare-caption .static { display: none; }
+    .compare[data-device="phone"] .compare-frame { max-inline-size: min(100%, calc((100svh - 16 * var(--u)) * 390 / 844)); }
   }
 
   /* How I work: three numbered steps, the number in brand ink. */
