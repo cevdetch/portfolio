@@ -2,7 +2,7 @@
   "contributions": [
     {
       "discussion": {
-        "comments": 2
+        "comments": 3
       },
       "mergedAt": "2026-10-27T15:07:03Z",
       "number": 32594,
@@ -209,7 +209,7 @@
       "url": "https://github.com/sveltejs/svelte/pull/12526"
     }
   ],
-  "refreshedAt": "2026-11-14T20:39:08.600Z",
+  "refreshedAt": "2026-11-21T00:31:09.463Z",
   "version": 1,
   "works": {
     "arch-waypure": {
@@ -268,9 +268,9 @@
         "zvbi"
       ],
       "repo": {
-        "commitCount": 155,
+        "commitCount": 159,
         "firstCommit": "2025-12-24T22:35:44Z",
-        "lastCommit": "2026-11-14T20:33:17Z",
+        "lastCommit": "2026-11-15T15:06:09Z",
         "latestRelease": null,
         "license": "0BSD",
         "private": false
@@ -281,15 +281,16 @@
       "lighthouse": {
         "accessibility": 100,
         "bestPractices": 100,
-        "measuredAt": "2026-11-14T20:38:28.667Z",
+        "measuredAt": "2026-11-21T00:30:23.458Z",
         "performance": 100,
-        "seo": 100
+        "seo": 100,
+        "site": "https://astro-metadata-lab.cevdet.ch/"
       },
       "packages": [],
       "repo": {
-        "commitCount": 18,
+        "commitCount": 20,
         "firstCommit": "2026-10-24T00:03:34Z",
-        "lastCommit": "2026-11-14T11:59:48Z",
+        "lastCommit": "2026-11-14T19:34:52Z",
         "latestRelease": null,
         "license": "MIT",
         "private": false
@@ -303,15 +304,16 @@
       "lighthouse": {
         "accessibility": 100,
         "bestPractices": 100,
-        "measuredAt": "2026-11-14T20:38:19.839Z",
+        "measuredAt": "2026-11-21T00:30:23.983Z",
         "performance": 100,
-        "seo": 100
+        "seo": 100,
+        "site": "https://astro-minimal-template.pages.dev/"
       },
       "packages": [],
       "repo": {
-        "commitCount": 17,
+        "commitCount": 27,
         "firstCommit": "2026-10-24T21:25:18Z",
-        "lastCommit": "2026-11-13T11:56:01Z",
+        "lastCommit": "2026-11-21T00:08:01Z",
         "latestRelease": null,
         "license": "MIT",
         "private": false
@@ -325,15 +327,16 @@
       "lighthouse": {
         "accessibility": 100,
         "bestPractices": 100,
-        "measuredAt": "2026-11-14T20:38:29.187Z",
+        "measuredAt": "2026-11-21T00:30:41.006Z",
         "performance": 100,
-        "seo": 100
+        "seo": 100,
+        "site": "https://astro-reels-template.pages.dev/"
       },
       "packages": [],
       "repo": {
-        "commitCount": 9,
+        "commitCount": 58,
         "firstCommit": "2026-11-08T14:22:06Z",
-        "lastCommit": "2026-11-13T11:58:27Z",
+        "lastCommit": "2026-11-21T00:08:11Z",
         "latestRelease": null,
         "license": "MIT",
         "private": false
@@ -347,9 +350,10 @@
       "lighthouse": {
         "accessibility": 100,
         "bestPractices": 100,
-        "measuredAt": "2026-11-14T20:38:47.817Z",
+        "measuredAt": "2026-11-21T00:30:41.197Z",
         "performance": 100,
-        "seo": 100
+        "seo": 100,
+        "site": "https://deadhead.cevdet.ch/"
       },
       "packages": [
         {
@@ -370,9 +374,9 @@
         }
       ],
       "repo": {
-        "commitCount": 334,
+        "commitCount": 348,
         "firstCommit": "2026-09-09T18:21:46Z",
-        "lastCommit": "2026-11-14T12:07:06Z",
+        "lastCommit": "2026-11-21T00:26:21Z",
         "latestRelease": {
           "publishedAt": "2026-10-14T19:34:24Z",
           "tag": "v0.3.1"
@@ -393,9 +397,10 @@
       "lighthouse": {
         "accessibility": 100,
         "bestPractices": 100,
-        "measuredAt": "2026-11-14T20:38:47.558Z",
+        "measuredAt": "2026-11-21T00:30:49.793Z",
         "performance": 100,
-        "seo": 100
+        "seo": 100,
+        "site": "https://favseed.cevdet.ch/"
       },
       "packages": [
         {
@@ -405,9 +410,9 @@
         }
       ],
       "repo": {
-        "commitCount": 124,
+        "commitCount": 136,
         "firstCommit": "2026-10-04T17:49:18Z",
-        "lastCommit": "2026-11-14T13:25:54Z",
+        "lastCommit": "2026-11-20T23:12:33Z",
         "latestRelease": null,
         "license": "MIT",
         "private": false
@@ -421,9 +426,10 @@
       "lighthouse": {
         "accessibility": 100,
         "bestPractices": 100,
-        "measuredAt": "2026-11-14T20:38:57.553Z",
+        "measuredAt": "2026-11-21T00:30:50.829Z",
         "performance": 100,
-        "seo": 100
+        "seo": 100,
+        "site": "https://one.cevdet.ch/"
       },
       "packages": []
     }
