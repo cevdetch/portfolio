@@ -1,5 +1,8 @@
 ---
-import SocialLinks from '../components/SocialLinks.astro';
+import Board from '../components/Board.astro';
+import Contact from '../components/Contact.astro';
+import Key from '../components/Key.astro';
+import Station from '../components/Station.astro';
 import Layout from '../layouts/Layout.astro';
 import { loadPortfolio } from '../data/portfolio.ts';
 import { availabilityLine, fullName, mailtoHref, otherWorkLine, pageTitle, placementLine } from '../data/profile.ts';
@@ -12,40 +15,43 @@ const works = new Map(data.works.map(work => [work.id, work]));
 const placement = placementLine(profile);
 const availability = placement ? otherWorkLine(profile.availability, profile.country) : availabilityLine(profile.availability, profile.country);
 const firstCited = firstCitations(profile.services);
-const mailto = mailtoHref(profile);
 ---
 
 <Layout title={pageTitle(profile, 'Hire')} description={`Hire ${fullName(profile)} for fast websites, SEO and metadata audits, or Astro starters and upkeep: what is on offer, how a project runs and how to get in touch.`}>
-  <h1>Work with me</h1>
-  {placement && <p>{placement} <a href="/cv.pdf">CV (PDF)</a></p>}
-  {availability && <p>{availability}</p>}
-  <section aria-labelledby="services">
-    <h2 id="services">Services</h2>
-    <ul>
+  <Station>
+    <h1>Work with me</h1>
+    <div class="intro">
+      {placement && <p class="lede">{placement}</p>}
+      {availability && <p class="lede">{availability}</p>}
+    </div>
+    <p class="actions"><Key href={mailtoHref(profile)}>Email {profile.email}</Key><Key href="/cv.pdf" secondary icon="document">CV (PDF)</Key></p>
+  </Station>
+
+  <div class="wrap">
+    <Board id="services" caption="Services" columns={['Service', 'What you get', 'Evidence']}>
       {profile.services.map((service, index) => (
-        <li>
-          <p>{service.name}: {service.summary}</p>
-          {service.evidence.length > 0 && (
-            <p>Evidence: {service.evidence.map((id, index) => (
-              <>{index > 0 && ', '}<a href={`/work/${id}/`}>{works.get(id)!.data.title}</a></>
-            ))}</p>
-          )}
-          {firstCited[index]!.map(id => works.get(id)!.data).filter(work => work.caveat).map(work => <p>{work.title}: {work.caveat}</p>)}
-        </li>
+        <tr>
+          <td class="what"><strong>{service.name}</strong></td>
+          <td>{service.summary}</td>
+          <td>
+            {service.evidence.map((id, index) => <>{index > 0 && ', '}<a href={`/work/${id}/`}>{works.get(id)!.data.title}</a></>)}
+            {firstCited[index]!.map(id => works.get(id)!.data).filter(work => work.caveat).map(work => <p class="caveat">{work.title}: {work.caveat}</p>)}
+          </td>
+        </tr>
       ))}
-    </ul>
-  </section>
-  <section aria-labelledby="how-i-work">
-    <h2 id="how-i-work">How I work</h2>
-    <ol>
-      {profile.process.map(step => (
-        <li>{step.detail}</li>
-      ))}
-    </ol>
-  </section>
-  <section aria-labelledby="contact">
-    <h2 id="contact">Contact</h2>
-    <p><a href={mailto}>{profile.email}</a></p>
-    <SocialLinks socials={profile.socials.filter(social => social.network !== 'npm')} />
-  </section>
+    </Board>
+
+    <section class="block" aria-labelledby="how-i-work">
+      <h2 id="how-i-work">How I work</h2>
+      {/* Numbered because the order is the information. */}
+      <ol class="steps">
+        {profile.process.map(step => <li><strong>{step.title}</strong> {step.detail}</li>)}
+      </ol>
+    </section>
+
+    <section class="block" aria-labelledby="contact">
+      <h2 id="contact">Contact</h2>
+      <Contact profile={profile} socials={profile.socials.filter(social => social.network !== 'npm')} />
+    </section>
+  </div>
 </Layout>

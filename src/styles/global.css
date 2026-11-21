@@ -136,6 +136,7 @@
   .station .destination span { white-space: nowrap; }
   .station .proof, .station .lede { max-inline-size: 60ch; font-size: var(--step-1); line-height: 1.45; }
   .station .lede + .lede { margin-block-start: calc(1.5 * var(--u)); }
+  .station h1 + .intro { margin-block-start: calc(3 * var(--u)); }
   .station .actions { display: flex; flex-wrap: wrap; align-items: center; gap: calc(2 * var(--u)) calc(3 * var(--u)); margin-block-start: calc(3 * var(--u)); }
   .station .portrait { inline-size: calc(26 * var(--u)); block-size: calc(26 * var(--u)); border: 1px solid var(--rule); border-radius: 2px; background: var(--bg); object-fit: cover; }
   .station .byline { margin-block: var(--u) calc(2 * var(--u)); color: var(--muted); }
@@ -430,8 +431,18 @@
     .compare[data-device="desktop"] .compare-caption .static { display: none; }
   }
 
+  /* How I work: three numbered steps, the number in brand ink. */
+  .steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: calc(3 * var(--u)); counter-reset: step; }
+  .steps li { counter-increment: step; line-height: 1.5; }
+  .steps li::before { content: counter(step); display: block; margin-block-end: calc(1.5 * var(--u)); color: var(--brand-ink); font-size: var(--step-4); font-weight: 800; font-stretch: var(--narrow); letter-spacing: -0.02em; line-height: 1; }
+  .steps strong { display: block; margin-block-end: calc(0.5 * var(--u)); }
+  @media (max-width: 52rem) { .steps { grid-template-columns: 1fr; } }
+
+  .board .caveat { margin-block-start: calc(0.5 * var(--u)); color: var(--muted); font-size: var(--step--1); }
+
   /* Contact links: a glyph beside every label, in the fixed order. */
   .contact { display: flex; flex-wrap: wrap; gap: var(--u) calc(3 * var(--u)); }
+  .block > .contact { gap: calc(1.5 * var(--u)) calc(4 * var(--u)); }
   .contact a { display: inline-flex; align-items: center; min-block-size: calc(3 * var(--u)); }
   .contact .ico { margin-inline-end: calc(0.75 * var(--u)); }
 }
