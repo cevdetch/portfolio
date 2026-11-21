@@ -413,23 +413,14 @@
   .compare-track:focus-visible { outline-offset: -3px; }
   .compare-caption { display: flex; flex-wrap: wrap; gap: var(--u) calc(3 * var(--u)); margin-block-start: calc(1.5 * var(--u)); color: var(--muted); font-size: var(--step--1); }
   .compare-caption .static { display: none; }
-  /* Without motion or scroll timelines, the pair sits still at a half split, and the caption says which is which. */
-  @media (prefers-reduced-motion: reduce) {
-    .compare .shot { animation: none; }
-    .compare .shot-light { clip-path: var(--light-still); }
-    .compare .shot-dark { clip-path: var(--dark-still); }
-    .compare-divider { inset-inline-start: 50%; animation: none; }
-    .compare-divider::before { translate: -50% -50%; animation: none; }
-    .compare-track, .compare-caption .live { display: none; }
-    .compare-caption .static { display: inline; }
-  }
+  /* The reveal moves only under the visitor's own hand, so it stays live under reduced motion. Without scroll
+     timelines the pair sits still at a half split with no grip to suggest a drag, and the caption says which is which. */
   @supports not (animation-timeline: scroll()) {
     .compare .shot { animation: none; }
     .compare .shot-light { clip-path: var(--light-still); }
     .compare .shot-dark { clip-path: var(--dark-still); }
     .compare-divider { inset-inline-start: 50%; animation: none; }
-    .compare-divider::before { translate: -50% -50%; animation: none; }
-    .compare-track, .compare-caption .live { display: none; }
+    .compare-track, .compare-divider::before, .compare-caption .live { display: none; }
     .compare-caption .static { display: inline; }
   }
   /* On a phone the phone frame fits the viewport's height, so the whole capture and its handle stay on screen. */
