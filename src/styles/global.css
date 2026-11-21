@@ -159,6 +159,7 @@
   /* Sections on the lattice: more space above a section than inside it. */
   .block { padding-block-start: calc(6 * var(--u)); }
   .block > h2 { margin-block-end: calc(2 * var(--u)); }
+  .board + .stack { margin-block-start: calc(2 * var(--u)); }
   .more { margin-block-start: calc(2 * var(--u)); }
   .flow > * + * { margin-block-start: calc(2 * var(--u)); }
   .head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--u) calc(3 * var(--u)); margin-block-end: calc(2 * var(--u)); }
@@ -265,6 +266,8 @@
   .board .what > a:first-child, .board .id a { font-weight: 700; }
   .board .where { inline-size: 22%; color: var(--muted); }
   .board .num { text-align: end; white-space: nowrap; }
+  .board.fixed { table-layout: fixed; }
+  .board.fixed .when, .board.fixed .where { inline-size: auto; white-space: normal; }
   /* The link sets the baseline, so a Work named mid-sentence sits on the line with the words around it. */
   .id { display: inline-flex; align-items: baseline; gap: calc(1.5 * var(--u)); }
   .id img, .id .mono { align-self: center; inline-size: calc(2 * var(--u)); block-size: calc(2 * var(--u)); flex: none; }
@@ -280,10 +283,25 @@
     .board .where:empty { display: none; }
   }
 
-  /* Theme lines: one line per kind of fix, each behind a brand-ink dash. */
-  .themes { display: grid; gap: var(--u); margin-block-start: calc(3 * var(--u)); }
-  .themes li { position: relative; padding-inline-start: calc(3 * var(--u)); }
-  .themes li::before { content: ""; position: absolute; inset-block-start: 0.7em; inset-inline-start: 0; inline-size: calc(1.5 * var(--u)); block-size: 2px; background: var(--brand-ink); }
+  /* A board grouped by row: each group opens on a heading row, its rows under the one column band. */
+  .board .group th { padding-block: calc(3 * var(--u)) var(--u); border-block-end: 1px solid var(--rule); background: none; font-size: var(--step-0); font-weight: 700; letter-spacing: 0; text-transform: none; white-space: normal; }
+  .board .group .touches { margin-inline-start: calc(1.5 * var(--u)); color: var(--muted); font-size: var(--step--1); font-weight: 400; }
+  .board .group .touches a { font-weight: 500; }
+  .board.grouped tbody tr:first-child:hover { background: none; }
+  .board .note { color: var(--muted); }
+  .board td > .note { margin-block-start: calc(0.5 * var(--u)); font-size: var(--step--1); }
+  .board .dashes { margin-block-start: var(--u); font-size: var(--step--1); }
+  .summary { margin-block-end: calc(2 * var(--u)); color: var(--muted); }
+  @media (max-width: 52rem) {
+    .board .group th { display: block; padding-block: calc(3 * var(--u)) var(--u); }
+    .board .group .touches { display: block; margin: calc(0.5 * var(--u)) 0 0; }
+  }
+
+  /* Theme lines and short lists: one line each, behind a brand-ink dash. */
+  .themes { margin-block-start: calc(3 * var(--u)); }
+  .themes, .dashes { display: grid; gap: var(--u); }
+  .themes li, .dashes li { position: relative; padding-inline-start: calc(3 * var(--u)); }
+  .themes li::before, .dashes li::before { content: ""; position: absolute; inset-block-start: 0.7em; inset-inline-start: 0; inline-size: calc(1.5 * var(--u)); block-size: 2px; background: var(--brand-ink); }
 
   /* Facts on a Work page: a two-column board of labels and values. */
   .facts { display: grid; grid-template-columns: max-content minmax(0, 1fr); }

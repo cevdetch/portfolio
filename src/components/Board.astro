@@ -1,16 +1,19 @@
 ---
 // A departure board: a ruled table under its caption, the column headers in a banded row. The caption names the
-// section; a board that is its page's whole content leaves the caption out and is named by the element `id` points
-// at, such as the page's h1. The rows come in the default slot and anything that follows the table in "after".
-interface Props { id: string; caption?: string; columns: readonly string[] }
-const { id, caption, columns } = Astro.props;
+// section; a board whose heading sits outside it leaves the caption out and is named by the element `id` points at,
+// such as the page's h1. The rows come in the default slot, wrapped in one <tbody> unless `groups` says the slot
+// brings its own row groups; anything that follows the table goes in the "after" slot. `widths` fixes the columns,
+// so boards stacked on one page keep their columns in line.
+interface Props { id: string; caption?: string; columns: readonly string[]; groups?: boolean; widths?: readonly string[] }
+const { id, caption, columns, groups = false, widths } = Astro.props;
 ---
 
-<section class="block" aria-labelledby={id}>
-  <table class="board" aria-labelledby={caption ? undefined : id}>
+<section class="block" aria-labelledby={caption ? id : undefined}>
+  <table class:list={['board', { fixed: widths }]} aria-labelledby={caption ? undefined : id}>
     {caption && <caption id={id}>{caption}</caption>}
+    {widths && <colgroup>{widths.map(width => <col style={`inline-size: ${width}`} />)}</colgroup>}
     <thead><tr>{columns.map(column => <th scope="col">{column}</th>)}</tr></thead>
-    <tbody><slot /></tbody>
+    {groups ? <slot /> : <tbody><slot /></tbody>}
   </table>
   <slot name="after" />
 </section>

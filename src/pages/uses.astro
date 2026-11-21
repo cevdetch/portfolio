@@ -1,4 +1,5 @@
 ---
+import Station from '../components/Station.astro';
 import Layout from '../layouts/Layout.astro';
 import { loadPortfolio } from '../data/portfolio.ts';
 import { fullName, pageTitle } from '../data/profile.ts';
@@ -11,23 +12,41 @@ const sections = usesSections(data.uses);
 ---
 
 <Layout title={pageTitle(data.profile, 'Uses')} description={`The desktop, editor, phone, web tools and hosting ${fullName(data.profile)} uses day to day, with links to each one.`}>
-  <h1>Uses</h1>
-  {sections.map(section => (
-    <section aria-labelledby={section.id}>
-      <h2 id={section.id}>{section.data.title}</h2>
-      {section.data.work && <p>See <a href={`/work/${section.data.work}/`}>the Case study</a>.</p>}
-      <ul>
-        {section.data.entries.map(entry => {
-          const tech = techs.get(entry.tech)!;
-          return (
-            <li>
-              <a href={tech.url}>{tech.label}</a>
-              {entry.note && <> ({entry.note})</>}
-              {entry.maintains && <> — packaged in <a href={`/work/${entry.maintains}/`}>{works.get(entry.maintains)!.data.title}</a></>}
-            </li>
-          );
-        })}
-      </ul>
-    </section>
-  ))}
+  <Station>
+    <h1>Uses</h1>
+  </Station>
+  <div class="wrap">
+    {sections.map(section => {
+      // The board carries the tools with a note or a package; the rest follow as a compact run of links.
+      const noted = section.data.entries.filter(entry => entry.note || entry.maintains);
+      const bare = section.data.entries.filter(entry => !entry.note && !entry.maintains);
+      return (
+        <section class="block" aria-labelledby={section.id}>
+          <h2 id={section.id}>{section.data.title}</h2>
+          {noted.length > 0 && (
+            <table class="board fixed" aria-labelledby={section.id}>
+              <colgroup><col style="inline-size: 30%" /><col style="inline-size: 70%" /></colgroup>
+              <thead><tr><th scope="col">Tool</th><th scope="col">Notes</th></tr></thead>
+              <tbody>
+                {noted.map(entry => {
+                  const tech = techs.get(entry.tech)!;
+                  return (
+                    <tr>
+                      <td class="what"><a href={tech.url}>{tech.label}</a></td>
+                      <td class="note">
+                        {entry.note}{entry.note && entry.maintains && '; '}
+                        {entry.maintains && <>packaged in <a href={`/work/${entry.maintains}/`}>{works.get(entry.maintains)!.data.title}</a></>}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+          {bare.length > 0 && <ul class="stack">{bare.map(entry => { const tech = techs.get(entry.tech)!; return <li><a href={tech.url}>{tech.label}</a></li>; })}</ul>}
+          {section.data.work && <p class="more">See <a href={`/work/${section.data.work}/`}>the Case study</a>.</p>}
+        </section>
+      );
+    })}
+  </div>
 </Layout>
