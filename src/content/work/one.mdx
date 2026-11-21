@@ -27,7 +27,7 @@ Cevdet Haran's essays lived on an earlier site built with Zola, and short poems 
 
 ## Decisions
 
-- **Start lean from the Astro Minimal Template.** One began as a local copy of the [starter](https://astro-minimal-template.cevdet.ch/) with everything it did not use removed, and each feature added back brought its own tests. The branded share-image pipeline returned once it was needed.
+- **Start lean from the Astro Minimal Template.** One began as a local copy of the [starter](https://astro-minimal-template.pages.dev/) with everything it did not use removed, and each feature added back brought its own tests. The branded share-image pipeline returned once it was needed.
 - **Content collections with strict fields.** Every entry needs a title, a description of at most 160 characters and a publication date. Drafts are filtered in one helper that every route uses, so a draft produces no page, list entry, feed item or sitemap entry.
 - **Search-ready by default.** Every URL ends in a slash and has a self-referencing canonical. `WebSite`, `Person` and `Article` structured data match the visible content only. Each sitemap entry's `lastmod` is the piece's own updated or published date, list pages carry the newest of their pieces, and pages with no meaningful date carry none rather than a guess.
 - **Redirects that preserve every link.** The old site is redeployed as a redirect map that sends each article, with and without a trailing slash, to its new URL with a 301.

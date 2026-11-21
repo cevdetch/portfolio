@@ -52,7 +52,7 @@ Each result links to the case records behind it; the [results index](https://ast
 - **Build checks alone missed a dev-only failure.** A strict trailing-slash policy made an extensionless asset endpoint reject file URLs in the dev server while the static build emitted the right files; a regression check now exercises Astro's dev route matching ([design notes](https://github.com/cevdetch/astro-metadata-lab/blob/main/src/metadata-cases/design-notes.md)).
 - **Clients cut text at different lengths**, so the recommendation keeps full escaped strings and gives writing guidance instead of silent truncation ([long-title](https://astro-metadata-lab.cevdet.ch/cases/results/metadata/long-title/)).
 - **LinkedIn's post composer and direct messages showed no preview.** Post Inspector rendered titles and images but never a description ([all-fields](https://astro-metadata-lab.cevdet.ch/cases/results/precedence/all-fields/)).
-- The [Astro Minimal Template](https://astro-minimal-template.cevdet.ch/) ships these defaults: one title and description for both the HTML and the Open Graph text, `og:type` and `og:url` without dimension tags, a generated 1200×630 PNG, untruncated text and escaped JSON-LD.
+- The [Astro Minimal Template](https://astro-minimal-template.pages.dev/) ships these defaults: one title and description for both the HTML and the Open Graph text, `og:type` and `og:url` without dimension tags, a generated 1200×630 PNG, untruncated text and escaped JSON-LD.
 
 ## Next
 

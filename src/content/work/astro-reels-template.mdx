@@ -5,7 +5,7 @@ status: active
 featured: true
 order: 4
 repo: cevdetch/astro-reels-template
-site: https://astro-reels-template.cevdet.ch/
+site: https://astro-reels-template.pages.dev/
 stack: [astro, typescript, html, css]
 tagline: A reels-style feed of short pieces for Astro, with no JavaScript
 summary: Shows short pieces one per screen, like a reels feed, each with a page of its own, built from HTML and CSS alone.
@@ -36,11 +36,11 @@ A reels-style feed shows one short piece per screen. The goal was that format wi
 - **Verse is typeset as lines.** A line too long for the screen wraps with a hanging indent, so its remainder never reads as a new line. Indentation comes from the source text, so irregular sonnets keep their own shape.
 - **Off-screen cards are skipped** with `content-visibility`, and the system serif stack replaces a web font.
 - The trade-off is documented: without JavaScript the address bar does not follow the scroll and there is no native share sheet, so each piece's own page is the link to share.
-- The template is built from the [Astro Minimal Template](https://astro-minimal-template.cevdet.ch/) and keeps its metadata, sitemap, `robots.txt`, `noindex` 404 and generated share images, adding `CreativeWork` structured data per piece.
+- The template is built from the [Astro Minimal Template](https://astro-minimal-template.pages.dev/) and keeps its metadata, sitemap, `robots.txt`, `noindex` 404 and generated share images, adding `CreativeWork` structured data per piece.
 
 ## Results
 
-- The [demo](https://astro-reels-template.cevdet.ch/) publishes all 154 of Shakespeare's sonnets, imported from Project Gutenberg by a script that records the source file and its hash and fails unless it finds exactly 154 sonnets in order.
+- The [demo](https://astro-reels-template.pages.dev/) publishes all 154 of Shakespeare's sonnets, imported from Project Gutenberg by a script that records the source file and its hash and fails unless it finds exactly 154 sonnets in order.
 - No built page ships JavaScript beyond structured data, and the deadhead audit and contrast test pass.
 
 ## Next

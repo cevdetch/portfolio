@@ -322,7 +322,7 @@ test('workFactsView gives the Lighthouse scores of a Work with a site, linked to
     analysisUrl: 'https://pagespeed.web.dev/analysis?url=https%3A%2F%2Fdeadhead.cevdet.ch%2F&form_factor=mobile',
   });
   assert.equal(workFactsView('deadhead', fixtureSnapshot(), { repo: 'cevdetch/deadhead' }).lighthouse, undefined);
-  assert.equal(workFactsView('astro-minimal-template', fixtureSnapshot(), { site: 'https://astro-minimal-template.cevdet.ch/' }).lighthouse, undefined);
+  assert.equal(workFactsView('astro-minimal-template', fixtureSnapshot(), { site: 'https://astro-minimal-template.pages.dev/' }).lighthouse, undefined);
 });
 
 test('the Lighthouse Number is the lowest mobile Performance score across the measured sites, linked to that site', () => {
