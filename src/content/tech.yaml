@@ -47,6 +47,11 @@
 - { id: docker-compose, label: Docker Compose, category: infrastructure, url: https://docs.docker.com/compose/ }
 - { id: tailscale, label: Tailscale, category: infrastructure, url: https://tailscale.com/ }
 
+# ai
+- { id: llms-txt, label: AI-ready documentation, category: ai, url: https://llmstxt.org/ }
+- { id: schema-org, label: Structured data for AI search, category: ai, url: https://schema.org/ }
+- { id: llm-integration, label: 'AI integration (LLM APIs, agent tooling)', category: ai, url: https://en.wikipedia.org/wiki/Large_language_model }
+
 # desktop
 - { id: arch-linux, label: Arch Linux, category: desktop, url: https://archlinux.org/ }
 - { id: wayland, label: Wayland, category: desktop, url: https://wayland.freedesktop.org/ }

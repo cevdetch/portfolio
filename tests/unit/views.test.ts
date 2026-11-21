@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import { availabilityLine, fillBio, languageItem, languageLevels, otherWorkLine, pageTitle, placementLine, socialUsername } from '../../src/data/profile.ts';
 import { contributionHighlights, contributionSpan, discussionLine, contributionTotals, featuredWorks, fillCvLine, firstCitations, homeMetrics, inSourceOrder, knowsAboutTechs, lighthouseMethod, lighthouseNumber, mergedPullsUrl, metricDisplay, newestFirst, recentlyShipped, skillGroups, splitOnTitles, upstreamGroups, upstreamLabel, workFactsView } from '../../src/data/views.ts';
 import { formatDay, formatDayRange, formatMonth, formatMonthRange, joinList } from '../../src/lib/format.ts';
+import { techSchema } from '../../src/schemas/tech.ts';
 import { statusMeanings, workStatuses } from '../../src/schemas/work.ts';
 import { fixturePortfolio, fixtureSnapshot } from '../helpers/portfolio-fixture.ts';
 
@@ -449,6 +450,18 @@ test('a month range names one month when it starts and ends in it', () => {
 
 test('every status has a meaning a reader can see', () => {
   for (const status of workStatuses) assert.ok(statusMeanings[status].length > 0, status);
+});
+
+test('AI skills show on /skills/, but reach knowsAbout only where a Work uses them', () => {
+  const p = fixturePortfolio();
+  const techs = [...p.techs, ...[
+    { id: 'llms-txt', label: 'AI-ready documentation', category: 'ai', url: 'https://llmstxt.org/' },
+    { id: 'llm-integration', label: 'AI integration (LLM APIs, agent tooling)', category: 'ai', url: 'https://en.wikipedia.org/wiki/Large_language_model' },
+  ].map(tech => techSchema.parse(tech))];
+  p.works[0]!.data.stack.push('llms-txt');
+  const ai = skillGroups(techs, p.works).find(group => group.category === 'ai');
+  assert.deepEqual(ai?.techs.map(t => [t.tech.id, t.works.map(w => w.id)]), [['llms-txt', ['deadhead']], ['llm-integration', []]]);
+  assert.deepEqual(knowsAboutTechs(techs, p.works, p.contributions).map(tech => tech.id), ['typescript', 'astro', 'llms-txt']);
 });
 
 test('knowsAbout keeps the skills, but desktop entries only where a Work or a Contribution uses them', () => {

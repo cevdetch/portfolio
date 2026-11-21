@@ -25,6 +25,7 @@ skills:
       - techs: [svelte]
       - techs: [vite]
       - techs: [tailwind-css]
+      - { techs: [schema-org, llms-txt], display: Structured data and llms.txt for AI search }
   - label: Tooling
     items:
       - techs: [node]
@@ -34,6 +35,7 @@ skills:
       - techs: [github-actions]
       - techs: [eslint]
       - techs: [docker-compose]
+      - techs: [llm-integration]
   - label: Platforms
     items:
       - { techs: [debian, arch-linux], display: 'Linux (Debian, Arch)' }
