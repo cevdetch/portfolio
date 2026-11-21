@@ -358,6 +358,23 @@ test('a pull labelled by what it touched shows under its own label, and only pul
   assert.deepEqual(groups[0]!.pulls.map(item => [item.number, item.label]), [[102, 'Astro'], [101, 'Astro'], [103, 'Astro test fixtures'], [104, 'Astro']]);
 });
 
+test("a burst links to GitHub's search for its merge days, unless another pull merged on those days", () => {
+  const p = fixturePortfolio();
+  const snapshot = fixtureSnapshot();
+  const pull = (number: number, mergedAt: string) => ({
+    upstream: 'withastro/astro', number, title: `Fix ${number}`, url: `https://github.com/withastro/astro/pull/${number}`, mergedAt,
+  });
+  // Without the highlighted #101 (24 June), only the burst's own pulls merged between 19 June and 1 July.
+  snapshot.contributions = snapshot.contributions.filter(item => item.number !== 101);
+  snapshot.contributions.push(pull(103, '2026-06-25T09:00:00Z'), pull(104, '2026-06-19T23:30:00Z'));
+  const burstUrl = () => recentlyShipped(snapshot, p.works, p.contributions, 10, 'cevdetch').flatMap(item => item.kind === 'pulls' ? [item.url] : []);
+  assert.deepEqual(burstUrl(), ['https://github.com/withastro/astro/pulls?q=is%3Apr+is%3Amerged+author%3Acevdetch+merged%3A2026-06-19..2026-07-01']);
+  // A pull under another label merged inside the range would show in the search, so the link drops the dates.
+  snapshot.contributions.push(pull(105, '2026-06-22T09:00:00Z'));
+  p.contributions.upstreams[0]!.pulls['105'] = { hidden: false, highlight: false, label: 'Astro test fixtures' };
+  assert.deepEqual(burstUrl(), ['https://github.com/withastro/astro/pulls?q=is%3Apr+is%3Amerged+author%3Acevdetch']);
+});
+
 test('Contribution highlights skip hidden pulls', () => {
   const p = fixturePortfolio();
   p.contributions.upstreams[0]!.pulls['101'] = { hidden: true, highlight: true };

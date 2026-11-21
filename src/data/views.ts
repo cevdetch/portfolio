@@ -132,8 +132,9 @@ export function contributionSpan(
 }
 
 /** The Handle's merged pull requests to one Upstream, on GitHub. */
-export function mergedPullsUrl(repo: string, handle: string): string {
-  return `https://github.com/${repo}/pulls?q=${encodeURIComponent(`is:pr is:merged author:${handle}`).replaceAll('%20', '+')}`;
+export function mergedPullsUrl(repo: string, handle: string, days?: { from: string; to: string }): string {
+  const range = days ? ` merged:${days.from.slice(0, 10)}..${days.to.slice(0, 10)}` : '';
+  return `https://github.com/${repo}/pulls?q=${encodeURIComponent(`is:pr is:merged author:${handle}${range}`).replaceAll('%20', '+')}`;
 }
 
 export interface WorkFactsView {
@@ -312,9 +313,9 @@ export function compareVersions(a: string, b: string): number {
  * Published package releases and merged, non-hidden, non-highlighted Contributions, newest first, for the home
  * page's "Recently shipped". Highlighted pulls already show as Contribution highlights, so they never repeat here.
  * One Work's releases on the same UTC day, such as a CLI and its plugin, show as one line: the higher version; on a
- * tie, the package named after the Work, else the newer release. Pulls to one Upstream under one label, merged within 7 days of each
- * other, show as one line too, dated by the newest merge and linked to the Handle's merged pulls there, so one burst
- * of fixes cannot fill the list.
+ * tie, the package named after the Work, else the newer release. Pulls to one Upstream under one label, merged
+ * within 7 days of each other, show as one line too, dated by the newest merge and linked to the Handle's merged
+ * pulls there on those days, so one burst of fixes cannot fill the list.
  */
 export function recentlyShipped(
   snapshot: Snapshot, works: readonly WorkEntry[], overrides: ContributionOverrides, limit: number, handle: string,
@@ -353,9 +354,14 @@ export function recentlyShipped(
         if (burst.length === 1) {
           return { kind: 'contribution', at: newest.mergedAt, repo: group.repo, label, number: newest.number, title: newest.title, url: newest.url };
         }
+        // GitHub's search for the burst's merge days (UTC) lists exactly its pulls, unless another of the Upstream's
+        // pulls merged on those days too, such as one under another label; then the link lists them all.
+        const days = { from: burst.at(-1)!.mergedAt, to: newest.mergedAt };
+        const inDays = (pull: UpstreamPull) => pull.mergedAt.slice(0, 10) >= days.from.slice(0, 10) && pull.mergedAt.slice(0, 10) <= days.to.slice(0, 10);
+        const exact = !group.pulls.some(pull => !burst.includes(pull) && inDays(pull));
         return {
-          kind: 'pulls', at: newest.mergedAt, from: burst.at(-1)!.mergedAt, repo: group.repo, label, count: burst.length,
-          url: mergedPullsUrl(group.repo, handle),
+          kind: 'pulls', at: newest.mergedAt, from: days.from, repo: group.repo, label, count: burst.length,
+          url: mergedPullsUrl(group.repo, handle, exact ? days : undefined),
         };
       });
     });
