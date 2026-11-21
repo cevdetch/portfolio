@@ -1,8 +1,16 @@
 {
-  "themeColor": "#5685AD",
-  "backgroundColor": "#0E1C28",
+  "themeColor": "#098D9C",
+  "backgroundColor": "#071E22",
   "primary": {
-    "oklch": "oklch(0.60 0.08 245)",
-    "hex": "#5685AD"
+    "oklch": "oklch(0.59 0.10 208)",
+    "hex": "#098D9C"
+  },
+  "icon": {
+    "bg": "#071E22",
+    "vars": {
+      "c-primary": "#098D9C",
+      "c-accent": "#CA8A10",
+      "c-period": "3.2s"
+    }
   }
 }

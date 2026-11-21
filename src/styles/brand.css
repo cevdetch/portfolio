@@ -1,17 +1,17 @@
 /* Generated from the shared portfolio palette. Do not edit: the next brand install replaces it. */
 @layer tokens {
   :root {
-    --brand: #5685AD;
-    --brand-ink: #45739A;
-    --brand-bg: #EAF5FF;
+    --brand: #098D9C;
+    --brand-ink: #005A65;
+    --brand-bg: #E5F8FB;
     --cta: #CA8A10;
     --cta-ink: #191A17;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --brand: #5685AD;
-      --brand-ink: #5C8BB3;
-      --brand-bg: #13212D;
+      --brand: #098D9C;
+      --brand-ink: #4DB9C8;
+      --brand-bg: #0C2327;
       --cta: #CA8A10;
       --cta-ink: #101210;
     }
