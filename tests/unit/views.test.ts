@@ -304,10 +304,13 @@ test('Recently shipped shows two same-day releases of one Work as one line, with
     ['eslint-plugin-deadhead', '0.10.0', '2026-10-20T19:35:35.071Z'],
     ['deadhead-old', '0.9.0', '2026-10-19T23:59:00.000Z'],
   ]);
-  // Equal versions keep the newer release.
-  snapshot.works['deadhead']!.packages[1] = npm('eslint-plugin-deadhead', '0.3.1', '2026-10-20T19:35:35.071Z');
-  const tied = recentlyShipped(snapshot, p.works, p.contributions, 10, 'cevdetch').flatMap(item => item.kind === 'release' ? [item.package] : []);
-  assert.deepEqual(tied, ['deadhead', 'deadhead-old']);
+  // Equal versions keep the package named after the Work, even when the plugin was published later.
+  snapshot.works['deadhead']!.packages[1] = npm('eslint-plugin-deadhead', '0.3.1', '2026-10-20T19:39:35.071Z');
+  const named = () => recentlyShipped(snapshot, p.works, p.contributions, 10, 'cevdetch').flatMap(item => item.kind === 'release' ? [item.package] : []);
+  assert.deepEqual(named(), ['deadhead', 'deadhead-old']);
+  // With neither named after the Work, equal versions keep the newer release.
+  snapshot.works['deadhead']!.packages[0] = npm('deadhead-cli', '0.3.1', '2026-10-20T19:37:08.506Z');
+  assert.deepEqual(named(), ['eslint-plugin-deadhead', 'deadhead-old']);
 });
 
 test('a highlight cites its review discussion only from three comments up', () => {

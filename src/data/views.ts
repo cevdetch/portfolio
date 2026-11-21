@@ -311,8 +311,8 @@ export function compareVersions(a: string, b: string): number {
 /**
  * Published package releases and merged, non-hidden, non-highlighted Contributions, newest first, for the home
  * page's "Recently shipped". Highlighted pulls already show as Contribution highlights, so they never repeat here.
- * One Work's releases on the same UTC day, such as a CLI and its plugin, show as one line: the higher version, or
- * the newer release when the versions tie. Pulls to one Upstream under one label, merged within 7 days of each
+ * One Work's releases on the same UTC day, such as a CLI and its plugin, show as one line: the higher version; on a
+ * tie, the package named after the Work, else the newer release. Pulls to one Upstream under one label, merged within 7 days of each
  * other, show as one line too, dated by the newest merge and linked to the Handle's merged pulls there, so one burst
  * of fixes cannot fill the list.
  */
@@ -328,7 +328,8 @@ export function recentlyShipped(
       const item = { kind: 'release' as const, at: pkg.releasedAt, work, registry: pkg.registry, package: pkg.name, version: pkg.version, url: pkg.url };
       const day = item.at.slice(0, 10);
       const kept = byDay.get(day);
-      const order = kept ? compareVersions(item.version, kept.version) || item.at.localeCompare(kept.at) : 1;
+      const named = (release: { package: string }) => Number(release.package === work.id);
+      const order = kept ? compareVersions(item.version, kept.version) || named(item) - named(kept) || item.at.localeCompare(kept.at) : 1;
       if (order > 0) byDay.set(day, item);
     }
     return [...byDay.values()];
