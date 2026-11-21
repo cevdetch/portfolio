@@ -14,7 +14,8 @@ export interface GhTree { truncated: boolean; tree: { path: string; type: 'blob'
 export interface GhBlob { encoding: string; content: string }
 
 export interface GhUser { login: string; type: string }
-export interface GhComment { user: GhUser | null; body?: string | null }
+// Comments carry created_at; reviews carry submitted_at instead, and none while still pending.
+export interface GhComment { user: GhUser | null; body?: string | null; created_at?: string | null; submitted_at?: string | null }
 
 // Bot accounts registered as ordinary users, so neither GitHub's type nor a [bot] suffix gives them away.
 const userBots = new Set(['astrobot-houston']);
@@ -25,11 +26,17 @@ function isBot(user: GhUser): boolean {
 
 /**
  * What other people wrote while reviewing a pull request: review summaries with a body, inline review comments and
- * conversation comments. The author's own replies, bots and bare approvals do not count.
+ * conversation comments, made before it merged. The author's own replies, bots, bare approvals and anything written
+ * after the merge (such as a later regression report) do not count; nor does a comment with no time to place it.
  */
-export function countDiscussion(input: { reviews: GhComment[]; reviewComments: GhComment[]; issueComments: GhComment[] }, author: string): number {
-  const counts = (comment: GhComment) => comment.user !== null && !isBot(comment.user)
-    && comment.user.login.toLowerCase() !== author.toLowerCase();
+export function countDiscussion(input: { reviews: GhComment[]; reviewComments: GhComment[]; issueComments: GhComment[] }, author: string, mergedAt: string): number {
+  const merged = Date.parse(mergedAt);
+  if (Number.isNaN(merged)) throw new Error(`countDiscussion: "${mergedAt}" is not a merge time`);
+  const counts = (comment: GhComment) => {
+    const at = comment.submitted_at ?? comment.created_at;
+    return comment.user !== null && !isBot(comment.user) && comment.user.login.toLowerCase() !== author.toLowerCase()
+      && Boolean(at) && Date.parse(at!) < merged;
+  };
   return input.reviews.filter(review => counts(review) && Boolean(review.body?.trim())).length
     + input.reviewComments.filter(counts).length + input.issueComments.filter(counts).length;
 }

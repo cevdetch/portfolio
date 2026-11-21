@@ -65,13 +65,13 @@ test('collectFacts reads every source for a Work and the Contributions', async (
 
 test('collectFacts records the review discussion of highlighted pulls only, across pages', async () => {
   const pr = (n: number) => ({ html_url: `https://github.com/withastro/astro/pull/${n}`, number: n, title: 'Fix', repository_url: `${api}/repos/withastro/astro`, pull_request: { merged_at: '2026-06-24T12:35:44Z' } });
-  const comment = (login: string) => ({ user: { login, type: 'User' }, body: 'Please rename this.' });
+  const comment = (login: string, created_at = '2026-06-20T10:00:00Z') => ({ user: { login, type: 'User' }, body: 'Please rename this.', created_at });
   const client = fakeClient({
     [search]: { data: { total_count: 2, items: [pr(101), pr(102)] } },
-    [`${api}/repos/withastro/astro/pulls/101/reviews?per_page=100&page=1`]: { data: [comment('maintainer')] },
+    [`${api}/repos/withastro/astro/pulls/101/reviews?per_page=100&page=1`]: { data: [{ user: { login: 'maintainer', type: 'User' }, body: 'One nit.', submitted_at: '2026-06-20T10:00:00Z' }] },
     [`${api}/repos/withastro/astro/pulls/101/comments?per_page=100&page=1`]: { data: Array.from({ length: 100 }, () => comment('maintainer')) },
     [`${api}/repos/withastro/astro/pulls/101/comments?per_page=100&page=2`]: { data: [comment('maintainer'), comment('cevdetch')] },
-    [`${api}/repos/withastro/astro/issues/101/comments?per_page=100&page=1`]: { data: [comment('netlify[bot]')] },
+    [`${api}/repos/withastro/astro/issues/101/comments?per_page=100&page=1`]: { data: [comment('netlify[bot]'), comment('reporter', '2026-07-01T10:00:00Z')] },
   });
   const collected = await collectFacts([], client, { highlights: ['withastro/astro#101'] });
   assert.deepEqual(collected.contributions.map(c => [c.number, c.discussion]), [[101, { comments: 102 }], [102, undefined]]);

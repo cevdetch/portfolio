@@ -104,7 +104,7 @@ async function discussion(client: Client, c: Contribution): Promise<{ comments: 
     allPages<GhComment>(client, `${GITHUB_API}/repos/${c.upstream}/pulls/${c.number}/comments`),
     allPages<GhComment>(client, `${GITHUB_API}/repos/${c.upstream}/issues/${c.number}/comments`),
   ]);
-  return { comments: countDiscussion({ reviews, reviewComments, issueComments }, HANDLE) };
+  return { comments: countDiscussion({ reviews, reviewComments, issueComments }, HANDLE, c.mergedAt) };
 }
 
 async function contributions(client: Client, highlights: ReadonlySet<string>): Promise<Contribution[]> {

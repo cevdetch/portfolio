@@ -38,12 +38,28 @@ test('toContribution keeps only what is displayed and rejects unmerged items', (
 });
 
 test('countDiscussion counts what other people wrote in review, never the author, bots or a bare approval', () => {
-  const by = (login: string, type = 'User', body = 'Looks good, one nit.') => ({ user: { login, type }, body });
+  const by = (login: string, type = 'User', body = 'Looks good, one nit.') => ({ user: { login, type }, body, created_at: '2026-06-20T10:00:00Z' });
+  const review = (login: string, type = 'User', body = 'Looks good, one nit.') => ({ user: { login, type }, body, submitted_at: '2026-06-20T10:00:00Z' });
   assert.equal(countDiscussion({
-    reviews: [by('maintainer'), by('maintainer', 'User', ''), by('maintainer', 'User', '  '), by('cevdetch')],
-    reviewComments: [by('maintainer'), by('maintainer'), by('cevdetch'), { user: null, body: 'from a deleted account' }],
+    reviews: [review('maintainer'), review('maintainer', 'User', ''), review('maintainer', 'User', '  '), review('cevdetch')],
+    reviewComments: [by('maintainer'), by('maintainer'), by('cevdetch'), { user: null, body: 'from a deleted account', created_at: '2026-06-20T10:00:00Z' }],
     issueComments: [by('reviewer'), by('netlify[bot]'), by('renovate', 'Bot'), by('astrobot-houston'), by('CevdetCH')],
-  }, 'cevdetch'), 4);
+  }, 'cevdetch', '2026-06-24T12:35:44Z'), 4);
+});
+
+test('countDiscussion counts only what was written before the merge', () => {
+  const at = (time: string) => ({ user: { login: 'maintainer', type: 'User' }, body: 'Please rename this.', created_at: time });
+  const merged = '2026-10-27T15:07:03Z';
+  assert.equal(countDiscussion({
+    reviews: [
+      { user: { login: 'maintainer', type: 'User' }, body: 'One nit.', submitted_at: '2026-10-20T09:00:00Z' },
+      { user: { login: 'maintainer', type: 'User' }, body: 'Late thought.', submitted_at: '2026-11-13T09:00:00Z' },
+      // A review not yet submitted has no time, so nothing shows it came before the merge.
+      { user: { login: 'maintainer', type: 'User' }, body: 'Pending.', submitted_at: null },
+    ],
+    reviewComments: [at('2026-10-20T09:01:00Z'), at(merged)],
+    issueComments: [at('2026-10-27T15:07:02Z'), at('2026-11-13T09:00:00Z'), at('2026-11-18T09:00:00Z'), { user: { login: 'maintainer', type: 'User' }, body: 'No time.' }],
+  }, 'cevdetch', merged), 3);
 });
 
 test('toRuleFiles lists the Markdown rule files, one folder deep under content/rules', () => {
