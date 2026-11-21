@@ -1,5 +1,5 @@
 upstreams:
-  - { repo: withastro/astro, order: 1, label: Astro starter templates, techs: [astro] }
+  - { repo: withastro/astro, order: 1, label: Astro starter templates, techs: [astro], pulls: { '17162': { label: Astro test fixtures } } }
   - { repo: immich-app/immich, order: 2, label: Immich, techs: [immich], pulls: { '29801': { highlight: true, order: 1 }, '32594': { highlight: true, order: 3 } } }
   - { repo: GrapheneOS/grapheneos.org, order: 3, label: grapheneos.org, techs: [grapheneos], pulls: { '1684': { highlight: true, order: 4 } } }
   - { repo: sveltejs/svelte, order: 4, label: svelte.dev, techs: [svelte] }

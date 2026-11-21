@@ -21,6 +21,9 @@ export const contributionOverridesSchema = z.strictObject({
       // Fixes the order of the home page's Contribution highlights; ignored unless highlight is true.
       order: z.number().int().positive().optional(),
       note: line(200).optional(),
+      // What this pull touched, where the Upstream's label would overstate it, such as test fixtures in a repo
+      // labelled by its starter templates. Shown wherever the pull is named on its own or counted with others.
+      label: line(40).optional(),
     })).default({}),
   })),
   // One line each on the CV and the home page: "<lead> <labels, linked>, <note>." No counts.

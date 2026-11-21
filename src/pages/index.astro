@@ -68,7 +68,7 @@ const proofParts = splitOnTitles(profile.proof, proofWorks.map(work => work.data
         <ul>
           {highlights.map(({ group, pull }) => (
             <li>
-              <a href={group.url}>{upstreamLabel(group.repo, data.contributions)}</a> <a href={pull.url}>#{pull.number}</a>: {pull.title}
+              <a href={group.url}>{pull.label}</a> <a href={pull.url}>#{pull.number}</a>: {pull.title}
               {pull.note && <> ({pull.note})</>}
               {discussionLine(pull.discussion) && <> · {discussionLine(pull.discussion)}</>}
             </li>

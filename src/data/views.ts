@@ -52,7 +52,8 @@ export function skillGroups(techs: readonly Tech[], works: readonly WorkEntry[])
     .filter(group => group.techs.length > 0);
 }
 
-export interface UpstreamPull extends Contribution { hidden: boolean; highlight: boolean; note?: string; order?: number }
+// label: what the pull touched; its own override, else the Upstream's label, else the repo id.
+export interface UpstreamPull extends Contribution { hidden: boolean; highlight: boolean; label: string; note?: string; order?: number }
 export interface UpstreamGroup { repo: string; url: string; pulls: UpstreamPull[]; techs: string[]; works: string[] }
 
 /** Every merged pull, grouped by Upstream; a hidden pull stays listed, flagged, so only the home page drops it. */
@@ -68,6 +69,7 @@ export function upstreamGroups(contributions: readonly Contribution[], overrides
     };
     group.pulls.push({
       ...contribution, hidden: pull?.hidden ?? false, highlight: pull?.highlight ?? false,
+      label: pull?.label ?? upstream?.label ?? contribution.upstream,
       ...(pull?.note ? { note: pull.note } : {}), ...(pull?.order !== undefined ? { order: pull.order } : {}),
     });
     groups.set(contribution.upstream, group);
@@ -265,9 +267,9 @@ export function compareVersions(a: string, b: string): number {
  * Published package releases and merged, non-hidden, non-highlighted Contributions, newest first, for the home
  * page's "Recently shipped". Highlighted pulls already show as Contribution highlights, so they never repeat here.
  * One Work's releases on the same UTC day, such as a CLI and its plugin, show as one line: the higher version, or
- * the newer release when the versions tie. Pulls to one Upstream merged within 7 days of each other show as one
- * line too, dated by the newest merge and linked to the Handle's merged pulls there, so one burst of fixes cannot
- * fill the list.
+ * the newer release when the versions tie. Pulls to one Upstream under one label, merged within 7 days of each
+ * other, show as one line too, dated by the newest merge and linked to the Handle's merged pulls there, so one burst
+ * of fixes cannot fill the list.
  */
 export function recentlyShipped(
   snapshot: Snapshot, works: readonly WorkEntry[], overrides: ContributionOverrides, limit: number, handle: string,
@@ -287,25 +289,29 @@ export function recentlyShipped(
     return [...byDay.values()];
   });
   const contributions: ShippedItem[] = upstreamGroups(snapshot.contributions, overrides).flatMap(group => {
-    const label = upstreamLabel(group.repo, overrides);
     const pulls = group.pulls.filter(pull => !pull.highlight && !pull.hidden).sort((a, b) => b.mergedAt.localeCompare(a.mergedAt));
-    // Newest first, a pull joins the current burst when it was merged within 7 days of the burst's oldest merge so far.
-    const bursts: UpstreamPull[][] = [];
-    for (const pull of pulls) {
-      const burst = bursts.at(-1);
-      const oldest = burst?.at(-1);
-      if (burst && oldest && Date.parse(oldest.mergedAt) - Date.parse(pull.mergedAt) <= burstDays * 86_400_000) burst.push(pull);
-      else bursts.push([pull]);
-    }
-    return bursts.map((burst): ShippedItem => {
-      const [newest] = burst as [UpstreamPull];
-      if (burst.length === 1) {
-        return { kind: 'contribution', at: newest.mergedAt, repo: group.repo, label, number: newest.number, title: newest.title, url: newest.url };
+    // Only pulls under one label count together, so a line never says a pull touched what it did not.
+    const byLabel = new Map<string, UpstreamPull[]>();
+    for (const pull of pulls) byLabel.set(pull.label, [...byLabel.get(pull.label) ?? [], pull]);
+    return [...byLabel].flatMap(([label, labelled]) => {
+      // Newest first, a pull joins the current burst when it was merged within 7 days of the burst's oldest merge so far.
+      const bursts: UpstreamPull[][] = [];
+      for (const pull of labelled) {
+        const burst = bursts.at(-1);
+        const oldest = burst?.at(-1);
+        if (burst && oldest && Date.parse(oldest.mergedAt) - Date.parse(pull.mergedAt) <= burstDays * 86_400_000) burst.push(pull);
+        else bursts.push([pull]);
       }
-      return {
-        kind: 'pulls', at: newest.mergedAt, from: burst.at(-1)!.mergedAt, repo: group.repo, label, count: burst.length,
-        url: mergedPullsUrl(group.repo, handle),
-      };
+      return bursts.map((burst): ShippedItem => {
+        const [newest] = burst as [UpstreamPull];
+        if (burst.length === 1) {
+          return { kind: 'contribution', at: newest.mergedAt, repo: group.repo, label, number: newest.number, title: newest.title, url: newest.url };
+        }
+        return {
+          kind: 'pulls', at: newest.mergedAt, from: burst.at(-1)!.mergedAt, repo: group.repo, label, count: burst.length,
+          url: mergedPullsUrl(group.repo, handle),
+        };
+      });
     });
   });
   return [...releases, ...contributions].sort((a, b) => b.at.localeCompare(a.at)).slice(0, limit);

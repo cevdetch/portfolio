@@ -286,6 +286,25 @@ test('Recently shipped collapses pulls to one Upstream merged within 7 days of e
   ]);
 });
 
+test('a pull labelled by what it touched shows under its own label, and only pulls sharing a label collapse', () => {
+  const p = fixturePortfolio();
+  const snapshot = fixtureSnapshot();
+  const pull = (number: number, mergedAt: string) => ({
+    upstream: 'withastro/astro', number, title: `Fix ${number}`, url: `https://github.com/withastro/astro/pull/${number}`, mergedAt,
+  });
+  // #103 falls inside the burst of #102 and #104 by date, but touched only test fixtures.
+  snapshot.contributions.push(pull(103, '2026-06-28T09:00:00Z'), pull(104, '2026-06-26T09:00:00Z'));
+  p.contributions.upstreams[0]!.pulls['103'] = { hidden: false, highlight: false, label: 'Astro test fixtures' };
+  const shipped = recentlyShipped(snapshot, p.works, p.contributions, 10, 'cevdetch')
+    .flatMap(item => item.kind === 'release' || item.repo !== 'withastro/astro' ? [] : [[item.kind, item.label, item.kind === 'pulls' ? item.count : item.number]]);
+  assert.deepEqual(shipped, [
+    ['pulls', 'Astro', 2],
+    ['contribution', 'Astro test fixtures', 103],
+  ]);
+  const groups = upstreamGroups(snapshot.contributions, p.contributions);
+  assert.deepEqual(groups[0]!.pulls.map(item => [item.number, item.label]), [[102, 'Astro'], [101, 'Astro'], [103, 'Astro test fixtures'], [104, 'Astro']]);
+});
+
 test('Contribution highlights skip hidden pulls', () => {
   const p = fixturePortfolio();
   p.contributions.upstreams[0]!.pulls['101'] = { hidden: true, highlight: true };
