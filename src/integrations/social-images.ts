@@ -148,11 +148,18 @@ export function socialImages(): AstroIntegration {
           }
         }
         await runSocialJobs({ dir, site: origin, base, jobs }, async () => {
-          const [{ createRenderer }, font] = await Promise.all([
-            import('../lib/social-renderer.ts'),
-            readFile(new URL('../assets/social-fonts/NotoSans-Regular.ttf', import.meta.url)),
+          const read = (path: string) => readFile(new URL(path, import.meta.url));
+          const text = async (path: string) => (await read(path)).toString('utf8');
+          const [{ createRenderer }, { cardPalette, markPaths }, { parse }, title, line, neutrals, brandCss, icon, profileYaml] = await Promise.all([
+            import('../lib/social-renderer.ts'), import('../lib/social-card.ts'), import('yaml'),
+            read('../assets/social-fonts/Archivo-SemiCondensed-ExtraBold.woff'), read('../assets/social-fonts/Archivo-SemiBold.woff'),
+            text('../styles/tokens.css'), text('../styles/brand.css'), text('../../public/icon.svg'), text('../content/profile.yaml'),
           ]);
-          return createRenderer(font);
+          const profile = parse(profileYaml) as { name: string; familyName?: string; jobTitle: string };
+          return createRenderer({ title, line }, {
+            name: [profile.name, profile.familyName].filter(Boolean).join(' '), role: profile.jobTitle,
+            palette: cardPalette(neutrals, brandCss), mark: markPaths(icon),
+          });
         });
       },
     },

@@ -14,7 +14,7 @@ const projects = new URL('../../.astro/test-projects/', import.meta.url);
 const astroManifest = new URL(import.meta.resolve('astro/package.json'));
 const manifest = JSON.parse(await readFile(astroManifest, 'utf8')) as { bin: { astro: string } };
 const astroBin = fileURLToPath(new URL(manifest.bin.astro, astroManifest));
-const fixtureFont = fileURLToPath(new URL('../../src/assets/social-fonts/NotoSans-Regular.ttf', import.meta.url));
+const fixtureFont = fileURLToPath(new URL('../../src/assets/social-fonts/Archivo-SemiBold.woff', import.meta.url));
 
 export async function createBuildFixture(input: {
   configSource: string;

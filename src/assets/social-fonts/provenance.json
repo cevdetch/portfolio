@@ -1,13 +1,32 @@
 {
-  "family": "Noto Sans",
-  "release": "NotoSans-v2.015",
-  "weight": 400,
-  "style": "normal",
+  "family": "Archivo",
+  "release": "Google Fonts v25",
   "license": "OFL-1.1",
-  "source": "https://github.com/notofonts/latin-greek-cyrillic/releases/download/NotoSans-v2.015/NotoSans-v2.015.zip",
-  "archiveSha256": "0c34df072a3fa7efbb7cbf34950e1f971a4447cffe365d3a359e2d4089b958f5",
-  "member": "NotoSans/hinted/ttf/NotoSans-Regular.ttf",
-  "bytes": 621572,
-  "sha256": "478c558ea716033cd60c03438f628dfa75694dcf6b5f6d505a2f05fd2b4f3823",
-  "licenseSha256": "cee9892f9f0cc8fe882c9e9537ee6a89621d86ee7ceaf70b02e2b2b1c25c061a"
+  "licenseSource": "https://raw.githubusercontent.com/google/fonts/main/ofl/archivo/OFL.txt",
+  "licenseSha256": "108b4e57c9c796d3d38d0428ca7ee39de47ad93187302718d9b2d8864b9b716b",
+  "why": "Satori reads neither WOFF2 nor variable axes, so the social cards use static instances of the variable Archivo the site serves, as Google Fonts serves them to a client without WOFF2 support.",
+  "files": [
+    {
+      "file": "Archivo-SemiCondensed-ExtraBold.woff",
+      "role": "title",
+      "weight": 800,
+      "stretch": "semi-condensed",
+      "style": "normal",
+      "request": "https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@87.5,800",
+      "source": "https://fonts.gstatic.com/s/archivo/v25/k3k6o8UDI-1M0wlSV9XAw6lQkqWY8Q9RsJaRE-NWIDdgffTTtDRp8w.woff",
+      "bytes": 38404,
+      "sha256": "0f1d90c7308b6ccb8870b41b566500a7c9d82f035c0e459a70d51d036de24569"
+    },
+    {
+      "file": "Archivo-SemiBold.woff",
+      "role": "line",
+      "weight": 600,
+      "stretch": "normal",
+      "style": "normal",
+      "request": "https://fonts.googleapis.com/css2?family=Archivo:wght@600",
+      "source": "https://fonts.gstatic.com/s/archivo/v25/k3k6o8UDI-1M0wlSV9XAw6lQkqWY8Q82sJaRE-NWIDdgffTT6jRp8w.woff",
+      "bytes": 36252,
+      "sha256": "ebfe0d64b457ded63b01831cfa767beb7ff80642cf9074faa6c62de6bec90490"
+    }
+  ]
 }

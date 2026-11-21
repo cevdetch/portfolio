@@ -7,8 +7,19 @@ import { pathToFileURL } from 'node:url';
 import { test } from 'node:test';
 import sharp from 'sharp';
 import type { SocialJob } from '../../src/integrations/social-images.ts';
+import type { CardBrand } from '../../src/lib/social-card.ts';
 
-const font = new URL('../../src/assets/social-fonts/NotoSans-Regular.ttf', import.meta.url);
+const repo = (path: string) => new URL(`../../${path}`, import.meta.url);
+const fonts = async () => ({
+  title: await readFile(repo('src/assets/social-fonts/Archivo-SemiCondensed-ExtraBold.woff')),
+  line: await readFile(repo('src/assets/social-fonts/Archivo-SemiBold.woff')),
+});
+async function brand(): Promise<CardBrand> {
+  const { cardPalette, markPaths } = await import('../../src/lib/social-card.ts');
+  const text = (path: string) => readFile(repo(path), 'utf8');
+  return { name: 'Cevdet Haran', role: 'Software Developer',
+    palette: cardPalette(await text('src/styles/tokens.css'), await text('src/styles/brand.css')), mark: markPaths(await text('public/icon.svg')) };
+}
 const input = { pageUrl: 'https://example.test/a/', title: 'Hello & welcome', description: 'Keep the full description.', lang: 'en' };
 const png = () => sharp({ create: { width: 1200, height: 630, channels: 3, background: '#fafafa' } }).png().toBuffer();
 async function setup(t: { after(fn: () => Promise<void>): void }, count = 2) {
@@ -36,8 +47,8 @@ test('empty run skips loader', async t => {
 
 test('renderer emits decoded PNG while preserving full metadata inputs', async () => {
   const { createRenderer } = await import('../../src/lib/social-renderer.ts');
-  const renderer = await createRenderer(await readFile(font));
-  for (const title of ['Hello & welcome', 'Café Ελληνικά Кириллица', 'W'.repeat(500), 'Measure '.repeat(16)]) {
+  const renderer = await createRenderer(await fonts(), await brand());
+  for (const title of ['Hello & welcome', 'Café Ærøskøbing Łódź Đà Nẵng', 'W'.repeat(500), 'Measure '.repeat(16), 'deadhead - Cevdet Haran']) {
     const value = { ...input, title };
     const before = structuredClone(value);
     const bytes = await renderer.render(value);
@@ -51,8 +62,9 @@ test('renderer emits decoded PNG while preserving full metadata inputs', async (
 
 test('renderer rejects unsupported text and explicit or implicit RTL with page remedies', async () => {
   const { createRenderer } = await import('../../src/lib/social-renderer.ts');
-  const renderer = await createRenderer(await readFile(font));
-  for (const value of [{ title: 'bad \u{10ffff}' }, { title: 'Hi 😀' }, { dir: 'rtl' as const }, { title: 'مرحبا' }]) {
+  const renderer = await createRenderer(await fonts(), await brand());
+  // Archivo covers Latin, Latin Extended and Vietnamese: other scripts are refused, never drawn as boxes.
+  for (const value of [{ title: 'bad \u{10ffff}' }, { title: 'Hi 😀' }, { dir: 'rtl' as const }, { title: 'مرحبا' }, { title: 'Ελληνικά' }, { title: 'Кириллица' }]) {
     await assert.rejects(() => renderer.render({ ...input, ...value }), /example\.test\/a\/.*manual image.*image=false/s);
   }
 });
@@ -175,4 +187,23 @@ test('marker cleanup write failure rejects after verifying its PNG', async t => 
     await rm(job.file); await mkdir(job.file); return png();
   } })), /page-0.*marker cleanup/);
   await verifyWrittenPng(new URL(`_social/${new URL(job.imageUrl).pathname.split('/').at(-1)}`, options.dir), job.pageUrl);
+});
+
+test('the card reads its palette from the light scheme of the token files and its mark from the icon', async () => {
+  const { cardPalette, lightTokens, markPaths } = await import('../../src/lib/social-card.ts');
+  const neutrals = '@layer tokens { :root { --bg: #ffffff; --text: #111111; } @media (prefers-color-scheme: dark) { :root { --text: #eeeeee; } } }';
+  const slots = '@layer tokens { :root { --brand: #0a0a0a; --brand-ink: #0b0b0b; --brand-bg: #0c0c0c; --cta: #0d0d0d; --cta-ink: #111111; } }';
+  assert.deepEqual(lightTokens(neutrals), { '--bg': '#ffffff', '--text': '#111111' });
+  assert.deepEqual(cardPalette(neutrals, slots), { text: '#111111', brand: '#0a0a0a', brandInk: '#0b0b0b', brandBg: '#0c0c0c', cta: '#0d0d0d' });
+  assert.throws(() => cardPalette('@layer tokens { :root { --bg: #ffffff; } }', slots), /no --text/);
+  assert.deepEqual(markPaths('<svg><path fill="x" d="M0 0h1v1H0z"/><path class="a" d="M2 0h1v1H2z"/></svg>'), { body: 'M0 0h1v1H0z', odd: 'M2 0h1v1H2z' });
+  assert.throws(() => markPaths('<svg><path d="M0 0"/></svg>'), /1 paths/);
+});
+
+test('the card states the page, then who: the home title leads with the name, so its line is the role alone', async () => {
+  const { cardText } = await import('../../src/lib/social-card.ts');
+  const who = { name: 'Cevdet Haran', role: 'Software Developer' };
+  assert.deepEqual(cardText('deadhead - Cevdet Haran', who), { heading: 'deadhead', line: 'Cevdet Haran · Software Developer' });
+  assert.deepEqual(cardText('Cevdet Haran - Software Developer', who), { heading: 'Cevdet Haran', line: 'Software Developer' });
+  assert.deepEqual(cardText('Untitled', who), { heading: 'Untitled', line: 'Cevdet Haran · Software Developer' });
 });
