@@ -101,6 +101,20 @@ test('a titled entry prints one cvLine per Work, from its first commit to its la
   });
 });
 
+test('a grouped line prints the perfect Lighthouse clause only while every Work in the entry scores 100 in all four', () => {
+  const p = data();
+  const perfect = { performance: 100, accessibility: 100, bestPractices: 100, seo: 100, measuredAt: '2026-11-21T00:30:00.000Z' };
+  p.cv.projects = [{ title: 'Astro templates', works: ['astro-minimal-template', 'deadhead'], optional: false }];
+  p.works.find(work => work.id === 'deadhead')!.data.cvLine = 'an HTML head linter{lighthouse}.';
+  p.works.find(work => work.id === 'deadhead')!.data.kind = 'template';
+  p.facts.works['astro-minimal-template']!.lighthouse = perfect;
+  p.facts.works['deadhead']!.lighthouse = perfect;
+  const line = () => buildCv(p).cv.sections.projects[0]!['highlights']!.at(-1);
+  assert.equal(line(), "[deadhead](https://github.com/cevdetch/deadhead): an HTML head linter, both templates' demo home pages scoring 100 in all four mobile Lighthouse categories.");
+  p.facts.works['astro-minimal-template']!.lighthouse = { ...perfect, accessibility: 97 };
+  assert.equal(line(), '[deadhead](https://github.com/cevdetch/deadhead): an HTML head linter.');
+});
+
 test('a private repository is never linked from the CV', () => {
   const p = data();
   p.cv.projects = [{ works: ['private-tool'], optional: false }];

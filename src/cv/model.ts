@@ -77,10 +77,12 @@ function project(entry: CvChoices['projects'][number], works: ReadonlyMap<string
     const site = work.data.repo && publicRepo(facts.works[work.id]) && work.data.site ? ` · [${host(work.data.site)}](${work.data.site})` : '';
     return { name: `${linkedTitle(work, facts)}${site}`, ...dates(members, facts), highlights: work.data.highlights.map(escapeMarkdown) };
   }
+  // A clause about the whole entry, such as {lighthouse}, reads the Facts of every Work in it.
+  const group = members.map(work => ({ kind: work.data.kind, facts: facts.works[work.id] }));
   return {
     name: escapeMarkdown(entry.title),
     ...dates(members, facts),
-    highlights: members.map(work => `${linkedTitle(work, facts)}: ${fillCvLine(escapeMarkdown(work.data.cvLine!), facts.works[work.id]).text}`),
+    highlights: members.map(work => `${linkedTitle(work, facts)}: ${fillCvLine(escapeMarkdown(work.data.cvLine!), facts.works[work.id], group).text}`),
   };
 }
 

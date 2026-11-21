@@ -162,21 +162,50 @@ export function workFactsView(id: string, snapshot: Snapshot, work?: Partial<Pic
   };
 }
 
-// Tokens a cvLine may hold, each filled from the Work's Facts.
-const cvLineTokens = new Map<string, (facts: WorkFacts | undefined) => number | undefined>([
-  ['pkgbuilds', facts => facts?.pkgbuilds?.length],
-]);
+export interface CvLineWork { kind?: Work['kind']; facts: WorkFacts | undefined }
+
+const isPerfect = (lighthouse: LighthouseFacts | undefined) => lighthouse !== undefined
+  && lighthouse.performance === 100 && lighthouse.accessibility === 100 && lighthouse.bestPractices === 100 && lighthouse.seo === 100;
+const pluralKinds: Partial<Record<Work['kind'], string>> = { app: 'apps', site: 'sites', package: 'packages', template: 'templates', tool: 'tools' };
+
+/**
+ * ", its demo home page scoring 100 in all four mobile Lighthouse categories", said of every Work in the line's CV
+ * entry ("both templates' demo home pages scoring…"), and only while each of them scores 100 in all four: otherwise
+ * the clause is left out, so the sentence never prints a lower score. A Work never measured leaves it out too. The
+ * scores are the home page's alone, and a template's site is its demo, so the clause says so.
+ */
+function perfectLighthouse(group: readonly CvLineWork[]): string {
+  if (group.length === 0 || !group.every(work => isPerfect(work.facts?.lighthouse))) return '';
+  const kinds = new Set(group.map(work => work.kind));
+  const [kind] = kinds;
+  const noun = kinds.size === 1 && kind ? pluralKinds[kind] ?? 'projects' : 'projects';
+  const page = kinds.size === 1 && kind === 'template' ? 'demo home page' : 'home page';
+  const subject = group.length === 1 ? `its ${page}` : `${group.length === 2 ? 'both' : `all ${group.length}`} ${noun}' ${page}s`;
+  return `, ${subject} scoring 100 in all four mobile Lighthouse categories`;
+}
+
 const count = new Intl.NumberFormat('en');
 
-/** Replaces each `{token}` in a cvLine with its Fact; `problems` lists what could not be filled. */
-export function fillCvLine(text: string, facts: WorkFacts | undefined): { text: string; problems: string[] } {
+// Tokens a cvLine may hold, each filled from the Work's Facts or, for a clause about the whole entry, from the Facts
+// of every Work in its CV entry. undefined means the Fact is missing.
+const cvLineTokens = new Map<string, (facts: WorkFacts | undefined, group: readonly CvLineWork[]) => string | undefined>([
+  ['pkgbuilds', facts => facts?.pkgbuilds === undefined ? undefined : count.format(facts.pkgbuilds.length)],
+  ['lighthouse', (_, group) => perfectLighthouse(group)],
+]);
+
+/**
+ * Replaces each `{token}` in a cvLine with its Fact; `problems` lists what could not be filled. `group` is every Work
+ * in the line's CV entry, the line's own included; a Work printed alone is its own group.
+ */
+export function fillCvLine(text: string, facts: WorkFacts | undefined, group?: readonly CvLineWork[]): { text: string; problems: string[] } {
   const problems: string[] = [];
+  const members = group ?? [{ facts }];
   const filled = text.replace(/\{(\w+)\}/g, (token, name: string) => {
     const fill = cvLineTokens.get(name);
     if (!fill) { problems.push(`unknown token ${token}`); return token; }
-    const value = fill(facts);
+    const value = fill(facts, members);
     if (value === undefined) { problems.push(`${token} has no Fact in the Snapshot`); return token; }
-    return count.format(value);
+    return value;
   });
   return { text: filled, problems };
 }

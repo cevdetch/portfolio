@@ -221,6 +221,28 @@ test('a cvLine fills {pkgbuilds} from the Snapshot and reports what it cannot fi
   assert.deepEqual(fillCvLine('{stars} stars, {constructor}', facts['deadhead']).problems, ['unknown token {stars}', 'unknown token {constructor}']);
 });
 
+test('{lighthouse} adds the perfect-score clause only when every Work in the entry scores 100 in all four categories', () => {
+  const perfect = { performance: 100, accessibility: 100, bestPractices: 100, seo: 100, measuredAt: '2026-11-21T00:30:00.000Z' };
+  const scored = (lighthouse?: typeof perfect) => ({ packages: [], ...(lighthouse ? { lighthouse } : {}) });
+  const line = 'a reels-style feed in HTML and CSS alone{lighthouse}.';
+  assert.deepEqual(fillCvLine(line, scored(perfect), [{ kind: 'template', facts: scored(perfect) }]),
+    { text: 'a reels-style feed in HTML and CSS alone, its demo home page scoring 100 in all four mobile Lighthouse categories.', problems: [] });
+  // Only a template's site is a demo.
+  assert.equal(fillCvLine(line, scored(perfect)).text,
+    'a reels-style feed in HTML and CSS alone, its home page scoring 100 in all four mobile Lighthouse categories.');
+  const both = [{ kind: 'template' as const, facts: scored(perfect) }, { kind: 'template' as const, facts: scored(perfect) }];
+  assert.equal(fillCvLine(line, both[1]!.facts, both).text,
+    "a reels-style feed in HTML and CSS alone, both templates' demo home pages scoring 100 in all four mobile Lighthouse categories.");
+  const three = [...both, { kind: 'site' as const, facts: scored(perfect) }];
+  assert.equal(fillCvLine(line, three[0]!.facts, three).text,
+    "a reels-style feed in HTML and CSS alone, all 3 projects' home pages scoring 100 in all four mobile Lighthouse categories.");
+  // One score under 100 anywhere in the entry, or a Work never measured, drops the clause: a lower number is never printed.
+  for (const other of [scored({ ...perfect, seo: 92 }), scored({ ...perfect, performance: 99 }), scored()]) {
+    assert.deepEqual(fillCvLine(line, both[0]!.facts, [both[0]!, { kind: 'template', facts: other }]),
+      { text: 'a reels-style feed in HTML and CSS alone.', problems: [] });
+  }
+});
+
 test('the numbers strip prefers a short headline, falling back to the full value and label', () => {
   const metric = { label: 'Sourced rules', value: '203', measuredAt: '2026-10-26', source: { label: 'deadhead release notes' } };
   assert.deepEqual(metricDisplay(metric), { value: '203', label: 'Sourced rules' });
