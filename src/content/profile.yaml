@@ -47,6 +47,7 @@ availability:
   capacity: part-time
   timeZone: Europe/Zurich
   openTo: [employment, contract, freelance]
+  internships: true
   workplace: [remote, local]
   hoursPerWeek: 20
 process:

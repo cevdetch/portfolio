@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { availabilityLine, fillBio, languageItem, pageTitle, socialUsername } from '../../src/data/profile.ts';
+import { availabilityLine, fillBio, languageItem, otherWorkLine, pageTitle, placementLine, socialUsername, workingLanguages } from '../../src/data/profile.ts';
 import { contributionHighlights, contributionSpan, discussionLine, contributionTotals, featuredWorks, fillCvLine, firstCitations, homeMetrics, inSourceOrder, lighthouseMethod, lighthouseNumber, mergedPullsUrl, metricDisplay, newestFirst, recentlyShipped, skillGroups, splitOnTitles, upstreamGroups, upstreamLabel, workFactsView } from '../../src/data/views.ts';
 import { formatDay, formatDayRange, formatMonth, joinList } from '../../src/lib/format.ts';
 import { fixturePortfolio, fixtureSnapshot } from '../helpers/portfolio-fixture.ts';
@@ -119,6 +119,33 @@ test('a weekly capacity leads the line and then covers every kind of work, never
     'Part-time, up to 20 hours a week. Open to employment, contract and freelance work, remote or on site in Switzerland.');
   assert.equal(availabilityLine({ ...availability, capacity: 'full-time', hoursPerWeek: 40, openTo: ['contract'] }, 'Switzerland'),
     'Full-time, up to 40 hours a week. Open to contract work, remote or on site in Switzerland.');
+});
+
+test('the placement line tells an employer the roles, the weekly capacity, the working languages and the place', () => {
+  const profile = fixturePortfolio().profile;
+  const availability = { ...profile.availability, hoursPerWeek: 20, internships: true };
+  assert.equal(placementLine({ ...profile, availability }),
+    'Open to part-time roles and internships, up to 20 hours a week. English and French (C1), German (B1). Switzerland, Europe/Zurich.');
+  assert.equal(placementLine({ ...profile, availability: { ...availability, internships: false, hoursPerWeek: undefined } }),
+    'Open to part-time roles. English and French (C1), German (B1). Switzerland, Europe/Zurich.');
+  // No employment on offer, no placement line.
+  assert.equal(placementLine({ ...profile, availability: { ...availability, openTo: ['contract', 'freelance'] } }), undefined);
+});
+
+test('working languages group the non-native ones by level, in data order', () => {
+  const { languages } = fixturePortfolio().profile;
+  assert.equal(workingLanguages(languages), 'English and French (C1), German (B1)');
+  assert.equal(workingLanguages([{ name: 'English', level: 'C1' }]), 'English (C1)');
+  assert.equal(workingLanguages([{ name: 'Turkish', level: 'native' }]), undefined);
+});
+
+test('beside the placement line, the other kinds of work follow on their own', () => {
+  const availability = fixturePortfolio().profile.availability;
+  assert.equal(otherWorkLine(availability, 'Switzerland'), 'Also open to contract and freelance work, remote or on site in Switzerland.');
+  // The weekly hours on the placement line bound this work too.
+  assert.equal(otherWorkLine({ ...availability, hoursPerWeek: 20 }, 'Switzerland'),
+    'Also open to contract and freelance work within those hours, remote or on site in Switzerland.');
+  assert.equal(otherWorkLine({ ...availability, openTo: ['employment'] }, 'Switzerland'), undefined);
 });
 
 test('the bio takes its graduation year from the expected Education entry, never a typed date', () => {

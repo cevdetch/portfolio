@@ -3,13 +3,15 @@ import SiteNav from '../components/SiteNav.astro';
 import SocialLinks from '../components/SocialLinks.astro';
 import Layout from '../layouts/Layout.astro';
 import { loadPortfolio } from '../data/portfolio.ts';
-import { availabilityLine, fullName, pageTitle } from '../data/profile.ts';
+import { availabilityLine, fullName, otherWorkLine, pageTitle, placementLine } from '../data/profile.ts';
 import { firstCitations } from '../data/views.ts';
 
 const data = await loadPortfolio();
 const { profile } = data;
 const works = new Map(data.works.map(work => [work.id, work]));
-const availability = availabilityLine(profile.availability, profile.country);
+// Employment first: the placement line for employers, then the other kinds of work; one line when there is no employment.
+const placement = placementLine(profile);
+const availability = placement ? otherWorkLine(profile.availability, profile.country) : availabilityLine(profile.availability, profile.country);
 const firstCited = firstCitations(profile.services);
 const mailto = `mailto:${profile.email}?subject=${encodeURIComponent(profile.contactSubject)}`;
 ---
@@ -18,7 +20,8 @@ const mailto = `mailto:${profile.email}?subject=${encodeURIComponent(profile.con
   <SiteNav />
   <main>
     <h1>Work with me</h1>
-    <p>{availability}</p>
+    {placement && <p>{placement} <a href="/cv.pdf">CV (PDF)</a></p>}
+    {availability && <p>{availability}</p>}
     <section aria-labelledby="services">
       <h2 id="services">Services</h2>
       <ul>

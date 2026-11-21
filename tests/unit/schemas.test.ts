@@ -141,6 +141,25 @@ test('availability may state a weekly capacity as a whole number of hours, and n
   assert.equal(profileSchema.parse({ ...profile, availability: withoutHours }).availability.hoursPerWeek, undefined);
 });
 
+test('availability lists the kinds of work once each, employment first, then contract, then freelance', () => {
+  const profile = profileSchema.parse({
+    name: 'Cevdet', familyName: 'Haran', handle: 'cevdetch', jobTitle: 'Software Developer', headline: 'Builds fast sites.',
+    specialisation: 'Web performance', country: 'Switzerland', bio: 'Builds tools.', proof: 'Creator of deadhead.', proofWorks: ['deadhead'],
+    homeMetrics: [{ work: 'deadhead', label: 'Sourced rules' }],
+    email: 'hello@cevdet.ch', website: 'https://cevdet.ch/', contactSubject: 'Enquiry', writing: 'one',
+    socials: [{ network: 'github', url: 'https://github.com/cevdetch' }],
+    availability: { capacity: 'part-time', timeZone: 'Europe/Zurich', openTo: ['employment', 'contract', 'freelance'], workplace: ['remote'] },
+    process: [{ title: 'Reply', detail: 'Reply.' }, { title: 'Scope', detail: 'Scope.' }, { title: 'Build', detail: 'Build.' }],
+    services: [{ id: 'static-sites', name: 'Fast static sites', summary: 'Astro sites.' }],
+    languages: [{ name: 'English', level: 'C1' }],
+  });
+  assert.equal(profile.availability.internships, false);
+  for (const openTo of [['freelance', 'employment'], ['contract', 'employment'], ['employment', 'employment']]) {
+    assert.throws(() => profileSchema.parse({ ...profile, availability: { ...profile.availability, openTo } }), /employment first/);
+  }
+  assert.doesNotThrow(() => profileSchema.parse({ ...profile, availability: { ...profile.availability, openTo: ['contract', 'freelance'] } }));
+});
+
 test('the home proof line stretches to a full sentence of real, sourced claims', () => {
   const profile = {
     name: 'Cevdet', familyName: 'Haran', handle: 'cevdetch', jobTitle: 'Software Developer',

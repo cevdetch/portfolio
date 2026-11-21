@@ -11,6 +11,43 @@ export function availabilityLine(a: Availability, country: string): string {
   return `${capacity}Open to ${joinList(openTo, 'and')} work, ${joinList(workplace, 'or')} in ${country}.`;
 }
 
+/** The non-native languages, grouped by level in data order: "English and French (C1), German (B1)". */
+export function workingLanguages(languages: Profile['languages']): string | undefined {
+  const byLevel = new Map<string, string[]>();
+  for (const language of languages) {
+    if (language.level !== 'native') byLevel.set(language.level, [...byLevel.get(language.level) ?? [], language.name]);
+  }
+  return byLevel.size ? [...byLevel].map(([level, names]) => `${joinList(names, 'and')} (${level})`).join(', ') : undefined;
+}
+
+/**
+ * /hire/'s line for employers: the roles, the weekly capacity, the working languages, the country and the time
+ * zone. Undefined when employment is not on offer.
+ */
+export function placementLine(profile: Pick<Profile, 'availability' | 'languages' | 'country'>): string | undefined {
+  const a = profile.availability;
+  if (!a.openTo.includes('employment')) return undefined;
+  const hours = a.hoursPerWeek === undefined ? '' : `, up to ${a.hoursPerWeek} hours a week`;
+  const languages = workingLanguages(profile.languages);
+  return [
+    `Open to ${a.capacity} roles${a.internships ? ' and internships' : ''}${hours}.`,
+    ...(languages ? [`${languages}.`] : []),
+    `${profile.country}, ${a.timeZone}.`,
+  ].join(' ');
+}
+
+/**
+ * Beside the placement line: the kinds of work other than employment, within the weekly hours it names, and where;
+ * undefined when there are none.
+ */
+export function otherWorkLine(a: Availability, country: string): string | undefined {
+  const others = a.openTo.filter(kind => kind !== 'employment');
+  if (others.length === 0) return undefined;
+  const workplace = a.workplace.map(item => item === 'local' ? 'on site' : item);
+  const hours = a.hoursPerWeek === undefined ? '' : ' within those hours';
+  return `Also open to ${joinList(others, 'and')} work${hours}, ${joinList(workplace, 'or')} in ${country}.`;
+}
+
 // Tokens the bio may hold, each filled from Education.
 const bioTokens = new Map<string, { fill: (education: readonly Education[]) => string | undefined; needs: string }>([
   ['graduationYear', {

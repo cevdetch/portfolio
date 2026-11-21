@@ -5,10 +5,18 @@ const timeZone = z.string().refine(zone => {
   try { new Intl.DateTimeFormat('en', { timeZone: zone }); return true; } catch { return false; }
 }, 'Use an IANA time zone.');
 
+// Employment leads wherever the kinds of work are listed, so the data order is the page order.
+const kindsOfWork = ['employment', 'contract', 'freelance'] as const;
+
 const availability = z.strictObject({
   capacity: z.enum(['part-time', 'full-time']),
   timeZone,
-  openTo: z.array(z.enum(['employment', 'contract', 'freelance'])).min(1),
+  openTo: z.array(z.enum(kindsOfWork)).min(1).refine(
+    kinds => kinds.every((kind, index) => index === 0 || kindsOfWork.indexOf(kind) > kindsOfWork.indexOf(kinds[index - 1]!)),
+    'List each kind of work once, employment first, then contract, then freelance.',
+  ),
+  // Employment includes internships; /hire/ says so beside the roles.
+  internships: z.boolean().default(false),
   workplace: z.array(z.enum(['remote', 'local'])).min(1),
   // Privacy: a weekly capacity only, never the days or hours of a schedule.
   hoursPerWeek: z.number().int().positive().optional(),
