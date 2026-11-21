@@ -22,7 +22,7 @@
     "capture-screenshots": "node scripts/capture-screenshots.ts",
     "prepare-portrait": "node scripts/prepare-portrait.ts",
     "cv:private": "node scripts/cv-private.ts",
-    "lighthouse": "astro build --site http://127.0.0.1:4321 && lhci autorun --config=lighthouse/mobile.json && lhci autorun --config=lighthouse/desktop.json",
+    "lighthouse": "astro build --site http://127.0.0.1:4390 && node scripts/lighthouse.ts",
     "preview": "astro preview",
     "astro": "astro"
   },

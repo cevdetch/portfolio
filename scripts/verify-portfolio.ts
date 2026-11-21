@@ -4,6 +4,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { promisify } from 'node:util';
 import { checkJsonLd } from '../src/gates/jsonld.ts';
 import { pdfPageCount } from '../src/gates/pdf.ts';
+import { unauditedRoutes } from '../src/gates/lighthouse.ts';
 import { checkPortrait } from '../src/gates/portrait.ts';
 import { hrefs, jsonLdBlocks, metaContents, visibleText } from '../src/gates/html.ts';
 import { denylistStatus, findDenylistTerms, findPrivacyViolations, isScannedTextFile, parseDenylist, splitCommitLog } from '../src/gates/privacy.ts';
@@ -72,6 +73,11 @@ if (import.meta.main) {
       if (colours.length !== 1 || colours[0] !== brand.primary.hex) errors.push(`${where}: theme-color must be ${brand.primary.hex}`);
       errors.push(...checkJsonLd(jsonLdBlocks(html), visibleText(html), hrefs(html)).map(error => `${where}: ${error}`));
       if (where === '/hire/' && !hrefs(html).some(href => href.startsWith(`mailto:${email}?subject=`))) errors.push('/hire/: no mailto link with a prefilled subject');
+    }
+    const routes = receipt.pages.filter(page => page.owned).map(page => new URL(page.url).pathname);
+    for (const device of ['mobile', 'desktop']) {
+      const config = JSON.parse(await readFile(new URL(`lighthouse/${device}.json`, root), 'utf8')) as { ci: { collect: { url: string[] } } };
+      errors.push(...unauditedRoutes(config.ci.collect.url, routes).map(route => `lighthouse/${device}.json: ${route} is not audited`));
     }
     // Every committed portrait: no EXIF, XMP or IPTC, so no location or camera data is published with it.
     const portraits = (await git('ls-files', '-z', '--', ...portraitOutputs.map(output => output.path))).split('\0').filter(Boolean);

@@ -1,22 +1,49 @@
 {
   "ci": {
     "collect": {
-      "startServerCommand": "pnpm exec astro preview --host 127.0.0.1 --port 4321",
-      "startServerReadyPattern": "4321",
+      "startServerCommand": "pnpm exec astro preview --host 127.0.0.1 --port 4390",
+      "startServerReadyPattern": "127.0.0.1:4390",
+      "settings": { "ignoreStatusCode": true },
       "url": [
-        "http://127.0.0.1:4321/", "http://127.0.0.1:4321/work/", "http://127.0.0.1:4321/work/deadhead/",
-        "http://127.0.0.1:4321/open-source/", "http://127.0.0.1:4321/skills/", "http://127.0.0.1:4321/uses/",
-        "http://127.0.0.1:4321/about/", "http://127.0.0.1:4321/hire/"
+        "http://127.0.0.1:4390/", "http://127.0.0.1:4390/work/",
+        "http://127.0.0.1:4390/work/arch-waypure/", "http://127.0.0.1:4390/work/astro-metadata-lab/",
+        "http://127.0.0.1:4390/work/astro-minimal-template/", "http://127.0.0.1:4390/work/astro-reels-template/",
+        "http://127.0.0.1:4390/work/branding/", "http://127.0.0.1:4390/work/deadhead/", "http://127.0.0.1:4390/work/favseed/",
+        "http://127.0.0.1:4390/work/homelab/", "http://127.0.0.1:4390/work/one/",
+        "http://127.0.0.1:4390/open-source/", "http://127.0.0.1:4390/skills/", "http://127.0.0.1:4390/uses/",
+        "http://127.0.0.1:4390/about/", "http://127.0.0.1:4390/hire/", "http://127.0.0.1:4390/404/"
       ],
-      "numberOfRuns": 1
+      "numberOfRuns": 3
     },
     "assert": {
-      "assertions": {
-        "categories:performance": ["error", { "minScore": 0.95 }],
-        "categories:accessibility": ["error", { "minScore": 0.95 }],
-        "categories:best-practices": ["error", { "minScore": 0.95 }],
-        "categories:seo": ["error", { "minScore": 0.95 }]
-      }
+      "assertMatrix": [
+        {
+          "matchingUrlPattern": "^http://127\\.0\\.0\\.1:4390/(?!404/$)",
+          "aggregationMethod": "median",
+          "assertions": {
+            "categories:performance": ["error", { "minScore": 1 }],
+            "categories:accessibility": ["error", { "minScore": 1 }],
+            "categories:best-practices": ["error", { "minScore": 1 }],
+            "categories:seo": ["error", { "minScore": 1 }]
+          }
+        },
+        {
+          "matchingUrlPattern": "^http://127\\.0\\.0\\.1:4390/404/$",
+          "aggregationMethod": "median",
+          "assertions": {
+            "categories:performance": ["error", { "minScore": 1 }],
+            "categories:accessibility": ["error", { "minScore": 1 }],
+            "categories:best-practices": ["error", { "minScore": 1 }],
+            "document-title": ["error", { "minScore": 1 }],
+            "meta-description": ["error", { "minScore": 1 }],
+            "http-status-code": ["error", { "minScore": 1 }],
+            "link-text": ["error", { "minScore": 1 }],
+            "crawlable-anchors": ["error", { "minScore": 1 }],
+            "robots-txt": ["error", { "minScore": 1 }],
+            "hreflang": ["error", { "minScore": 1 }]
+          }
+        }
+      ]
     },
     "upload": { "target": "filesystem", "outputDir": ".lighthouseci/mobile" }
   }

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { hrefs, jsonLdBlocks, metaContents, visibleText } from '../../src/gates/html.ts';
 import { checkJsonLd } from '../../src/gates/jsonld.ts';
+import { unauditedRoutes } from '../../src/gates/lighthouse.ts';
 import { pdfPageCount } from '../../src/gates/pdf.ts';
 import {
   denylistStatus, findDenylistTerms, findPrivacyViolations, isScannedTextFile, parseDenylist, splitCommitLog,
@@ -99,4 +100,10 @@ test('pdfPageCount counts the page objects, not the page tree, and refuses what 
   assert.throws(() => pdfPageCount(pdf('4 0 obj\n<</Type/ObjStm/N 2>>\nendobj\n')), /compressed streams/);
   assert.throws(() => pdfPageCount(pdf('')), /no page objects/);
   assert.throws(() => pdfPageCount(new TextEncoder().encode('<html>')), /not a PDF/);
+});
+
+test('unauditedRoutes names the built routes a Lighthouse config never visits', () => {
+  const urls = ['http://127.0.0.1:4390/', 'http://127.0.0.1:4390/work/deadhead/', 'http://127.0.0.1:4390/404/'];
+  assert.deepEqual(unauditedRoutes(urls, ['/', '/work/deadhead/', '/404/']), []);
+  assert.deepEqual(unauditedRoutes(urls, ['/', '/work/', '/work/favseed/', '/404/']), ['/work/', '/work/favseed/']);
 });
