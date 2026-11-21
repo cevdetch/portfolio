@@ -11,24 +11,25 @@ export function availabilityLine(a: Availability, country: string): string {
   return `${capacity}Open to ${joinList(openTo, 'and')} work, ${joinList(workplace, 'or')} in ${country}.`;
 }
 
-/** The non-native languages, grouped by level in data order: "English and French (C1), German (B1)". */
-export function workingLanguages(languages: Profile['languages']): string | undefined {
-  const byLevel = new Map<string, string[]>();
-  for (const language of languages) {
-    if (language.level !== 'native') byLevel.set(language.level, [...byLevel.get(language.level) ?? [], language.name]);
-  }
+/**
+ * Every language, grouped by level with the native ones first and the other levels in data order:
+ * "Turkish and Kurdish (native), English and French (C1), German (B1)".
+ */
+export function languageLevels(languages: Profile['languages']): string | undefined {
+  const byLevel = new Map<string, string[]>(languages.some(language => language.level === 'native') ? [['native', []]] : []);
+  for (const language of languages) byLevel.set(language.level, [...byLevel.get(language.level) ?? [], language.name]);
   return byLevel.size ? [...byLevel].map(([level, names]) => `${joinList(names, 'and')} (${level})`).join(', ') : undefined;
 }
 
 /**
- * /hire/'s line for employers: the roles, the weekly capacity, the working languages, the country and the time
+ * /hire/'s line for employers: the roles, the weekly capacity, the languages, the country and the time
  * zone. Undefined when employment is not on offer.
  */
 export function placementLine(profile: Pick<Profile, 'availability' | 'languages' | 'country'>): string | undefined {
   const a = profile.availability;
   if (!a.openTo.includes('employment')) return undefined;
   const hours = a.hoursPerWeek === undefined ? '' : `, up to ${a.hoursPerWeek} hours a week`;
-  const languages = workingLanguages(profile.languages);
+  const languages = languageLevels(profile.languages);
   return [
     `Open to ${a.capacity} roles${a.internships ? ' and internships' : ''}${hours}.`,
     ...(languages ? [`${languages}.`] : []),

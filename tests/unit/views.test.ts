@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { availabilityLine, fillBio, languageItem, otherWorkLine, pageTitle, placementLine, socialUsername, workingLanguages } from '../../src/data/profile.ts';
+import { availabilityLine, fillBio, languageItem, languageLevels, otherWorkLine, pageTitle, placementLine, socialUsername } from '../../src/data/profile.ts';
 import { contributionHighlights, contributionSpan, discussionLine, contributionTotals, featuredWorks, fillCvLine, firstCitations, homeMetrics, inSourceOrder, knowsAboutTechs, lighthouseMethod, lighthouseNumber, mergedPullsUrl, metricDisplay, newestFirst, recentlyShipped, skillGroups, splitOnTitles, upstreamGroups, upstreamLabel, workFactsView } from '../../src/data/views.ts';
 import { formatDay, formatDayRange, formatMonth, formatMonthRange, joinList } from '../../src/lib/format.ts';
 import { statusMeanings, workStatuses } from '../../src/schemas/work.ts';
@@ -122,22 +122,28 @@ test('a weekly capacity leads the line and then covers every kind of work, never
     'Full-time, up to 40 hours a week. Open to contract work, remote or on site in Switzerland.');
 });
 
-test('the placement line tells an employer the roles, the weekly capacity, the working languages and the place', () => {
+test('the placement line tells an employer the roles, the weekly capacity, the languages and the place', () => {
   const profile = fixturePortfolio().profile;
   const availability = { ...profile.availability, hoursPerWeek: 20, internships: true };
   assert.equal(placementLine({ ...profile, availability }),
-    'Open to part-time roles and internships, up to 20 hours a week. English and French (C1), German (B1). Switzerland, Europe/Zurich.');
+    'Open to part-time roles and internships, up to 20 hours a week. Turkish and Kurdish (native), English and French (C1), German (B1). Switzerland, Europe/Zurich.');
   assert.equal(placementLine({ ...profile, availability: { ...availability, internships: false, hoursPerWeek: undefined } }),
-    'Open to part-time roles. English and French (C1), German (B1). Switzerland, Europe/Zurich.');
+    'Open to part-time roles. Turkish and Kurdish (native), English and French (C1), German (B1). Switzerland, Europe/Zurich.');
+  assert.equal(placementLine({ ...profile, availability, languages: [] }),
+    'Open to part-time roles and internships, up to 20 hours a week. Switzerland, Europe/Zurich.');
   // No employment on offer, no placement line.
   assert.equal(placementLine({ ...profile, availability: { ...availability, openTo: ['contract', 'freelance'] } }), undefined);
 });
 
-test('working languages group the non-native ones by level, in data order', () => {
+test('the languages group by level, natives first and the other levels in data order', () => {
   const { languages } = fixturePortfolio().profile;
-  assert.equal(workingLanguages(languages), 'English and French (C1), German (B1)');
-  assert.equal(workingLanguages([{ name: 'English', level: 'C1' }]), 'English (C1)');
-  assert.equal(workingLanguages([{ name: 'Turkish', level: 'native' }]), undefined);
+  assert.equal(languageLevels(languages), 'Turkish and Kurdish (native), English and French (C1), German (B1)');
+  assert.equal(languageLevels([{ name: 'English', level: 'C1' }]), 'English (C1)');
+  assert.equal(languageLevels([{ name: 'Turkish', level: 'native' }]), 'Turkish (native)');
+  // A native language listed after the others still leads.
+  assert.equal(languageLevels([{ name: 'German', level: 'B1' }, { name: 'Turkish', level: 'native' }, { name: 'English', level: 'C1' }]),
+    'Turkish (native), German (B1), English (C1)');
+  assert.equal(languageLevels([]), undefined);
 });
 
 test('beside the placement line, the other kinds of work follow on their own', () => {
