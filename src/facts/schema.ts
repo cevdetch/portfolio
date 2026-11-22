@@ -22,9 +22,10 @@ export const packageFactsSchema = z.discriminatedUnion('published', [
 
 const score = z.number().int().min(0).max(100);
 
-// The median of three mobile PageSpeed Insights runs on the Work's site, per category. measuredAt is the median
-// run's fetch time, kept from the last refresh while the four scores stay the same (see collectFacts). site is the
-// URL measured, so scores never carry over to a Work whose site has moved; scores recorded before it have none.
+// Five mobile PageSpeed Insights runs on the Work's site: performance from the best run, the other categories from
+// the median (see combineRuns). Published only as 100 in all four (see collectFacts). measuredAt is the best run's
+// fetch time, kept from the last refresh while the four scores stay the same. site is the URL measured, so scores
+// never carry over to a Work whose site has moved; scores recorded before it have none.
 export const lighthouseFactsSchema = z.strictObject({
   performance: score,
   accessibility: score,

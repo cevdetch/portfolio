@@ -230,7 +230,7 @@ test('every Work with a site gets the median Lighthouse scores, a few sites at a
     most = Math.max(most, running);
     await new Promise(resolve => setTimeout(resolve, 5));
     running--;
-    return { facts: { performance: 99, accessibility: 100, bestPractices: 100, seo: 100, measuredAt: '2026-11-14T20:00:00.000Z' } };
+    return { facts: { performance: 100, accessibility: 100, bestPractices: 100, seo: 100, measuredAt: '2026-11-14T20:00:00.000Z' } };
   };
   const ids = ['a', 'b', 'c', 'd'];
   const client = fakeClient({
@@ -243,11 +243,12 @@ test('every Work with a site gets the median Lighthouse scores, a few sites at a
   ], { ...client, json: async <T>(url: string) => url === 'https://registry.npmjs.org/pkg' ? null : client.json<T>(url) }, { lighthouse });
   assert.deepEqual(sites.sort(), ids.map(id => `https://${id}.cevdet.ch/`));
   assert.ok(most > 1 && most <= 2, `ran ${most} at once`);
-  assert.deepEqual(collected.works['a']?.lighthouse, { performance: 99, accessibility: 100, bestPractices: 100, seo: 100, measuredAt: '2026-11-14T20:00:00.000Z', site: 'https://a.cevdet.ch/' });
+  assert.deepEqual(collected.works['a']?.lighthouse, { performance: 100, accessibility: 100, bestPractices: 100, seo: 100, measuredAt: '2026-11-14T20:00:00.000Z', site: 'https://a.cevdet.ch/' });
+  assert.deepEqual(collected.held, []);
   assert.equal(collected.works['pkg']?.lighthouse, undefined);
 });
 
-const scores = { performance: 98, accessibility: 100, bestPractices: 100, seo: 100 };
+const scores = { performance: 100, accessibility: 100, bestPractices: 100, seo: 100 };
 const lighthousePrevious = (lighthouse?: LighthouseFacts): Snapshot => ({
   version: 1 as const, refreshedAt: '2026-11-09T06:00:00.000Z', contributions: [],
   works: { x: { packages: [], icon: null, ...(lighthouse ? { lighthouse } : {}) } },
@@ -261,8 +262,37 @@ test('unchanged scores keep the date they were first measured, so a quiet week c
   const previous = lighthousePrevious({ ...scores, measuredAt: '2026-11-07T05:00:00.000Z', site });
   const same = async () => ({ facts: { ...scores, measuredAt: '2026-11-14T05:00:00.000Z' } });
   assert.equal((await collectFacts(xSource, lighthouseRoutes(), { previous, lighthouse: same })).works['x']?.lighthouse?.measuredAt, '2026-11-07T05:00:00.000Z');
-  const better = async () => ({ facts: { ...scores, performance: 100, measuredAt: '2026-11-14T05:00:00.000Z' } });
-  assert.deepEqual((await collectFacts(xSource, lighthouseRoutes(), { previous, lighthouse: better })).works['x']?.lighthouse, { ...scores, performance: 100, measuredAt: '2026-11-14T05:00:00.000Z', site });
+});
+
+test('last scores under 100 give way to the next 100s, dated when they were measured', async () => {
+  const previous = lighthousePrevious({ ...scores, bestPractices: 92, measuredAt: '2026-11-07T05:00:00.000Z', site });
+  const perfect = async () => ({ facts: { ...scores, measuredAt: '2026-11-14T05:00:00.000Z' } });
+  assert.deepEqual((await collectFacts(xSource, lighthouseRoutes(), { previous, lighthouse: perfect })).works['x']?.lighthouse, { ...scores, measuredAt: '2026-11-14T05:00:00.000Z', site });
+});
+
+test('a measurement under 100 is held: the last 100s stay with their date, and the refresh reports the scores and failing audits', async () => {
+  const warnings: string[] = [];
+  const lower = async () => ({
+    facts: { ...scores, bestPractices: 92, measuredAt: '2026-11-14T05:00:00.000Z' }, shortfalls: ['best-practices: errors-in-console (2 of 5 runs)'],
+  });
+  const previous = lighthousePrevious({ ...scores, measuredAt: '2026-11-07T05:00:00.000Z', site });
+  const collected = await collectFacts(xSource, lighthouseRoutes(), { previous, lighthouse: lower, warn: message => warnings.push(message) });
+  assert.deepEqual(collected.works['x']?.lighthouse, { ...scores, measuredAt: '2026-11-07T05:00:00.000Z', site });
+  assert.deepEqual(collected.held, [
+    'x: Lighthouse measured best practices 92 on https://x.cevdet.ch/, so it is not published; keeping the last scores. Failing audits: best-practices: errors-in-console (2 of 5 runs)',
+  ]);
+  assert.deepEqual(warnings, []);
+});
+
+test('a measurement under 100 with no last 100s to keep publishes no scores at all', async () => {
+  const lower = async () => ({ facts: { ...scores, performance: 99, seo: 92, measuredAt: '2026-11-14T05:00:00.000Z' } });
+  const first = await collectFacts(xSource, lighthouseRoutes(), { previous: lighthousePrevious(), lighthouse: lower });
+  assert.equal(first.works['x']?.lighthouse, undefined);
+  assert.deepEqual(first.held, ['x: Lighthouse measured performance 99, SEO 92 on https://x.cevdet.ch/, so it is not published; no earlier scores to keep. Failing audits: none listed']);
+  const previous = lighthousePrevious({ ...scores, performance: 98, measuredAt: '2026-11-07T05:00:00.000Z', site });
+  const again = await collectFacts(xSource, lighthouseRoutes(), { previous, lighthouse: lower });
+  assert.equal(again.works['x']?.lighthouse, undefined);
+  assert.match(again.held[0]!, /; the last scores are under 100, so none are kept\./);
 });
 
 test('scores measured on another site, or on an unrecorded one, are replaced even when they are the same', async () => {
@@ -292,6 +322,16 @@ test('a skipped measurement drops scores from another site rather than publish t
   const collected = await collectFacts(xSource, lighthouseRoutes(), { previous, lighthouse: skipped, warn: message => warnings.push(message) });
   assert.equal(collected.works['x']?.lighthouse, undefined);
   assert.deepEqual(warnings, ['x: Lighthouse not measured (HTTP 429); the last scores were measured on another site, so none are kept']);
+});
+
+test('a skipped measurement never keeps last scores under 100', async () => {
+  const warnings: string[] = [];
+  const skipped = async () => ({ skipped: 'HTTP 429' });
+  const previous = lighthousePrevious({ ...scores, performance: 99, measuredAt: '2026-11-07T05:00:00.000Z', site });
+  const collected = await collectFacts(xSource, lighthouseRoutes(), { previous, lighthouse: skipped, warn: message => warnings.push(message) });
+  assert.equal(collected.works['x']?.lighthouse, undefined);
+  assert.deepEqual(warnings, ['x: Lighthouse not measured (HTTP 429); the last scores are under 100, so none are kept']);
+  assert.equal((await collectFacts(xSource, lighthouseRoutes(), { previous })).works['x']?.lighthouse, undefined);
 });
 
 test('without a measurer the last Lighthouse Facts carry over, for the same site only', async () => {

@@ -27,7 +27,7 @@ export function mergeSnapshot(previous: Snapshot | undefined, next: Payload, now
   return { changed, snapshot: { version: 1, refreshedAt, ...payload } };
 }
 
-const lighthouseLabels: [keyof Omit<LighthouseFacts, 'measuredAt' | 'site'>, string][] = [
+export const lighthouseLabels: [keyof Omit<LighthouseFacts, 'measuredAt' | 'site'>, string][] = [
   ['performance', 'performance'], ['accessibility', 'accessibility'], ['bestPractices', 'best practices'], ['seo', 'SEO'],
 ];
 

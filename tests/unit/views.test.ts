@@ -438,8 +438,8 @@ test('the Lighthouse Number is the lowest mobile Performance score across the me
   assert.equal(lighthouseNumber(p.works, one), undefined);
 });
 
-test('the Lighthouse method names the page, the device and the runs behind the median', () => {
-  assert.equal(lighthouseMethod(), 'on the home page (mobile, median of 3 runs)');
+test('the Lighthouse method names the page, the device, the runs and how they combine', () => {
+  assert.equal(lighthouseMethod(), 'on the home page (mobile; performance the best of 5 runs, the rest the median)');
 });
 
 test('a month range names one month when it starts and ends in it', () => {

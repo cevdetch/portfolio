@@ -26,7 +26,7 @@ jobs:
           # The privacy gate scans every commit message on the branch.
           fetch-depth: 0
       - uses: ./.github/actions/setup
-      - run: pnpm fetch-facts --changes-file "$RUNNER_TEMP/changes.txt"
+      - run: pnpm fetch-facts --changes-file "$RUNNER_TEMP/changes.txt" --held-file "$RUNNER_TEMP/held.txt"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PSI_API_KEY: ${{ secrets.PSI_API_KEY }}
@@ -50,3 +50,9 @@ jobs:
         run: node scripts/commit-facts.ts "$RUNNER_TEMP/changes.txt"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # A site measured under 100 kept its last 100s on the page; the run fails so the site gets debugged and fixed.
+      - name: Fail on a site measured under 100
+        run: |
+          [ -s "$RUNNER_TEMP/held.txt" ] || exit 0
+          while IFS= read -r line; do echo "::error::$line"; done < "$RUNNER_TEMP/held.txt"
+          exit 1

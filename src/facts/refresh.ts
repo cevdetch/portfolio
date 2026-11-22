@@ -2,6 +2,7 @@ import type { ContributionOverrides } from '../schemas/contributions.ts';
 import type { PackageRef } from '../schemas/work.ts';
 import type { Client } from './client.ts';
 import type { Contribution, LighthouseFacts, RepoFacts, Snapshot, WorkFacts } from './schema.ts';
+import { lighthouseLabels } from './snapshot.ts';
 import {
   contributionsQuery, countDiscussion, GITHUB_API, HANDLE, lastPage, toContribution, toPkgbuilds, toRepoFacts, toRuleCounts, toRuleFiles,
   type GhBlob, type GhComment, type GhCommit, type GhRelease, type GhRepo, type GhSearch, type GhTree,
@@ -18,7 +19,11 @@ export interface CollectOptions {
   lighthouse?: MeasureLighthouse;
   warn?: (message: string) => void;
 }
-export interface Collected { works: Record<string, WorkFacts>; contributions: Contribution[]; icons: { workId: string; svg: string }[] }
+export interface Collected {
+  works: Record<string, WorkFacts>; contributions: Contribution[]; icons: { workId: string; svg: string }[];
+  // Measurements under 100, kept off the pages: one line per site, naming the scores and the audits that failed.
+  held: string[];
+}
 
 async function required<T>(client: Client, url: string): Promise<{ data: T; headers: Headers }> {
   const result = await client.json<T>(url);
@@ -121,7 +126,7 @@ async function contributions(client: Client, highlights: ReadonlySet<string>): P
   return found;
 }
 
-// Sites measured at once: each takes three runs in turn, so two keep a refresh short and far inside the API's quota.
+// Sites measured at once: each takes five runs in turn, so two keep a refresh short and far inside the API's quota.
 const lighthouseConcurrency = 2;
 
 async function inPool<T, R>(items: readonly T[], size: number, run: (item: T) => Promise<R>): Promise<R[]> {
@@ -136,32 +141,42 @@ async function inPool<T, R>(items: readonly T[], size: number, run: (item: T) =>
   return results;
 }
 
-const sameScores = (a: LighthouseFacts, b: LighthouseFacts) =>
-  a.performance === b.performance && a.accessibility === b.accessibility && a.bestPractices === b.bestPractices && a.seo === b.seo;
+const perfect = (facts: LighthouseFacts) => lighthouseLabels.every(([key]) => facts[key] === 100);
 
 /**
- * Each site's Lighthouse Facts. Unchanged scores keep the date they were first measured, so a quiet week leaves the
- * Snapshot alone; a skipped measurement keeps the last scores and their date, and warns. Only scores measured on the
- * Work's current site count as the last ones: a Work that moved is measured afresh, and never shows the old site's.
+ * Each site's Lighthouse Facts, published only as 100 in all four categories. A measurement under 100 is held: the
+ * site keeps its last 100s and their date, or shows none, and the refresh reports the scores and the failing audits,
+ * so the site gets fixed instead of the page showing the lower score. Unchanged 100s keep the date they were first
+ * measured, so a quiet week leaves the Snapshot alone; a skipped measurement keeps the last 100s and their date, and
+ * warns. Only scores measured on the Work's current site count as the last ones: a Work that moved is measured afresh,
+ * and never shows the old site's.
  */
-async function lighthouseFacts(sources: readonly (WorkSource & { site: string })[], options: CollectOptions): Promise<Map<string, LighthouseFacts>> {
+async function lighthouseFacts(sources: readonly (WorkSource & { site: string })[], options: CollectOptions): Promise<{ found: Map<string, LighthouseFacts>; held: string[] }> {
   const found = new Map<string, LighthouseFacts>();
+  const held: string[] = [];
   const { lighthouse: measure, warn = console.warn } = options;
   const results = await inPool(sources, lighthouseConcurrency, async source => measure ? measure(source.site) : undefined);
   sources.forEach((source, index) => {
     const earlier = options.previous?.works[source.id]?.lighthouse;
-    const before = earlier?.site === source.site ? earlier : undefined;
+    const here = earlier?.site === source.site ? earlier : undefined;
+    const before = here && perfect(here) ? here : undefined;
+    const kept = before ? 'keeping the last scores'
+      : here ? 'the last scores are under 100, so none are kept'
+      : earlier ? 'the last scores were measured on another site, so none are kept' : 'no earlier scores to keep';
     const result = results[index];
     if (result && 'facts' in result) {
-      found.set(source.id, before && sameScores(before, result.facts) ? before : { ...result.facts, site: source.site });
-      return;
+      if (perfect(result.facts)) {
+        found.set(source.id, before ?? { ...result.facts, site: source.site });
+        return;
+      }
+      const under = lighthouseLabels.filter(([key]) => result.facts[key] < 100).map(([key, label]) => `${label} ${result.facts[key]}`).join(', ');
+      held.push(`${source.id}: Lighthouse measured ${under} on ${source.site}, so it is not published; ${kept}. Failing audits: ${result.shortfalls?.join(', ') || 'none listed'}`);
+    } else if (result) {
+      warn(`${source.id}: Lighthouse not measured (${result.skipped}); ${kept}`);
     }
-    const kept = before ? 'keeping the last scores'
-      : earlier ? 'the last scores were measured on another site, so none are kept' : 'no earlier scores to keep';
-    if (result) warn(`${source.id}: Lighthouse not measured (${result.skipped}); ${kept}`);
     if (before) found.set(source.id, before);
   });
-  return found;
+  return { found, held };
 }
 
 export async function collectFacts(sources: readonly WorkSource[], client: Client, options: CollectOptions = {}): Promise<Collected> {
@@ -192,6 +207,7 @@ export async function collectFacts(sources: readonly WorkSource[], client: Clien
     works[source.id] = facts;
   }
   const sites = sources.filter((source): source is WorkSource & { site: string } => source.site !== undefined);
-  for (const [id, lighthouse] of await lighthouseFacts(sites, options)) works[id]!.lighthouse = lighthouse;
-  return { works, contributions: await contributions(client, new Set(options.highlights)), icons };
+  const { found, held } = await lighthouseFacts(sites, options);
+  for (const [id, lighthouse] of found) works[id]!.lighthouse = lighthouse;
+  return { works, contributions: await contributions(client, new Set(options.highlights)), icons, held };
 }

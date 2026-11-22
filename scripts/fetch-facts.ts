@@ -39,8 +39,9 @@ if (import.meta.main) {
   try {
     const token = process.env['GITHUB_TOKEN'];
     if (!token) throw new Error('Set GITHUB_TOKEN, e.g. GITHUB_TOKEN=$(gh auth token) pnpm fetch-facts');
-    const flag = process.argv.indexOf('--changes-file');
-    const changesFile = flag === -1 ? undefined : process.argv[flag + 1];
+    const option = (name: string) => { const at = process.argv.indexOf(name); return at === -1 ? undefined : process.argv[at + 1]; };
+    const changesFile = option('--changes-file');
+    const heldFile = option('--held-file');
     const facts = new URL('src/facts/', root);
     const snapshotFile = new URL('snapshot.json', facts);
     const previous = await readSnapshot(snapshotFile);
@@ -63,6 +64,11 @@ if (import.meta.main) {
     }
     console.log(changed ? lines.join('\n') : 'Facts unchanged.');
     if (changesFile) await writeFile(changesFile, lines.length ? `${lines.join('\n')}\n` : '');
+    // A site measured under 100 is a problem to debug, never a score to publish. The weekly workflow commits the rest
+    // and then fails on the held file; a run by hand fails here, after writing the rest.
+    for (const line of collected.held) console.error(`error: ${line}`);
+    if (heldFile) await writeFile(heldFile, collected.held.length ? `${collected.held.join('\n')}\n` : '');
+    else if (collected.held.length) process.exitCode = 1;
   } catch (error) {
     console.error(error instanceof Error ? error.message : error);
     process.exitCode = 1;

@@ -252,7 +252,7 @@ export interface HomeNumber extends MetricDisplay { source: Metric['source']; me
 
 /** How the Lighthouse Facts are measured, for the line beside the scores: each site's home URL, as fetch-facts runs it. */
 export function lighthouseMethod(): string {
-  return `on the home page (mobile, median of ${lighthouseRuns} runs)`;
+  return `on the home page (mobile; performance the best of ${lighthouseRuns} runs, the rest the median)`;
 }
 
 /**

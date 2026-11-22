@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import { test } from 'node:test';
-import { publicRepo } from '../../src/facts/schema.ts';
-import { describeChanges, mergeSnapshot, stableJson } from '../../src/facts/snapshot.ts';
+import { publicRepo, snapshotSchema } from '../../src/facts/schema.ts';
+import { describeChanges, lighthouseLabels, mergeSnapshot, stableJson } from '../../src/facts/snapshot.ts';
 import { fixtureSnapshot } from '../helpers/portfolio-fixture.ts';
 
 const later = new Date('2026-11-16T06:00:00.000Z');
@@ -114,4 +115,12 @@ test('describeChanges names a site measured afresh, even with the same scores', 
   assert.deepEqual(describeChanges(next, moved), [
     'one: Lighthouse measured on one.example.dev, performance 100, accessibility 100, best practices 96, SEO 100',
   ]);
+});
+
+test('the committed Snapshot publishes Lighthouse scores of 100 only', async () => {
+  const committed = snapshotSchema.parse(JSON.parse(await readFile(new URL('../../src/facts/snapshot.json', import.meta.url), 'utf8')));
+  const under = Object.entries(committed.works).flatMap(([id, { lighthouse }]) => lighthouse
+    ? lighthouseLabels.filter(([key]) => lighthouse[key] < 100).map(([key, label]) => `${id}: ${label} ${lighthouse[key]}`)
+    : []);
+  assert.deepEqual(under, []);
 });

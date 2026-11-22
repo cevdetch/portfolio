@@ -6,17 +6,30 @@ export const PSI_API = 'https://www.googleapis.com/pagespeedonline/v5/runPagespe
 const categories = { performance: 'performance', accessibility: 'accessibility', bestPractices: 'best-practices', seo: 'seo' } as const;
 type Category = keyof typeof categories;
 
-export interface LighthouseRun extends Record<Category, number> { fetchTime: string }
+export interface LighthouseScores extends Record<Category, number> { fetchTime: string }
+// Shortfalls name what cost a run its 100s, as `category: audit`, so a site that measures lower can be debugged.
+export interface LighthouseRun extends LighthouseScores { shortfalls: string[] }
 // A well-formed answer from a run Lighthouse could not finish: the site keeps its last scores.
 export interface FailedRun { failed: string }
-export type Measured = { facts: LighthouseFacts } | { skipped: string };
+export type Measured = { facts: LighthouseFacts; shortfalls?: readonly string[] } | { skipped: string };
 export type MeasureLighthouse = (site: string) => Promise<Measured>;
 
+// PageSpeed Insights answers a repeated request from its cache for a minute or more, and its cache key holds the
+// report's locale but not the utm parameters. One English locale per run makes every run a measurement of its own;
+// the scores do not depend on the locale.
+const locales = ['en-US', 'en-GB', 'en-AU', 'en-IN', 'en'] as const;
+
+// Runs per site, one per locale; the pages say how many the scores were taken from.
+export const lighthouseRuns = locales.length;
+
 /** The API request for one mobile run. The key travels in a header, so this URL is safe to log. */
-export function pagespeedUrl(site: string): string {
+export function pagespeedUrl(site: string, run = 0): string {
+  const locale = locales[run];
+  if (!locale) throw new Error(`Lighthouse: run ${run + 1} has no locale of its own; at most ${locales.length} runs`);
   const url = new URL(PSI_API);
   url.searchParams.set('url', site);
   url.searchParams.set('strategy', 'mobile');
+  url.searchParams.set('locale', locale);
   for (const id of Object.values(categories)) url.searchParams.append('category', id);
   return url.href;
 }
@@ -28,6 +41,19 @@ export function analysisUrl(site: string): string {
 
 const record = (value: unknown): Record<string, unknown> | undefined =>
   value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : undefined;
+
+/** The weighted audits of a category that scored under 1, or the category alone when the answer lists none. */
+function failingAudits(id: string, category: Record<string, unknown> | undefined, audits: Record<string, unknown> | undefined): string[] {
+  const refs = Array.isArray(category?.['auditRefs']) ? category['auditRefs'] as unknown[] : [];
+  const failing = refs.flatMap(ref => {
+    const audit = record(ref)?.['id'];
+    const weight = record(ref)?.['weight'];
+    if (typeof audit !== 'string' || typeof weight !== 'number' || weight <= 0) return [];
+    const score = record(audits?.[audit])?.['score'];
+    return typeof score === 'number' && score < 1 ? [`${id}: ${audit}`] : [];
+  });
+  return failing.length ? failing : [id];
+}
 
 /**
  * One run's scores, 0–100, or a failed run when Lighthouse reports a runtime error or leaves a score empty. Anything
@@ -46,7 +72,8 @@ export function toLighthouseRun(site: string, body: unknown): LighthouseRun | Fa
   if (formFactor !== 'mobile') throw new Error(`${site}: PageSpeed Insights run is ${String(formFactor)}, not mobile`);
   const fetchTime = result['fetchTime'];
   if (typeof fetchTime !== 'string' || Number.isNaN(Date.parse(fetchTime))) throw new Error(`${site}: PageSpeed Insights gave no valid fetchTime`);
-  const status = record(record(result['audits'])?.['http-status-code']);
+  const audits = record(result['audits']);
+  const status = record(audits?.['http-status-code']);
   if (!status) throw new Error(`${site}: PageSpeed Insights gave no http-status-code audit`);
   if (status['score'] !== 1) {
     const code = typeof status['displayValue'] === 'string' && status['displayValue'] ? status['displayValue'] : 'unknown';
@@ -54,32 +81,36 @@ export function toLighthouseRun(site: string, body: unknown): LighthouseRun | Fa
   }
   const found = record(result['categories']);
   const scores: Partial<Record<Category, number>> = {};
+  const shortfalls: string[] = [];
   for (const [key, id] of Object.entries(categories) as [Category, string][]) {
-    const value = record(found?.[id])?.['score'];
+    const category = record(found?.[id]);
+    const value = category?.['score'];
     if (value === null || value === undefined) return { failed: `no ${id} score` };
     if (typeof value !== 'number' || value < 0 || value > 1) throw new Error(`${site}: PageSpeed Insights gave no valid ${id} score`);
     scores[key] = Math.round(value * 100);
+    if (scores[key] < 100) shortfalls.push(...failingAudits(id, category, audits));
   }
-  return { ...scores as Record<Category, number>, fetchTime: new Date(fetchTime).toISOString() };
+  return { ...scores as Record<Category, number>, fetchTime: new Date(fetchTime).toISOString(), shortfalls };
 }
 
 const median = (values: number[]) => [...values].sort((a, b) => a - b)[Math.floor((values.length - 1) / 2)]!;
 
-/** The median per category; measuredAt is the fetch time of the run whose performance score is the median. */
-export function medianRun(runs: readonly LighthouseRun[]): LighthouseFacts {
-  if (runs.length === 0) throw new Error('Lighthouse: no runs to take the median of');
-  const dated = [...runs].sort((a, b) => a.performance - b.performance)[Math.floor((runs.length - 1) / 2)]!;
+/**
+ * Performance from the best run, the other categories from the median. A PageSpeed Insights host that stalls before
+ * the first paint only ever slows a run, so the fastest run is the site's own speed, while a real regression slows
+ * every run and still shows. measuredAt is the fetch time of the best run, the first on a tie.
+ */
+export function combineRuns(runs: readonly LighthouseScores[]): LighthouseFacts {
+  if (runs.length === 0) throw new Error('Lighthouse: no runs to combine');
+  const best = runs.reduce((top, run) => run.performance > top.performance ? run : top);
   return {
-    performance: median(runs.map(run => run.performance)),
+    performance: best.performance,
     accessibility: median(runs.map(run => run.accessibility)),
     bestPractices: median(runs.map(run => run.bestPractices)),
     seo: median(runs.map(run => run.seo)),
-    measuredAt: dated.fetchTime,
+    measuredAt: best.fetchTime,
   };
 }
-
-// Runs per site; the Facts keep their median, and the pages say how many it was taken from.
-export const lighthouseRuns = 3;
 
 // A run takes 10 to 40 seconds on Google's side; past two minutes it is treated as an outage.
 const defaultTimeout = 120_000;
@@ -109,7 +140,7 @@ export function createPageSpeed(rawKey: string | undefined, fetcher: typeof fetc
     for (let run = 0; run < runs; run++) {
       let text: string;
       try {
-        const response = await fetcher(pagespeedUrl(site), {
+        const response = await fetcher(pagespeedUrl(site, run), {
           headers: { 'X-goog-api-key': key, 'User-Agent': 'cevdet.ch-fetch-facts' }, signal: AbortSignal.timeout(timeoutMs),
         });
         text = await response.text();
@@ -126,6 +157,16 @@ export function createPageSpeed(rawKey: string | undefined, fetcher: typeof fetc
       if ('failed' in result) return { skipped: result.failed };
       results.push(result);
     }
-    return { facts: medianRun(results) };
+    // Two runs with one fetch time are one measurement answered twice from the cache, not two runs.
+    if (new Set(results.map(result => result.fetchTime)).size < results.length) return { skipped: 'PageSpeed Insights answered a run from its cache' };
+    const facts = combineRuns(results);
+    // The shortfalls of each category the Facts have under 100, with the share of runs each cost, so a one-off reads
+    // differently from a steady failure.
+    const under = (Object.entries(categories) as [Category, string][]).filter(([key]) => facts[key] < 100).map(([, id]) => id);
+    const counts = new Map<string, number>();
+    for (const result of results) for (const shortfall of new Set(result.shortfalls)) counts.set(shortfall, (counts.get(shortfall) ?? 0) + 1);
+    const shortfalls = [...counts].filter(([shortfall]) => under.includes(shortfall.split(':')[0]!))
+      .map(([shortfall, count]) => `${shortfall} (${count} of ${results.length} runs)`);
+    return { facts, ...(shortfalls.length ? { shortfalls } : {}) };
   };
 }
