@@ -1,0 +1,4 @@
+# Hashed build assets change name whenever their content changes, so browsers may keep them for a year
+# without asking again. Pages and the social cards keep the default: they change under the same name.
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
