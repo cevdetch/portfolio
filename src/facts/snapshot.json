@@ -209,7 +209,7 @@
       "url": "https://github.com/sveltejs/svelte/pull/12526"
     }
   ],
-  "refreshedAt": "2026-11-21T07:40:49.663Z",
+  "refreshedAt": "2026-11-22T14:29:45.949Z",
   "version": 1,
   "works": {
     "arch-waypure": {
@@ -268,9 +268,9 @@
         "zvbi"
       ],
       "repo": {
-        "commitCount": 159,
+        "commitCount": 166,
         "firstCommit": "2025-12-24T22:35:44Z",
-        "lastCommit": "2026-11-15T15:06:09Z",
+        "lastCommit": "2026-11-21T14:59:50Z",
         "latestRelease": null,
         "license": "0BSD",
         "private": false
@@ -288,9 +288,9 @@
       },
       "packages": [],
       "repo": {
-        "commitCount": 20,
+        "commitCount": 24,
         "firstCommit": "2026-10-24T00:03:34Z",
-        "lastCommit": "2026-11-14T19:34:52Z",
+        "lastCommit": "2026-11-22T09:19:09Z",
         "latestRelease": null,
         "license": "MIT",
         "private": false
@@ -311,9 +311,9 @@
       },
       "packages": [],
       "repo": {
-        "commitCount": 27,
+        "commitCount": 28,
         "firstCommit": "2026-10-24T21:25:18Z",
-        "lastCommit": "2026-11-21T00:08:01Z",
+        "lastCommit": "2026-11-22T09:19:09Z",
         "latestRelease": null,
         "license": "MIT",
         "private": false
@@ -334,9 +334,9 @@
       },
       "packages": [],
       "repo": {
-        "commitCount": 58,
+        "commitCount": 59,
         "firstCommit": "2026-11-08T14:22:06Z",
-        "lastCommit": "2026-11-21T00:08:11Z",
+        "lastCommit": "2026-11-22T09:19:09Z",
         "latestRelease": null,
         "license": "MIT",
         "private": false
@@ -374,9 +374,9 @@
         }
       ],
       "repo": {
-        "commitCount": 351,
+        "commitCount": 352,
         "firstCommit": "2026-09-09T18:21:46Z",
-        "lastCommit": "2026-11-21T01:01:37Z",
+        "lastCommit": "2026-11-21T07:42:26Z",
         "latestRelease": {
           "publishedAt": "2026-11-21T00:37:54Z",
           "tag": "v0.4.0"
@@ -405,15 +405,21 @@
       "packages": [
         {
           "name": "favseed",
-          "published": false,
-          "registry": "npm"
+          "published": true,
+          "registry": "npm",
+          "releasedAt": "2026-11-22T13:14:49.589Z",
+          "url": "https://www.npmjs.com/package/favseed",
+          "version": "1.0.1"
         }
       ],
       "repo": {
-        "commitCount": 138,
+        "commitCount": 146,
         "firstCommit": "2026-10-04T17:49:18Z",
-        "lastCommit": "2026-11-21T07:36:33Z",
-        "latestRelease": null,
+        "lastCommit": "2026-11-22T14:20:54Z",
+        "latestRelease": {
+          "publishedAt": "2026-11-22T13:21:44Z",
+          "tag": "v1.0.1"
+        },
         "license": "MIT",
         "private": false
       }
