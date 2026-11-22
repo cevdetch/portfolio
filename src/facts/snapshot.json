@@ -209,7 +209,7 @@
       "url": "https://github.com/sveltejs/svelte/pull/12526"
     }
   ],
-  "refreshedAt": "2026-11-22T16:47:54.529Z",
+  "refreshedAt": "2026-11-22T18:03:00.841Z",
   "version": 1,
   "works": {
     "arch-waypure": {
@@ -327,8 +327,8 @@
       "lighthouse": {
         "accessibility": 100,
         "bestPractices": 100,
-        "measuredAt": "2026-11-22T16:47:14.412Z",
-        "performance": 99,
+        "measuredAt": "2026-11-22T18:01:17.975Z",
+        "performance": 100,
         "seo": 100,
         "site": "https://astro-reels-template.pages.dev/"
       },
@@ -396,8 +396,8 @@
       },
       "lighthouse": {
         "accessibility": 100,
-        "bestPractices": 92,
-        "measuredAt": "2026-11-22T16:47:39.304Z",
+        "bestPractices": 100,
+        "measuredAt": "2026-11-22T17:35:06.623Z",
         "performance": 100,
         "seo": 100,
         "site": "https://favseed.cevdet.ch/"
