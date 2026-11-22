@@ -2,8 +2,8 @@ name: Setup
 description: Install pnpm, Node, Python and RenderCV, then the locked dependencies.
 inputs:
   node-version:
-    description: Node version
-    default: '24.8.0'
+    description: Node version; empty takes the one .node-version pins for production builds
+    default: ''
 runs:
   using: composite
   steps:
@@ -13,6 +13,7 @@ runs:
     - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
       with:
         node-version: ${{ inputs.node-version }}
+        node-version-file: .node-version
         cache: pnpm
     - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
       with:
