@@ -57,14 +57,15 @@ jobs:
           args: --config lychee.toml --root-dir ${{ github.workspace }}/dist --no-progress 'dist/**/*.html'
           fail: true
 
-  # The Lighthouse gate in parallel: mobile's five runs per page split across three jobs, desktop and both dark
-  # passes in a fourth. Each job keeps its reports, so a failure can be read without rerunning it.
+  # The Lighthouse gate in parallel: mobile's five runs per page split across three jobs, desktop's three in a
+  # fourth, both accessibility-only dark passes in a fifth. Each job keeps its reports, so a failure can be read
+  # without rerunning it.
   lighthouse:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        passes: ['mobile --shard 1/3', 'mobile --shard 2/3', 'mobile --shard 3/3', 'desktop dark dark-desktop']
+        passes: ['mobile --shard 1/3', 'mobile --shard 2/3', 'mobile --shard 3/3', 'desktop', 'dark dark-desktop']
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
