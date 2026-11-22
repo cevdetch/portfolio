@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { commitMessage, parsePorcelain } from '../../scripts/commit-facts.ts';
+import { commitMessage, gateCheck, parsePorcelain, refreshBranch } from '../../scripts/commit-facts.ts';
 
 test('porcelain -z output splits into changed and deleted paths', () => {
   assert.deepEqual(parsePorcelain(' M src/facts/snapshot.json\0?? src/facts/icons/new.svg\0 D src/facts/icons/old.svg\0'), {
@@ -28,4 +28,16 @@ test('a bare-path record throws Unexpected git status record error', () => {
     () => parsePorcelain('R  a.svg\0b.svg\0'),
     /Unexpected git status record/,
   );
+});
+
+test('a refresh run commits on a branch of its own, named for the run', () => {
+  assert.equal(refreshBranch('123456789'), 'facts/refresh-123456789');
+});
+
+test('the gate check the refresh posts is a completed success on its commit, linking the run that earned it', () => {
+  const check = gateCheck('abc123', 'https://github.com/cevdetch/portfolio/actions/runs/42');
+  assert.equal(check.name, 'gate');
+  assert.equal(check.head_sha, 'abc123');
+  assert.deepEqual([check.status, check.conclusion], ['completed', 'success']);
+  assert.match(check.output.summary, /Lighthouse on this exact tree.*actions\/runs\/42$/);
 });
