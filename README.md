@@ -78,4 +78,4 @@ Started from the `cevdetch/astro-minimal-template` template at `a2b023d`.
 
 ## Licence
 
-[MIT](LICENSE).
+The code is [MIT](LICENSE). The writing, the portrait, the screenshots and the C mark are not: they are all rights reserved, as [LICENSE-CONTENT.md](LICENSE-CONTENT.md) sets out, together with the licences of the typeface and icons.
