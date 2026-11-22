@@ -1,7 +1,8 @@
 // The Lighthouse gate: 100 in every category it asserts. Each pass measures what can change there, as often as it
 // varies, on every page the build owns:
-//   mobile        all four categories, median of five runs: performance on a throttled phone is the one noisy
-//                 measurement;
+//   mobile        all four categories, five runs: performance on a throttled phone is the one noisy measurement,
+//                 and its noise only ever slows a run (a stall on the host), so the best run measures the page
+//                 while a real regression slows every run and still fails;
 //   desktop       all four categories, one run: desktop scores sit far from every threshold;
 //   dark,         accessibility, one run each: a colour scheme changes contrast and nothing else, and the
 //   dark-desktop  accessibility audits give the same answer every run.

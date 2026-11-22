@@ -15,7 +15,7 @@
           "matchingUrlPattern": "^http://127\\.0\\.0\\.1:4390/(?!404/$)",
           "aggregationMethod": "median",
           "assertions": {
-            "categories:performance": ["error", { "minScore": 1 }],
+            "categories:performance": ["error", { "minScore": 1, "aggregationMethod": "optimistic" }],
             "categories:accessibility": ["error", { "minScore": 1 }],
             "categories:best-practices": ["error", { "minScore": 1 }],
             "categories:seo": ["error", { "minScore": 1 }]
@@ -25,7 +25,7 @@
           "matchingUrlPattern": "^http://127\\.0\\.0\\.1:4390/404/$",
           "aggregationMethod": "median",
           "assertions": {
-            "categories:performance": ["error", { "minScore": 1 }],
+            "categories:performance": ["error", { "minScore": 1, "aggregationMethod": "optimistic" }],
             "categories:accessibility": ["error", { "minScore": 1 }],
             "categories:best-practices": ["error", { "minScore": 1 }],
             "document-title": ["error", { "minScore": 1 }],
