@@ -8,9 +8,12 @@ on:
 permissions:
   contents: read
 
+# Each job stops at about four times its slowest green run, and no sooner than five minutes, so a hang fails
+# in minutes instead of holding gate, and with it main, for GitHub's six-hour default.
 jobs:
   verify:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
@@ -44,6 +47,7 @@ jobs:
   links:
     needs: verify
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
@@ -62,6 +66,7 @@ jobs:
   # without rerunning it.
   lighthouse:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     strategy:
       fail-fast: false
       matrix:
@@ -86,6 +91,7 @@ jobs:
     if: always()
     needs: [verify, links, lighthouse]
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped')
         run: exit 1

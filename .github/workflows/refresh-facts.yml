@@ -17,6 +17,8 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
+    # About two and a half times the slowest green run, which spends most of its time in Lighthouse.
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
