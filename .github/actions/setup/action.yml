@@ -1,5 +1,5 @@
 name: Setup
-description: Install pnpm, Node, Python and RenderCV, then the locked dependencies.
+description: Install Bun, Node, Python and RenderCV, then the locked dependencies.
 inputs:
   node-version:
     description: Node version; empty takes the one .node-version pins for production builds
@@ -7,19 +7,18 @@ inputs:
 runs:
   using: composite
   steps:
-    - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5
+    - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
       with:
-        run_install: false
+        bun-version: 1.4.5
     - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
       with:
         node-version: ${{ inputs.node-version }}
         node-version-file: .node-version
-        cache: pnpm
     - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
       with:
         python-version-file: .python-version
         cache: pip
     - run: pip install -r requirements.txt
       shell: bash
-    - run: pnpm install --frozen-lockfile
+    - run: bun install --frozen-lockfile
       shell: bash

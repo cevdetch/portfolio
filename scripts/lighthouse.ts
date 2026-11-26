@@ -30,9 +30,9 @@ if (import.meta.main) {
     const failed = passes.filter(pass => {
       const { config, flags } = configs[pass];
       console.log(`\nLighthouse, ${pass}${suffix && `, shard ${shard.index} of ${shard.count}`}: ${routes.length} pages`);
-      const args = ['exec', 'lhci', 'autorun', `--config=lighthouse/${config}.json`, ...flags,
+      const args = ['lhci', 'autorun', `--config=lighthouse/${config}.json`, ...flags,
         ...routes.map(url => `--collect.url=${url}`), `--upload.outputDir=.lighthouseci/${pass}${suffix}`];
-      return spawnSync('pnpm', args, { stdio: 'inherit' }).status !== 0;
+      return spawnSync('bunx', args, { stdio: 'inherit' }).status !== 0;
     });
     if (failed.length) {
       console.error(`\nLighthouse failed: ${failed.join(', ')}`);

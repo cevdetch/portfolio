@@ -38,7 +38,7 @@ async function readSnapshot(file: URL): Promise<Snapshot | undefined> {
 if (import.meta.main) {
   try {
     const token = process.env['GITHUB_TOKEN'];
-    if (!token) throw new Error('Set GITHUB_TOKEN, e.g. GITHUB_TOKEN=$(gh auth token) pnpm fetch-facts');
+    if (!token) throw new Error('Set GITHUB_TOKEN, e.g. GITHUB_TOKEN=$(gh auth token) bun run fetch-facts');
     const option = (name: string) => { const at = process.argv.indexOf(name); return at === -1 ? undefined : process.argv[at + 1]; };
     const changesFile = option('--changes-file');
     const heldFile = option('--held-file');

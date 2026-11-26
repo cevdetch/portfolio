@@ -5,7 +5,7 @@ import { placePhoto, renderCvPdf } from '../cv/render.ts';
 import { cvPortraitPath } from '../data/portrait.ts';
 import { loadPortfolio } from '../data/portfolio.ts';
 
-// The build also leaves .astro/cv/cv.yaml, the public model that pnpm cv:private renders with private fields.
+// The build also leaves .astro/cv/cv.yaml, the public model that bun run cv:private renders with private fields.
 export const GET: APIRoute = async () => {
   const workDir = resolve('.astro/cv');
   const photo = await placePhoto(resolve(cvPortraitPath), workDir);

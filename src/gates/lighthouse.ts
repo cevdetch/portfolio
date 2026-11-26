@@ -1,6 +1,6 @@
 import type { BuildReceipt } from '../integrations/receipt.ts';
 
-/** The origin Lighthouse audits. `pnpm lighthouse` builds with it as the site, so canonical URLs match the preview. */
+/** The origin Lighthouse audits. `bun run lighthouse` builds with it as the site, so canonical URLs match the preview. */
 export const previewOrigin = 'http://127.0.0.1:4390';
 
 export const lighthousePasses = ['mobile', 'desktop', 'dark', 'dark-desktop'] as const;
@@ -10,7 +10,7 @@ export interface Shard { index: number; count: number }
 /** Every page the site owns, as the URLs Lighthouse visits, in path order: a new page is audited from its first build. */
 export function lighthouseRoutes(receipt: Pick<BuildReceipt, 'site' | 'pages'>): string[] {
   if (new URL(receipt.site).origin !== previewOrigin) {
-    throw new Error(`The build is for ${receipt.site}; build with --site ${previewOrigin}, as pnpm lighthouse does.`);
+    throw new Error(`The build is for ${receipt.site}; build with --site ${previewOrigin}, as bun run lighthouse does.`);
   }
   return receipt.pages.filter(page => page.owned).map(page => page.url).sort();
 }

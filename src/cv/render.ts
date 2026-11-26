@@ -34,7 +34,7 @@ function spawnRenderCv(args: readonly string[], cwd: string, command: string, en
 }
 
 /**
- * RenderCV resolves `cv.photo` against the model's folder, so the portrait is copied next to it; pnpm cv:private
+ * RenderCV resolves `cv.photo` against the model's folder, so the portrait is copied next to it; bun run cv:private
  * renders the same model and finds it there too. Returns the file name to put in the model, or undefined when
  * there is no portrait, and the CV prints without one.
  */

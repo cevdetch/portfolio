@@ -6,7 +6,7 @@ featured: true
 order: 3
 repo: cevdetch/astro-minimal-template
 site: https://astro-minimal-template.pages.dev/
-stack: [astro, typescript, node, pnpm, github-actions, cloudflare-pages, schema-org]
+stack: [astro, typescript, node, bun, github-actions, cloudflare-pages, schema-org]
 tagline: An Astro starter with typed metadata and browser-native defaults
 summary: Starts a new Astro website with titles, descriptions, link previews, a sitemap and output checks already in place, leaving the design to each project.
 role: Creator and maintainer
@@ -35,7 +35,7 @@ A new Astro site needs the same head work every time: a title and description on
 - Social cards are optional and built locally: pages without a manual image get a 1200×630 PNG at build time, rendered with Satori and Sharp from a bundled, licensed Noto Sans. The renderer and font never reach visitors, and the README documents how to remove the feature entirely.
 - The sitemap and `robots.txt` follow the pages. A build-time collector reads each page's indexing policy and feeds the actual emitted URLs to Astro's official sitemap integration, so there is no route list to maintain. Pages marked `noindex`, error pages, redirects and pages that canonicalise elsewhere stay out. A finalizer then checks `robots.txt` against the sitemap that was actually written.
 - The layout emits `og:image:alt` only for `image.alt` text the author supplied and never invents alt from the title.
-- `pnpm verify` checks the built output as well as the source, running type checks, unit tests, build tests, a fresh build, an output verifier and a [deadhead](https://deadhead.cevdet.ch/) audit of the emitted HTML. The verifier decodes generated PNGs and checks sitemap and robots references against the recorded selection.
+- `bun run verify` checks the built output as well as the source, running type checks, unit tests, build tests, a fresh build, an output verifier and a [deadhead](https://deadhead.cevdet.ch/) audit of the emitted HTML. The verifier decodes generated PNGs and checks sitemap and robots references against the recorded selection.
 - A neutral, replaceable mark ships as a declared ICO plus optional SVG, Apple and PNG icons, named to match [favseed](https://favseed.cevdet.ch/)'s output so a project can swap in its own set.
 
 ## Results
