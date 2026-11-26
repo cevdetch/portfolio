@@ -49,7 +49,7 @@ CHROME_PATH=/path/to/chrome bun run lighthouse
 
 ## Deployment
 
-Cloudflare Pages settings, applied by hand in the dashboard:
+Cloudflare Pages settings to apply by hand in the dashboard:
 
 - Build command: `bun run build` (or `bun run verify`, whichever gate the Pages settings currently run)
 - Environment variable: `BUN_VERSION=1.4.5`
