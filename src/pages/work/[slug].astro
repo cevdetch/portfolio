@@ -25,7 +25,7 @@ const work = data.works.find(item => item.id === entry.id)!;
 const facts = workFactsView(entry.id, data.facts, work.data);
 const techs = new Map(data.techs.map(tech => [tech.id, tech]));
 const icon = iconUrl(facts.icon);
-// Present only when `pnpm capture-screenshots` has captured this Work's site; the build never fails or fetches for it.
+// Present only when `bun run capture-screenshots` has captured this Work's site; the build never fails or fetches for it.
 const masters = import.meta.glob<{ default: ImageMetadata }>('/src/assets/screenshots/*/*.webp', { eager: true });
 const screenshots = findScreenshots(masters, entry.id);
 const crumbs = workCrumbs(work);

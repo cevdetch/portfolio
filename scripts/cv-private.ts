@@ -19,7 +19,7 @@ export function privateOverrides(env: Record<string, string | undefined>): strin
 if (import.meta.main) {
   try {
     const model = resolve('.astro/cv/cv.yaml');
-    await access(model).catch(() => { throw new Error('No CV model; run pnpm build first.'); });
+    await access(model).catch(() => { throw new Error('No CV model; run bun run build first.'); });
     const envFile = resolve(process.argv[2] ?? 'cv.private.env');
     const overrides = privateOverrides(parseEnv(await readFile(envFile, 'utf8')));
     // Every output, the Typst source included, stays in the gitignored private/ folder.

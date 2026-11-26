@@ -177,20 +177,20 @@ test('physical removal builds manual metadata and crawlers with normal remaining
     await rm(new URL(`src/${path}`, fixture.root), { recursive: true });
   }
   await writeFile(new URL('src/pages/index.astro', fixture.root), page('{image:{src:"/_social/manual.png"}}'));
-  for (const path of ['package.json', 'pnpm-lock.yaml', 'tsconfig.json']) {
+  for (const path of ['package.json', 'bun.lock', 'tsconfig.json']) {
     await cp(new URL(`../../${path}`, import.meta.url), new URL(path, fixture.root));
   }
   await cp(new URL('../../scripts/', import.meta.url), new URL('scripts/', fixture.root), { recursive: true });
   // cv-private.ts reaches src/cv/ and, through it, data/portfolio.ts's astro:content import,
   // which this fixture deliberately never defines (see the consumer() comment above).
   await rm(new URL('scripts/cv-private.ts', fixture.root));
-  await promisify(execFile)('pnpm', ['remove', '-D', 'satori'], { cwd: fixture.root, maxBuffer: 1024 * 1024 });
+  await promisify(execFile)('bun', ['remove', 'satori'], { cwd: fixture.root, maxBuffer: 1024 * 1024 });
   const manifest = JSON.parse(await readFile(new URL('package.json', fixture.root), 'utf8')) as {devDependencies: Record<string,string>};
   assert.equal(manifest.devDependencies['satori'], undefined);
   assert.equal(manifest.devDependencies['parse5'], '8.0.1');
-  await promisify(execFile)('pnpm', ['check'], { cwd: fixture.root, maxBuffer: 1024 * 1024 });
+  await promisify(execFile)('bun', ['--bun', 'run', 'check'], { cwd: fixture.root, maxBuffer: 1024 * 1024 });
   const result = await fixture.build(); assert.equal(result.code, 0, result.log);
-  await promisify(execFile)('pnpm', ['verify:output'], { cwd: fixture.root, maxBuffer: 1024 * 1024 });
+  await promisify(execFile)('bun', ['run', 'verify:output'], { cwd: fixture.root, maxBuffer: 1024 * 1024 });
   const html = await readFile(new URL('index.html', result.outDir), 'utf8');
   assert.equal(parseDocument(html).imageUrl, 'https://example.test/_social/manual.png');
   assert.doesNotMatch(html, /data-starter-/);

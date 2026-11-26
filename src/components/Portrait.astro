@@ -10,7 +10,7 @@ interface Props {
   class?: string;
 }
 const { alt, priority = false, class: className } = Astro.props;
-// The portrait the Person's image shows, when `pnpm prepare-portrait` has written it; the page renders without it.
+// The portrait the Person's image shows, when `bun run prepare-portrait` has written it; the page renders without it.
 const portraits = import.meta.glob<{ default: ImageMetadata }>('/src/assets/portrait/*.jpg', { eager: true });
 const portrait = portraits[`/src/assets/portrait/${portraitFile}`]?.default;
 ---

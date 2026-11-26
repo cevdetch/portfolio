@@ -135,8 +135,8 @@ test('a Work with sources needs Facts, and Facts need a Work', () => {
   delete facts.works['deadhead'];
   facts.works['ghost'] = { packages: [] };
   assert.deepEqual(validatePortfolio(fixturePortfolio(), facts).sort(), [
-    'snapshot: Facts for unknown Work "ghost"; run pnpm fetch-facts',
-    'work/deadhead: no Facts in the Snapshot; run pnpm fetch-facts',
+    'snapshot: Facts for unknown Work "ghost"; run bun run fetch-facts',
+    'work/deadhead: no Facts in the Snapshot; run bun run fetch-facts',
   ]);
 });
 
@@ -144,7 +144,7 @@ test('a Work with a repo needs repository Facts, so an unrefreshed repo is never
   const facts = fixtureSnapshot();
   delete facts.works['deadhead']!.repo;
   assert.deepEqual(validatePortfolio(fixturePortfolio(), facts), [
-    'work/deadhead: no repository Facts in the Snapshot; run pnpm fetch-facts',
+    'work/deadhead: no repository Facts in the Snapshot; run bun run fetch-facts',
   ]);
 });
 
@@ -153,7 +153,7 @@ test('a Work that counts its rules needs a repo and the counts in the Snapshot',
   p.works[0]!.data.rules = true;
   p.works[1]!.data.rules = true;
   assert.deepEqual(validatePortfolio(p, fixtureSnapshot()).sort(), [
-    'work/deadhead: no rule counts in the Snapshot; run pnpm fetch-facts',
+    'work/deadhead: no rule counts in the Snapshot; run bun run fetch-facts',
     'work/one: rules are counted from a repo, and this Work has none',
   ]);
 });
@@ -326,14 +326,14 @@ test("a Metric headline's label is linted too, alongside its full label", () => 
 test('a Work with a site needs Lighthouse Facts in the Snapshot', () => {
   const facts = fixtureSnapshot();
   delete facts.works['one']!.lighthouse;
-  assert.deepEqual(validatePortfolio(fixturePortfolio(), facts), ['work/one: no Lighthouse Facts in the Snapshot; run pnpm fetch-facts with PSI_API_KEY set']);
+  assert.deepEqual(validatePortfolio(fixturePortfolio(), facts), ['work/one: no Lighthouse Facts in the Snapshot; run bun run fetch-facts with PSI_API_KEY set']);
 });
 
 test("a Work's Lighthouse Facts must be measured on its own site", () => {
   const facts = fixtureSnapshot();
   facts.works['one']!.lighthouse!.site = 'https://one.example.dev/';
   assert.deepEqual(validatePortfolio(fixturePortfolio(), facts), [
-    'work/one: Lighthouse Facts measured on https://one.example.dev/, not the site https://one.cevdet.ch/; run pnpm fetch-facts with PSI_API_KEY set',
+    'work/one: Lighthouse Facts measured on https://one.example.dev/, not the site https://one.cevdet.ch/; run bun run fetch-facts with PSI_API_KEY set',
   ]);
   facts.works['one']!.lighthouse!.site = 'https://one.cevdet.ch/';
   assert.deepEqual(validatePortfolio(fixturePortfolio(), facts), []);

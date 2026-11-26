@@ -2,7 +2,7 @@ title: Web toolchain
 order: 3
 entries:
   - { tech: node }
-  - { tech: pnpm }
+  - { tech: bun }
   - { tech: mise }
   - { tech: uv }
   - { tech: deno }

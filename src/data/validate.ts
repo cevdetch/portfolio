@@ -124,18 +124,18 @@ export function validatePortfolio(p: Portfolio, facts: Snapshot): string[] {
       errors.push(...lintAll(`${at} metrics[${index}]`, { label: metric.label, 'headline label': metric.headline?.label }, false));
     });
     // Every surface links a repo only once the Snapshot has found it public; a missing entry is an unrefreshed Story.
-    if (data.repo && facts.works[id] && !facts.works[id].repo) errors.push(`${at}: no repository Facts in the Snapshot; run pnpm fetch-facts`);
+    if (data.repo && facts.works[id] && !facts.works[id].repo) errors.push(`${at}: no repository Facts in the Snapshot; run bun run fetch-facts`);
     const sourced = data.repo || data.site || data.packages.length > 0 || data.pkgbuilds;
-    if (sourced && !facts.works[id]) errors.push(`${at}: no Facts in the Snapshot; run pnpm fetch-facts`);
+    if (sourced && !facts.works[id]) errors.push(`${at}: no Facts in the Snapshot; run bun run fetch-facts`);
     // The Work page and the home Number show a site's scores; a site with none would quietly drop out of both.
-    if (data.site && facts.works[id] && !facts.works[id].lighthouse) errors.push(`${at}: no Lighthouse Facts in the Snapshot; run pnpm fetch-facts with PSI_API_KEY set`);
+    if (data.site && facts.works[id] && !facts.works[id].lighthouse) errors.push(`${at}: no Lighthouse Facts in the Snapshot; run bun run fetch-facts with PSI_API_KEY set`);
     // Scores from a site the Work has moved away from would be published, and linked, as the new site's.
     const measured = facts.works[id]?.lighthouse?.site;
     if (data.site && measured && measured !== data.site) {
-      errors.push(`${at}: Lighthouse Facts measured on ${measured}, not the site ${data.site}; run pnpm fetch-facts with PSI_API_KEY set`);
+      errors.push(`${at}: Lighthouse Facts measured on ${measured}, not the site ${data.site}; run bun run fetch-facts with PSI_API_KEY set`);
     }
     if (data.rules && !data.repo) errors.push(`${at}: rules are counted from a repo, and this Work has none`);
-    else if (data.rules && facts.works[id] && !facts.works[id].rules) errors.push(`${at}: no rule counts in the Snapshot; run pnpm fetch-facts`);
+    else if (data.rules && facts.works[id] && !facts.works[id].rules) errors.push(`${at}: no rule counts in the Snapshot; run bun run fetch-facts`);
     const rules = facts.works[id]?.rules;
     if (rules) errors.push(...ruleCountErrors(at, data, rules.total));
   }
@@ -144,7 +144,7 @@ export function validatePortfolio(p: Portfolio, facts: Snapshot): string[] {
     errors.push(`work: Featured order must run 1..${orders.length} without gaps (found ${orders.join(', ')})`);
   }
   for (const id of Object.keys(facts.works)) {
-    if (!workIds.has(id)) errors.push(`snapshot: Facts for unknown Work "${id}"; run pnpm fetch-facts`);
+    if (!workIds.has(id)) errors.push(`snapshot: Facts for unknown Work "${id}"; run bun run fetch-facts`);
   }
 
   for (const entry of p.experience) {

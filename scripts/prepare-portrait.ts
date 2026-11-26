@@ -3,7 +3,7 @@ import { dirname, resolve } from 'node:path';
 import sharp from 'sharp';
 import { portraitOutputs } from '../src/data/portrait.ts';
 
-// Runs on demand: `pnpm prepare-portrait <web-source> <cv-source>`. The outputs are committed; the build never needs
+// Runs on demand: `bun run prepare-portrait <web-source> <cv-source>`. The outputs are committed; the build never needs
 // the originals.
 
 /**
@@ -19,7 +19,7 @@ export function preparePortrait(input: string | Buffer, size: number): Promise<B
 if (import.meta.main) {
   try {
     const [web, cv] = process.argv.slice(2);
-    if (!web || !cv) throw new Error('Usage: pnpm prepare-portrait <web-source> <cv-source>');
+    if (!web || !cv) throw new Error('Usage: bun run prepare-portrait <web-source> <cv-source>');
     const sources = { web, cv };
     for (const output of portraitOutputs) {
       const bytes = await preparePortrait(resolve(sources[output.source]), output.size);
