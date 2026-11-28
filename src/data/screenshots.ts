@@ -18,7 +18,7 @@ export type ScreenshotScheme = typeof screenshotSchemes[number];
 export const screenshotScale = 2;
 
 /** One device's masters: light is the base, dark only when the site has a dark theme. */
-export interface DeviceScreenshots<T> { light: T; dark?: T }
+interface DeviceScreenshots<T> { light: T; dark?: T }
 export type WorkScreenshots<T> = Partial<Record<ScreenshotDevice, DeviceScreenshots<T>>>;
 
 /** Groups a Work's masters, among modules keyed the way a root-absolute `import.meta.glob` names them,

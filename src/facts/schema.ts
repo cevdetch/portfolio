@@ -3,7 +3,7 @@ import { httpsUrl, isoDateTime } from '../schemas/common.ts';
 
 const registry = z.enum(['npm', 'aur']);
 
-export const publicRepoFactsSchema = z.strictObject({
+const publicRepoFactsSchema = z.strictObject({
   private: z.literal(false),
   license: z.string().nullable(),
   firstCommit: isoDateTime,
@@ -13,9 +13,9 @@ export const publicRepoFactsSchema = z.strictObject({
 });
 
 // A private repository yields one Fact, that its source is private: no link, dates or counts.
-export const repoFactsSchema = z.discriminatedUnion('private', [publicRepoFactsSchema, z.strictObject({ private: z.literal(true) })]);
+const repoFactsSchema = z.discriminatedUnion('private', [publicRepoFactsSchema, z.strictObject({ private: z.literal(true) })]);
 
-export const packageFactsSchema = z.discriminatedUnion('published', [
+const packageFactsSchema = z.discriminatedUnion('published', [
   z.strictObject({ registry, name: z.string(), published: z.literal(false) }),
   z.strictObject({ registry, name: z.string(), published: z.literal(true), version: z.string(), releasedAt: isoDateTime, url: httpsUrl }),
 ]);
@@ -26,7 +26,7 @@ const score = z.number().int().min(0).max(100);
 // the median (see combineRuns). Published only as 100 in all four (see collectFacts). measuredAt is the best run's
 // fetch time, kept from the last refresh while the four scores stay the same. site is the URL measured, so scores
 // never carry over to a Work whose site has moved; scores recorded before it have none.
-export const lighthouseFactsSchema = z.strictObject({
+const lighthouseFactsSchema = z.strictObject({
   performance: score,
   accessibility: score,
   bestPractices: score,
@@ -35,7 +35,7 @@ export const lighthouseFactsSchema = z.strictObject({
   site: httpsUrl.optional(),
 });
 
-export const workFactsSchema = z.strictObject({
+const workFactsSchema = z.strictObject({
   repo: repoFactsSchema.optional(),
   packages: z.array(packageFactsSchema),
   pkgbuilds: z.array(z.string()).optional(),
@@ -46,7 +46,7 @@ export const workFactsSchema = z.strictObject({
   lighthouse: lighthouseFactsSchema.optional(),
 });
 
-export const contributionSchema = z.strictObject({
+const contributionSchema = z.strictObject({
   upstream: z.string().regex(/^[^/\s]+\/[^/\s]+$/),
   number: z.number().int().positive(),
   title: z.string(),

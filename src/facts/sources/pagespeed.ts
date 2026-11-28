@@ -1,6 +1,6 @@
 import type { LighthouseFacts } from '../schema.ts';
 
-export const PSI_API = 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed';
+const PSI_API = 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed';
 
 // Fact key → PageSpeed Insights category id, in the order the page lists them.
 const categories = { performance: 'performance', accessibility: 'accessibility', bestPractices: 'best-practices', seo: 'seo' } as const;
@@ -11,7 +11,7 @@ export interface LighthouseScores extends Record<Category, number> { fetchTime: 
 export interface LighthouseRun extends LighthouseScores { shortfalls: string[] }
 // A well-formed answer from a run Lighthouse could not finish: the site keeps its last scores.
 export interface FailedRun { failed: string }
-export type Measured = { facts: LighthouseFacts; shortfalls?: readonly string[] } | { skipped: string };
+type Measured = { facts: LighthouseFacts; shortfalls?: readonly string[] } | { skipped: string };
 export type MeasureLighthouse = (site: string) => Promise<Measured>;
 
 // PageSpeed Insights answers a repeated request from its cache for a minute or more, and its cache key holds the

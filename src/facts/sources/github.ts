@@ -13,7 +13,7 @@ export interface GhSearch { total_count: number; items: GhSearchItem[] }
 export interface GhTree { truncated: boolean; tree: { path: string; type: 'blob' | 'tree' | 'commit'; sha?: string }[] }
 export interface GhBlob { encoding: string; content: string }
 
-export interface GhUser { login: string; type: string }
+interface GhUser { login: string; type: string }
 // Comments carry created_at; reviews carry submitted_at instead, and none while still pending.
 export interface GhComment { user: GhUser | null; body?: string | null; created_at?: string | null; submitted_at?: string | null }
 

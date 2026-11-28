@@ -8,7 +8,7 @@ import { techSchema } from '../../src/schemas/tech.ts';
 import { usesSectionSchema } from '../../src/schemas/uses.ts';
 import { workSchema } from '../../src/schemas/work.ts';
 
-export const caseStudyBody = '## Problem\n\nA.\n\n## Constraints\n\nB.\n\n## Decisions\n\nC.\n\n## Results\n\nD.\n\n## Next\n\nE.\n';
+const caseStudyBody = '## Problem\n\nA.\n\n## Constraints\n\nB.\n\n## Decisions\n\nC.\n\n## Results\n\nD.\n\n## Next\n\nE.\n';
 
 export function fixturePortfolio(): Portfolio {
   return {
