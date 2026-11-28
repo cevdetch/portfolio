@@ -22,7 +22,7 @@ bun run dev
 | Command | Purpose |
 | --- | --- |
 | `bun run dev` | Run the site locally |
-| `bun run verify` | Run every check: types, tests, a fresh build and the output gates |
+| `bun run verify` | Run every check: types, unused code, tests, a fresh build and the output gates |
 | `bun run fetch-facts` | Refresh `src/facts/` from GitHub, npm, the AUR and PageSpeed Insights |
 | `bun run cv:private` | Render the full CV, including the fields kept out of the public build |
 | `bun run lighthouse` | Build and audit performance, accessibility, best practices and SEO |
@@ -73,8 +73,8 @@ is never committed or published.
 
 ## Verification
 
-`bun run verify` runs type checks, the test suites, a build and the output
-gates, and must pass before a change ships. `bun run lighthouse` runs the
+`bun run verify` runs type checks, an unused-code check with knip, the test
+suites, a build and the output gates, and must pass before a change ships. `bun run lighthouse` runs the
 performance, accessibility, best-practices and SEO budgets against a local
 preview build. Both run in CI on every push and pull request, alongside a
 link check of the built site.

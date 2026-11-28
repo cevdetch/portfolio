@@ -1,6 +1,6 @@
 import sharp from 'sharp';
 
-export const portraitLimits = { minSize: 400, maxBytes: 200_000 } as const;
+const portraitLimits = { minSize: 400, maxBytes: 200_000 } as const;
 
 /**
  * What a published portrait must be: a square JPEG, large enough to print and small enough to serve, with no EXIF,

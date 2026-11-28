@@ -1,6 +1,6 @@
 // Generic patterns for details that never go public. Personal terms are supplied privately,
 // through the PRIVACY_DENYLIST secret or a local .privacy-denylist file.
-export const privacyRules: readonly { name: string; pattern: RegExp }[] = [
+const privacyRules: readonly { name: string; pattern: RegExp }[] = [
   { name: 'phone number', pattern: /\+\d{2}[\s\d]{8,}\d/ },
   { name: 'IPv4 address', pattern: /\b(?:25[0-5]|2[0-4]\d|1?\d?\d)(?:\.(?:25[0-5]|2[0-4]\d|1?\d?\d)){3}\b(?!\.\d)/ },
   { name: 'tailnet hostname', pattern: /\b[\w-]+\.ts\.net\b/i },

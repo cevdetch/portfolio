@@ -1,7 +1,7 @@
 import { z } from 'astro/zod';
 import { httpsUrl, id, isoDate, line } from './common.ts';
 
-export const workKinds = ['app', 'site', 'package', 'template', 'research', 'tool', 'infrastructure'] as const;
+const workKinds = ['app', 'site', 'package', 'template', 'research', 'tool', 'infrastructure'] as const;
 export const workStatuses = ['active', 'maintained', 'complete', 'archived'] as const;
 
 // What each Status means, printed beside it so a reader never has to guess.
@@ -42,7 +42,7 @@ export const metricSchema = z.strictObject({
 });
 export type Metric = z.infer<typeof metricSchema>;
 
-export const packageRefSchema = z.strictObject({
+const packageRefSchema = z.strictObject({
   registry: z.enum(['npm', 'aur']),
   name: z.string().regex(/^(?:@[a-z0-9-]+\/)?[a-z0-9._-]+$/),
 });

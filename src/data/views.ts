@@ -62,7 +62,7 @@ export function knowsAboutTechs(techs: readonly Tech[], works: readonly WorkEntr
 }
 
 // label: what the pull touched; its own override, else the Upstream's label, else the repo id.
-export interface UpstreamPull extends Contribution { hidden: boolean; highlight: boolean; label: string; note?: string; order?: number }
+interface UpstreamPull extends Contribution { hidden: boolean; highlight: boolean; label: string; note?: string; order?: number }
 export interface UpstreamGroup { repo: string; url: string; pulls: UpstreamPull[]; techs: string[]; works: string[] }
 
 /** Every merged pull, grouped by Upstream; a hidden pull stays listed, flagged, so only the home page drops it. */
@@ -292,7 +292,7 @@ export type ShippedItem =
 const burstDays = 7;
 
 /** Orders dotted release versions numerically, so 0.10.0 sorts above 0.9.0; a pre-release tag sorts below its release. */
-export function compareVersions(a: string, b: string): number {
+function compareVersions(a: string, b: string): number {
   const parse = (version: string) => {
     const [core = '', pre] = version.replace(/^v/, '').split('-', 2);
     return { parts: core.split('.').map(Number), pre };

@@ -12,8 +12,8 @@ import * as shared from './structured-data.ts';
 export { graph, serializeJsonLd } from './structured-data.ts';
 
 const site = shared.identity.url;
-// Fixed identifiers: One (one.cevdet.ch) and every other cevdet.ch site reference #person.
-export const PERSON_ID = shared.identity.id;
+// Fixed identifiers. The person is shared.identity.id (#person), which One (one.cevdet.ch)
+// and every other cevdet.ch site reference.
 export const WEBSITE_ID = shared.nodeId(site, 'website');
 export const PROFILE_ID = shared.nodeId(site, 'profile');
 

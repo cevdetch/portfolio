@@ -1,9 +1,9 @@
 import type { BuildReceipt } from '../integrations/receipt.ts';
 
 /** The origin Lighthouse audits. `bun run lighthouse` builds with it as the site, so canonical URLs match the preview. */
-export const previewOrigin = 'http://127.0.0.1:4390';
+const previewOrigin = 'http://127.0.0.1:4390';
 
-export const lighthousePasses = ['mobile', 'desktop', 'dark', 'dark-desktop'] as const;
+const lighthousePasses = ['mobile', 'desktop', 'dark', 'dark-desktop'] as const;
 export type LighthousePass = typeof lighthousePasses[number];
 export interface Shard { index: number; count: number }
 
